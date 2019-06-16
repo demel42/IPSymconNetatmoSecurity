@@ -1,0 +1,11 @@
+{
+	"id": "{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}",
+	"name": "NetatmoSecurityIO",
+	"type": 1,
+	"vendor": "Netatmo",
+	"aliases": ["NetatmoSecurity I/O"],
+	"parentRequirements": [],
+	"childRequirements": ["{5F947426-53FB-4DD9-A725-F95590CBD97C}"],
+	"implemented": ["{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}"],
+	"prefix": "NetatmoSecurityIO"
+}

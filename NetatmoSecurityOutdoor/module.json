@@ -1,0 +1,11 @@
+{
+	"id": "{06D589CF-7789-44B1-A0EC-6F51428352E6}",
+	"name": "NetatmoSecurityOutdoor",
+	"type": 3,
+	"vendor": "Netatmo",
+	"aliases": ["NetatmoSecurity"],
+	"parentRequirements": ["{5F947426-53FB-4DD9-A725-F95590CBD97C}"],
+	"childRequirements": [],
+	"implemented": ["{5F947426-53FB-4DD9-A725-F95590CBD97C}"],
+	"prefix": "NetatmoSecurityOutdoor"
+}

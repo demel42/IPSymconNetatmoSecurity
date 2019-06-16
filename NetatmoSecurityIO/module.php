@@ -25,9 +25,9 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurityIO_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
 
-		if (IPS_GetKernelRunlevel() == KR_READY) {
-			$this->RegisterHook('/hook/NetatmoSecurity');
-		}
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+            $this->RegisterHook('/hook/NetatmoSecurity');
+        }
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -35,7 +35,7 @@ class NetatmoSecurityIO extends IPSModule
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
 
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
-			$this->RegisterHook('/hook/NetatmoSecurity');
+            $this->RegisterHook('/hook/NetatmoSecurity');
         }
     }
 
@@ -50,8 +50,8 @@ class NetatmoSecurityIO extends IPSModule
             die('File not found!');
         }
         if ($uri == '/hook/NetatmoSecurity') {
-			$this->SendDebug(__FUNCTION__, '_GET=' . print_r($_GET, true), 0);
-			$this->SendDebug(__FUNCTION__, '_PUT=' . print_r($_PUT, true), 0);
+            $this->SendDebug(__FUNCTION__, '_GET=' . print_r($_GET, true), 0);
+            $this->SendDebug(__FUNCTION__, '_PUT=' . print_r($_PUT, true), 0);
             return;
         }
         $path = realpath($root . '/' . $basename);

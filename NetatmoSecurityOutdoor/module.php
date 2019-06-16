@@ -26,7 +26,7 @@ class NetatmoSecurityOutdoor extends IPSModule
         $module_id = $this->ReadPropertyString('module_id');
 
         $vpos = 1;
-		$module_info = 'abc';
+        $module_info = 'abc';
         $this->SetSummary($module_info);
 
         $this->SetStatus(IS_ACTIVE);
@@ -79,7 +79,7 @@ class NetatmoSecurityOutdoor extends IPSModule
 
         if ($buf != '') {
             $netatmo = json_decode($buf, true);
-		}
+        }
 
         $now = time();
 

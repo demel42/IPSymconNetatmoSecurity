@@ -36,6 +36,7 @@ class NetatmoSecurityIO extends IPSModule
 
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
             $this->RegisterHook('/hook/NetatmoSecurity');
+            $this->UpdateData();
         }
     }
 
@@ -136,16 +137,6 @@ class NetatmoSecurityIO extends IPSModule
         return json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
     }
 
-    // Inspired by module SymconTest/HookServe
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
-    {
-        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-
-        if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
-            $this->UpdateData();
-        }
-    }
-
     protected function SetUpdateInterval()
     {
         $min = $this->ReadPropertyInteger('UpdateDataInterval');
@@ -175,7 +166,7 @@ class NetatmoSecurityIO extends IPSModule
         }
 
         $netatmo_auth_url = 'https://api.netatmo.net/oauth2/token';
-        $netatmo_data_url = 'https://api.netatmo.net/api/getstationsdata';
+        $netatmo_data_url = 'https://api.netatmo.net/api/gethomedata';
 
         $netatmo_user = $this->ReadPropertyString('Netatmo_User');
         $netatmo_password = $this->ReadPropertyString('Netatmo_Password');
@@ -194,7 +185,7 @@ class NetatmoSecurityIO extends IPSModule
                 'client_secret' => $netatmo_secret,
                 'username'      => $netatmo_user,
                 'password'      => $netatmo_password,
-                'scope'         => 'read_station'
+                'scope'         => 'read_presence'
             ];
 
             $this->SendDebug(__FUNCTION__, "netatmo-auth-url=$netatmo_auth_url, postdata=" . print_r($postdata, true), 0);

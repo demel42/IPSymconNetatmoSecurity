@@ -4,7 +4,7 @@
 	"type": 3,
 	"vendor": "Netatmo",
 	"aliases": ["NetatmoSecurity"],
-	"parentRequirements": ["{5F947426-53FB-4DD9-A725-F95590CBD97C}"],
+	"parentRequirements": ["{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}"],
 	"childRequirements": [],
 	"implemented": ["{5F947426-53FB-4DD9-A725-F95590CBD97C}"],
 	"prefix": "NetatmoSecurityOutdoor"

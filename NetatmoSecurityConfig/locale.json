@@ -1,8 +1,22 @@
 {
 	"translations": {
 		"de": {
-			"Import of product": "Importieren des Produktes",
+			"Product": "Produkt",
+			"Products": "Produkte",
+
+			"Camera": "Kamera",
+			"Outdoor camera": "Aussenkamera",
+			"Indoor camera": "Innenkamera",
+			"Smoke detector": "Rauchmelder",
+
+			"Category": "Kategorie",
+			"Home": "Haus",
+			"Name": "Name",
+
 			"Module description": "Modulbeschreibung",
+
+			"selected product missing": "Ausgewähltes Produkt nicht gefunden",
+			"no product selected": "Kein Produkt ausgewählt",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
@@ -12,11 +26,13 @@
 
 			"Instance is inactive (no data)": "Instanz ist inaktiv (keine Daten)",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
+			"Instance is inactive (forbidden)": "Instanz ist inaktiv (fehlende Berechtigung)",
 			"Instance is inactive (server error)": "Instanz ist inaktiv (Serverfehler)",
 			"Instance is inactive (http error)": "Instanz ist inaktiv (HTTP-Fehler)",
 			"Instance is inactive (invalid data)": "Instanz ist inaktiv (ungültige Daten)",
-			"Instance is inactive (no station)": "Instanz ist inaktiv (keine Station)",
-			"Instance is inactive (station missing)": "Instanz ist inaktiv (Station ist unbekannt)"
+			"Instance is inactive (no product)": "Instanz ist inaktiv (kein Produkt)",
+			"Instance is inactive (product missing)": "Instanz ist inaktiv (Produkt ist unbekannt)",
+			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)"
 		}
 	}
 }

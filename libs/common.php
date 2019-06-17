@@ -3,11 +3,13 @@
 if (!defined('IS_NODATA')) {
     define('IS_NODATA', IS_EBASE + 1);
     define('IS_UNAUTHORIZED', IS_EBASE + 2);
-    define('IS_SERVERERROR', IS_EBASE + 3);
-    define('IS_HTTPERROR', IS_EBASE + 4);
-    define('IS_INVALIDDATA', IS_EBASE + 5);
-    define('IS_NOSTATION', IS_EBASE + 6);
-    define('IS_STATIONMISSІNG', IS_EBASE + 7);
+    define('IS_FORBIDDEN', IS_EBASE + 3);
+    define('IS_SERVERERROR', IS_EBASE + 4);
+    define('IS_HTTPERROR', IS_EBASE + 5);
+    define('IS_INVALIDDATA', IS_EBASE + 6);
+    define('IS_NOPRODUCT', IS_EBASE + 7);
+    define('IS_PRODUCTMISSІNG', IS_EBASE + 8);
+    define('IS_NOWEBHOOK', IS_EBASE + 9);
 }
 
 trait NetatmoSecurityCommon
@@ -112,5 +114,67 @@ trait NetatmoSecurityCommon
             $ret = $ret[$v];
         }
         return $ret;
+    }
+
+    // inspired by Nall-chan
+    //   https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23a0de51bb3fbc114cefc3acf23c27a14/libs/SqueezeBoxTraits.php
+    public function __get($name)
+    {
+        $n = strpos($name, 'Multi_');
+        if (strpos($name, 'Multi_') === 0) {
+            $curCount = $this->GetBuffer('BufferCount_' . $name);
+            if ($curCount == false) {
+                $curCount = 0;
+            }
+            $data = '';
+            for ($i = 0; $i < $curCount; $i++) {
+                $data .= $this->GetBuffer('BufferPart' . $i . '_' . $name);
+            }
+        } else {
+            $data = $this->GetBuffer($name);
+        }
+        return unserialize($data);
+    }
+
+    public function __set($name, $value)
+    {
+        $data = serialize($value);
+        $n = strpos($name, 'Multi_');
+        if (strpos($name, 'Multi_') === 0) {
+            $oldCount = $this->GetBuffer('BufferCount_' . $name);
+            if ($oldCount == false) {
+                $oldCount = 0;
+            }
+            $parts = str_split($data, 8000);
+            $newCount = count($parts);
+            $this->SetBuffer('BufferCount_' . $name, $newCount);
+            for ($i = 0; $i < $newCount; $i++) {
+                $this->SetBuffer('BufferPart' . $i . '_' . $name, $parts[$i]);
+            }
+            for ($i = $newCount; $i < $oldCount; $i++) {
+                $this->SetBuffer('BufferPart' . $i . '_' . $name, '');
+            }
+        } else {
+            $this->SetBuffer($name, $data);
+        }
+    }
+
+    private function SetMultiBuffer($name, $value)
+    {
+        $this->{'Multi_' . $name} = $value;
+    }
+
+    private function GetMultiBuffer($name)
+    {
+        $value = $this->{'Multi_' . $name};
+        return $value;
+    }
+
+    private function bool2str($bval)
+    {
+        if (is_bool($bval)) {
+            return $bval ? 'true' : 'false';
+        }
+        return $bval;
     }
 }

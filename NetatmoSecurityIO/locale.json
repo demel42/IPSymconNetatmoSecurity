@@ -18,12 +18,20 @@
 			"Ignore HTTP-Error X times": "HTTP-Fehler X-fach ignorieren",
 			"Count": "Anzahl",
 
+			"Webhook for receive events from Netatmo": "Webhook zum Empfang von Netåtmo-Events",
+			"Register Webhook": "Webhook registrieren",
+			"To the URL '/hook/NetatmoSecurity/event' is appended": "An die URL wird '/hook/NetatmoSecurity/event' angehängt",
+			" ... if not given, the Connect-URL is used" : " ... falls nicht angegeben, wird die Connect-URL verwendet",
+			"Base-URL": "Basis-URL",
+
 			"Update data every X minutes": "Aktualisiere Daten alle X Minuten",
 			"Minutes": "Minuten",
 
-			"Update weatherdata": "Aktualisiere Daten",
+			"Update data": "Aktualisiere Daten",
 
 			"Module description": "Modulbeschreibung",
+
+			"data contains no cameras or smokedetectors": "Daten entalten keine Kamera/Rauchmelder",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
@@ -33,11 +41,13 @@
 
 			"Instance is inactive (no data)": "Instanz ist inaktiv (keine Daten)",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
+			"Instance is inactive (forbidden)": "Instanz ist inaktiv (fehlende Berechtigung)",
 			"Instance is inactive (server error)": "Instanz ist inaktiv (Serverfehler)",
 			"Instance is inactive (http error)": "Instanz ist inaktiv (HTTP-Fehler)",
 			"Instance is inactive (invalid data)": "Instanz ist inaktiv (ungültige Daten)",
-			"Instance is inactive (no station)": "Instanz ist inaktiv (keine Station)",
-			"Instance is inactive (station missing)": "Instanz ist inaktiv (Station ist unbekannt)"
+			"Instance is inactive (no module)": "Instanz ist inaktiv (kein Modul)",
+			"Instance is inactive (module missing)": "Instanz ist inaktiv (Modul ist unbekannt)",
+			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)"
 		}
 	}
 }

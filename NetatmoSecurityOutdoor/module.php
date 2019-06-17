@@ -10,7 +10,8 @@ class NetatmoSecurityOutdoor extends IPSModule
     {
         parent::Create();
 
-        $this->RegisterPropertyString('module_id', '');
+        $this->RegisterPropertyString('product_type', '');
+        $this->RegisterPropertyString('product_id', '');
         $this->RegisterPropertyString('home_id', '');
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
@@ -22,21 +23,24 @@ class NetatmoSecurityOutdoor extends IPSModule
     {
         parent::ApplyChanges();
 
-        $home_id = $this->ReadPropertyString('home_id');
-        $module_id = $this->ReadPropertyString('module_id');
+        $product_type = $this->ReadPropertyString('product_type');
+        $product_id = $this->ReadPropertyString('product_id');
 
         $vpos = 1;
-        $module_info = 'abc';
-        $this->SetSummary($module_info);
+
+        $product_info = $product_id . ' (' . $product_type . ')';
+        $this->SetSummary($product_info);
 
         $this->SetStatus(IS_ACTIVE);
     }
 
     public function GetConfigurationForm()
     {
-        $module_type = $this->ReadPropertyString('module_type');
-
         $formElements = [];
+        $formElements[] = ['type' => 'Label', 'label' => 'Netatmo Outdoor camera (Presence)'];
+		$formElements[] = ['type' => 'ValidationTextBox', 'name' => 'product_type', 'caption' => 'Product-Type'];
+		$formElements[] = ['type' => 'ValidationTextBox', 'name' => 'product_id', 'caption' => 'Product-ID'];
+		$formElements[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
 
         $formActions = [];
         $formActions[] = ['type' => 'Label', 'label' => '____________________________________________________________________________________________________'];
@@ -55,11 +59,13 @@ class NetatmoSecurityOutdoor extends IPSModule
 
         $formStatus[] = ['code' => IS_NODATA, 'icon' => 'error', 'caption' => 'Instance is inactive (no data)'];
         $formStatus[] = ['code' => IS_UNAUTHORIZED, 'icon' => 'error', 'caption' => 'Instance is inactive (unauthorized)'];
+		$formStatus[] = ['code' => IS_FORBIDDEN, 'icon' => 'error', 'caption' => 'Instance is inactive (forbidden)'];
         $formStatus[] = ['code' => IS_SERVERERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (server error)'];
         $formStatus[] = ['code' => IS_HTTPERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (http error)'];
         $formStatus[] = ['code' => IS_INVALIDDATA, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid data)'];
-        $formStatus[] = ['code' => IS_NOSTATION, 'icon' => 'error', 'caption' => 'Instance is inactive (no station)'];
-        $formStatus[] = ['code' => IS_STATIONMISSІNG, 'icon' => 'error', 'caption' => 'Instance is inactive (station missing)'];
+        $formStatus[] = ['code' => IS_NOPRODUCT, 'icon' => 'error', 'caption' => 'Instance is inactive (no product)'];
+        $formStatus[] = ['code' => IS_PRODUCTMISSІNG, 'icon' => 'error', 'caption' => 'Instance is inactive (product missing)'];
+		$formStatus[] = ['code' => IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
 
         return json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
     }
@@ -71,7 +77,7 @@ class NetatmoSecurityOutdoor extends IPSModule
         $buf = $jdata->Buffer;
 
         $home_id = $this->ReadPropertyString('home_id');
-        $module_id = $this->ReadPropertyString('module_id');
+        $product_id = $this->ReadPropertyString('product_id');
 
         $err = '';
         $statuscode = 0;

@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 
 /*
-	https://499a98cf82f2554257fddd3d7dcf31d3.ipmagic.de/hook/NetatmoSecurity/event
+    https://499a98cf82f2554257fddd3d7dcf31d3.ipmagic.de/hook/NetatmoSecurity/event
 */
 
 class NetatmoSecurityIO extends IPSModule
@@ -64,16 +64,16 @@ class NetatmoSecurityIO extends IPSModule
         $register_webhook = $this->ReadPropertyBoolean('register_webhook');
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
 
-		if ($register_webhook) {
-			if ($webhook_baseurl == '') {
-				$instID = IPS_GetInstanceListByModuleID("{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}")[0];
-				$url = CC_GetUrl($instID);
-				if ($url == '') {
-					$this->SetStatus(IS_NOWEBHOOK);
-					return;
-				}
-			}
-		}
+        if ($register_webhook) {
+            if ($webhook_baseurl == '') {
+                $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+                $url = CC_GetUrl($instID);
+                if ($url == '') {
+                    $this->SetStatus(IS_NOWEBHOOK);
+                    return;
+                }
+            }
+        }
 
         if ($netatmo_user != '' && $netatmo_password != '' && $netatmo_client != '' && $netatmo_secret != '') {
             $this->SetUpdateInterval();
@@ -103,13 +103,13 @@ class NetatmoSecurityIO extends IPSModule
         $formElements[] = ['type' => 'Label', 'label' => 'Webhook for receive events from Netatmo'];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'register_webhook', 'caption' => 'Register Webhook'];
 
-		$formElements[] = ['type' => 'Label', 'label' => 'To the URL \'/hook/NetatmoSecurity/event\' is appended'];
+        $formElements[] = ['type' => 'Label', 'label' => 'To the URL \'/hook/NetatmoSecurity/event\' is appended'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'webhook_baseurl', 'caption' => 'Base-URL'];
-		$instID = IPS_GetInstanceListByModuleID("{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}")[0];
-		$url = CC_GetUrl($instID);
-		if ($url != '') {
-			$formElements[] = ['type' => 'Label', 'label' => ' ... if not given, the Connect-URL is used'];
-		}
+        $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+        $url = CC_GetUrl($instID);
+        if ($url != '') {
+            $formElements[] = ['type' => 'Label', 'label' => ' ... if not given, the Connect-URL is used'];
+        }
 
         $formElements[] = ['type' => 'Label', 'label' => 'Update data every X minutes'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'UpdateDataInterval', 'caption' => 'Minutes'];
@@ -128,7 +128,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $formStatus[] = ['code' => IS_NODATA, 'icon' => 'error', 'caption' => 'Instance is inactive (no data)'];
         $formStatus[] = ['code' => IS_UNAUTHORIZED, 'icon' => 'error', 'caption' => 'Instance is inactive (unauthorized)'];
-		$formStatus[] = ['code' => IS_FORBIDDEN, 'icon' => 'error', 'caption' => 'Instance is inactive (forbidden)'];
+        $formStatus[] = ['code' => IS_FORBIDDEN, 'icon' => 'error', 'caption' => 'Instance is inactive (forbidden)'];
         $formStatus[] = ['code' => IS_SERVERERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (server error)'];
         $formStatus[] = ['code' => IS_HTTPERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (http error)'];
         $formStatus[] = ['code' => IS_INVALIDDATA, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid data)'];
@@ -239,35 +239,35 @@ class NetatmoSecurityIO extends IPSModule
             $err = '';
             $statuscode = 0;
             $jdata = json_decode($data, true);
-			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             $status = $jdata['status'];
             if ($status != 'ok') {
                 $err = "got status \"$status\"";
                 $statuscode = IS_INVALIDDATA;
             } else {
-				$empty = true;
-				if (isset($jdata['body']['homes'])) {
-					$homes = $jdata['body']['homes'];
-					$this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
-					foreach ($homes as $home) {
-						if (isset($home['cameras'])) {
-							$cameras = $home['cameras'];
-							if ($cameras != '' && count($cameras)) {
-								$empty = false;
-							}
-						}
-						if (isset($home['smokedetectors'])) {
-							$smokedetectors = $home['smokedetectors'];
-							if ($smokedetectors != '' && count($smokedetectors)) {
-								$empty = false;
-							}
-						}
-					}
-				}
-				if ($empty) {
-					$err = 'data contains no cameras or smokedetectors';
-					$statuscode = IS_NOPRODUCT;
-				}
+                $empty = true;
+                if (isset($jdata['body']['homes'])) {
+                    $homes = $jdata['body']['homes'];
+                    $this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
+                    foreach ($homes as $home) {
+                        if (isset($home['cameras'])) {
+                            $cameras = $home['cameras'];
+                            if ($cameras != '' && count($cameras)) {
+                                $empty = false;
+                            }
+                        }
+                        if (isset($home['smokedetectors'])) {
+                            $smokedetectors = $home['smokedetectors'];
+                            if ($smokedetectors != '' && count($smokedetectors)) {
+                                $empty = false;
+                            }
+                        }
+                    }
+                }
+                if ($empty) {
+                    $err = 'data contains no cameras or smokedetectors';
+                    $statuscode = IS_NOPRODUCT;
+                }
             }
             if ($statuscode) {
                 $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
@@ -334,10 +334,10 @@ class NetatmoSecurityIO extends IPSModule
             if ($httpcode == 401) {
                 $statuscode = IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
-			} elseif ($httpcode == 403) {
-				$statuscode = IS_FORBIDDEN;
-				$err = 'got http-code ' . $httpcode . ' (forbidden)';
-				$this->SetBuffer('Token', '');
+            } elseif ($httpcode == 403) {
+                $statuscode = IS_FORBIDDEN;
+                $err = 'got http-code ' . $httpcode . ' (forbidden)';
+                $this->SetBuffer('Token', '');
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
                 $statuscode = IS_SERVERERROR;
                 $err = 'got http-code ' . $httpcode . ' (server error)';
@@ -393,7 +393,7 @@ class NetatmoSecurityIO extends IPSModule
             http_response_code(404);
             die('File not found!');
         }
-		$basename = substr($uri, strlen('/hook/NetatmoWeather/'));
+        $basename = substr($uri, strlen('/hook/NetatmoWeather/'));
         if ($basename == 'event') {
             $this->SendDebug(__FUNCTION__, '_GET=' . print_r($_GET, true), 0);
             $this->SendDebug(__FUNCTION__, '_PUT=' . print_r($_PUT, true), 0);

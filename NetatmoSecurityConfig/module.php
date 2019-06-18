@@ -20,9 +20,44 @@ class NetatmoSecurityConfig extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
+	private function buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category)
+	{
+		$instID = 0;
+		$instIDs = IPS_GetInstanceListByModuleID($guid);
+		foreach ($instIDs as $id) {
+			$prodID = IPS_GetProperty($id, 'product_id');
+			if ($prodID == $product_id) {
+				$instID = $id;
+				break;
+			}
+		}
+
+		$create = [
+					'moduleID'       => $guid,
+					'configuration'  => [
+							'product_type' => $product_type,
+							'product_id'   => $product_id,
+							'home_id'      => $home_id,
+						]
+					];
+		if (IPS_GetKernelVersion() >= 5.1) {
+			$create['info'] = $home_name . '\\' . $product_name;
+		}
+
+		$entry = [
+				'category'   => $this->Translate($product_category),
+				'home'       => $home_name,
+				'name'       => $product_name,
+				'product_id' => $product_id,
+				'instanceID' => $instID,
+				'create'     => $create,
+			];
+
+		return $entry;
+	}
     public function GetConfigurationForm()
     {
-        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}'];
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
 
         $this->SendDebug(__FUNCTION__, "data=$data", 0);
@@ -59,36 +94,7 @@ class NetatmoSecurityConfig extends IPSModule
                                 continue;
                             }
 
-                            $instID = 0;
-                            $instIDs = IPS_GetInstanceListByModuleID($guid);
-                            foreach ($instIDs as $id) {
-                                $prodID = IPS_GetProperty($id, 'product_id');
-                                if ($prodID == $product_id) {
-                                    $instID = $id;
-                                    break;
-                                }
-                            }
-
-                            $create = [
-                                        'moduleID'       => $guid,
-                                        'configuration'  => [
-                                                'product_type' => $product_type,
-                                                'product_id'   => $product_id,
-                                                'home_id'      => $home_id,
-                                            ]
-                                        ];
-                            if (IPS_GetKernelVersion() >= 5.1) {
-                                $create['info'] = $home_name . '\\' . $product_name;
-                            }
-
-                            $entry = [
-                                'category'   => $this->Translate($product_category),
-                                'home'       => $home_name,
-                                'name'       => $product_name,
-                                'product_id' => $product_id,
-                                'instanceID' => $instID,
-                                'create'     => $create,
-                            ];
+							$entry = $this->buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category);
                             $entries[] = $entry;
                         }
                     }
@@ -99,20 +105,23 @@ class NetatmoSecurityConfig extends IPSModule
                         foreach ($smokedetectors as $smokedetector) {
                             $product_id = $smokedetector['id'];
                             $product_name = $smokedetector['name'];
-                            $product_type = 'Smoke detector';
-                            $guid = '';
-                            switch ($smokedetector['type']) {
+                            $product_type = $smokedetector['type'];
+                            switch ($product_type) {
                                 case 'NSD':
                                     $guid = '';
                                     $product_category = 'Smoke detector';
                                     break;
                                 default:
+                                    $guid = '';
                                     break;
                             }
                             if ($guid == '') {
                                 $this->SendDebug(__FUNCTION__, 'ignore smokedetector ' . $smokedetector['id'] . ': unsupported type ' . $smokedetector['type']);
                                 continue;
                             }
+
+							$entry = $this->buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category);
+                            $entries[] = $entry;
                         }
                     }
                 }
@@ -166,22 +175,7 @@ class NetatmoSecurityConfig extends IPSModule
                             'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
                         ];
 
-        $formStatus = [];
-        $formStatus[] = ['code' => IS_CREATING, 'icon' => 'inactive', 'caption' => 'Instance getting created'];
-        $formStatus[] = ['code' => IS_ACTIVE, 'icon' => 'active', 'caption' => 'Instance is active'];
-        $formStatus[] = ['code' => IS_DELETING, 'icon' => 'inactive', 'caption' => 'Instance is deleted'];
-        $formStatus[] = ['code' => IS_INACTIVE, 'icon' => 'inactive', 'caption' => 'Instance is inactive'];
-        $formStatus[] = ['code' => IS_NOTCREATED, 'icon' => 'inactive', 'caption' => 'Instance is not created'];
-
-        $formStatus[] = ['code' => IS_NODATA, 'icon' => 'error', 'caption' => 'Instance is inactive (no data)'];
-        $formStatus[] = ['code' => IS_UNAUTHORIZED, 'icon' => 'error', 'caption' => 'Instance is inactive (unauthorized)'];
-        $formStatus[] = ['code' => IS_FORBIDDEN, 'icon' => 'error', 'caption' => 'Instance is inactive (forbidden)'];
-        $formStatus[] = ['code' => IS_SERVERERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (server error)'];
-        $formStatus[] = ['code' => IS_HTTPERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (http error)'];
-        $formStatus[] = ['code' => IS_INVALIDDATA, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid data)'];
-        $formStatus[] = ['code' => IS_NOPRODUCT, 'icon' => 'error', 'caption' => 'Instance is inactive (no product)'];
-        $formStatus[] = ['code' => IS_PRODUCTMISSІNG, 'icon' => 'error', 'caption' => 'Instance is inactive (product missing)'];
-        $formStatus[] = ['code' => IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
+        $formStatus = $this->GetFormStatus();
 
         return json_encode(['actions' => $formActions, 'status' => $formStatus]);
     }

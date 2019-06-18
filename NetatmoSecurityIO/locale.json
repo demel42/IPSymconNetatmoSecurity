@@ -18,9 +18,10 @@
 			"Ignore HTTP-Error X times": "HTTP-Fehler X-fach ignorieren",
 			"Count": "Anzahl",
 
-			"Webhook for receive events from Netatmo": "Webhook zum Empfang von Netåtmo-Events",
+			"Webhook for receive events from Netatmo (must be reachable from internet)":
+				"Webhook zum Empfang von Netatmo-Events (muss aus dem Internet erreichbar sein)",
 			"Register Webhook": "Webhook registrieren",
-			"To the URL '/hook/NetatmoSecurity/event' is appended": "An die URL wird '/hook/NetatmoSecurity/event' angehängt",
+			"to the base-URL '/hook/NetatmoSecurity/event' is appended": "an die Basis-URL wird '/hook/NetatmoSecurity/event' angehängt",
 			" ... if not given, the Connect-URL is used" : " ... falls nicht angegeben, wird die Connect-URL verwendet",
 			"Base-URL": "Basis-URL",
 
@@ -47,7 +48,8 @@
 			"Instance is inactive (invalid data)": "Instanz ist inaktiv (ungültige Daten)",
 			"Instance is inactive (no module)": "Instanz ist inaktiv (kein Modul)",
 			"Instance is inactive (module missing)": "Instanz ist inaktiv (Modul ist unbekannt)",
-			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)"
+			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
+			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)"
 		}
 	}
 }

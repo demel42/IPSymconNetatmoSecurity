@@ -60,7 +60,7 @@ class NetatmoSecurityOutdoor extends IPSModule
         $jdata = json_decode($data, true);
         $this->SendDebug(__FUNCTION__, 'data=' . print_r($jdata, true), 0);
 
-        $src = $jdata['Source'];
+        $source = $jdata['Source'];
         $buf = $jdata['Buffer'];
 
         $home_id = $this->ReadPropertyString('home_id');
@@ -70,8 +70,11 @@ class NetatmoSecurityOutdoor extends IPSModule
         $statuscode = 0;
         $do_abort = false;
 
+		$this->SendDebug(__FUNCTION__, 'source=' . $source, 0);
+
         if ($buf != '') {
             $jdata = json_decode($buf, true);
+			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         }
 
         $now = time();

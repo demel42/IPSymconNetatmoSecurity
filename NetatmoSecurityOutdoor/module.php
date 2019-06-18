@@ -78,6 +78,7 @@ class NetatmoSecurityOutdoor extends IPSModule
         }
 
         $now = time();
+        $statuscode = IS_ACTIVE;
 
         $this->SetStatus($statuscode);
     }

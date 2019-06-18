@@ -20,41 +20,42 @@ class NetatmoSecurityConfig extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
-	private function buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category)
-	{
-		$instID = 0;
-		$instIDs = IPS_GetInstanceListByModuleID($guid);
-		foreach ($instIDs as $id) {
-			$prodID = IPS_GetProperty($id, 'product_id');
-			if ($prodID == $product_id) {
-				$instID = $id;
-				break;
-			}
-		}
+    private function buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category)
+    {
+        $instID = 0;
+        $instIDs = IPS_GetInstanceListByModuleID($guid);
+        foreach ($instIDs as $id) {
+            $prodID = IPS_GetProperty($id, 'product_id');
+            if ($prodID == $product_id) {
+                $instID = $id;
+                break;
+            }
+        }
 
-		$create = [
-					'moduleID'       => $guid,
-					'configuration'  => [
-							'product_type' => $product_type,
-							'product_id'   => $product_id,
-							'home_id'      => $home_id,
-						]
-					];
-		if (IPS_GetKernelVersion() >= 5.1) {
-			$create['info'] = $home_name . '\\' . $product_name;
-		}
+        $create = [
+                    'moduleID'       => $guid,
+                    'configuration'  => [
+                            'product_type' => $product_type,
+                            'product_id'   => $product_id,
+                            'home_id'      => $home_id,
+                        ]
+                    ];
+        if (IPS_GetKernelVersion() >= 5.1) {
+            $create['info'] = $home_name . '\\' . $product_name;
+        }
 
-		$entry = [
-				'category'   => $this->Translate($product_category),
-				'home'       => $home_name,
-				'name'       => $product_name,
-				'product_id' => $product_id,
-				'instanceID' => $instID,
-				'create'     => $create,
-			];
+        $entry = [
+                'category'   => $this->Translate($product_category),
+                'home'       => $home_name,
+                'name'       => $product_name,
+                'product_id' => $product_id,
+                'instanceID' => $instID,
+                'create'     => $create,
+            ];
 
-		return $entry;
-	}
+        return $entry;
+    }
+
     public function GetConfigurationForm()
     {
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
@@ -94,7 +95,7 @@ class NetatmoSecurityConfig extends IPSModule
                                 continue;
                             }
 
-							$entry = $this->buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category);
+                            $entry = $this->buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category);
                             $entries[] = $entry;
                         }
                     }
@@ -120,7 +121,7 @@ class NetatmoSecurityConfig extends IPSModule
                                 continue;
                             }
 
-							$entry = $this->buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category);
+                            $entry = $this->buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category);
                             $entries[] = $entry;
                         }
                     }

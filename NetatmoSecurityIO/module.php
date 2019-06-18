@@ -31,7 +31,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
-			$this->RegisterHook('/hook/NetatmoSecurity');
+            $this->RegisterHook('/hook/NetatmoSecurity');
         }
     }
 
@@ -40,7 +40,7 @@ class NetatmoSecurityIO extends IPSModule
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
 
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
-			$this->RegisterHook('/hook/NetatmoSecurity');
+            $this->RegisterHook('/hook/NetatmoSecurity');
             $this->UpdateData();
         }
     }
@@ -74,14 +74,14 @@ class NetatmoSecurityIO extends IPSModule
                 }
             }
 
-			$instID = IPS_GetInstanceListByModuleID("{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}")[0];
-			$hooks = json_decode(IPS_GetProperty($instID, "Hooks"), true);
-			foreach($hooks as $index => $hook) {
-				if ($hook['Hook'] == '/hook/NetatmoSecurity' && $hook['TargetID'] != $this->InstanceID) {
-					$this->SetStatus(IS_DUPWEBHOOK);
-					return;
-				}
-			}
+            $instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
+            $hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
+            foreach ($hooks as $index => $hook) {
+                if ($hook['Hook'] == '/hook/NetatmoSecurity' && $hook['TargetID'] != $this->InstanceID) {
+                    $this->SetStatus(IS_DUPWEBHOOK);
+                    return;
+                }
+            }
         }
 
         if ($netatmo_user != '' && $netatmo_password != '' && $netatmo_client != '' && $netatmo_secret != '') {
@@ -148,35 +148,35 @@ class NetatmoSecurityIO extends IPSModule
 
     public function ForwardData($data)
     {
-		if ($this->GetStatus() == IS_INACTIVE) {
-			$this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
-			return;
-		}
+        if ($this->GetStatus() == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            return;
+        }
 
-		$jdata = json_decode($data);
-		$this->SendDebug(__FUNCTION__, 'data=' . print_r($jdata, true), 0);
+        $jdata = json_decode($data);
+        $this->SendDebug(__FUNCTION__, 'data=' . print_r($jdata, true), 0);
 
-		$ret = '';
-		if (isset($jdata->Function)) {
-			switch ($jdata->Function) {
-				case 'LastData':
-					$ret = $this->GetMultiBuffer('LastData');
-					break;
-				default:
-					$this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata->Function . '"', 0);
-					break;
-				}
-			} else {
-				$this->SendDebug(__FUNCTION__, 'unknown message-structure', 0);
-			}
+        $ret = '';
+        if (isset($jdata->Function)) {
+            switch ($jdata->Function) {
+                case 'LastData':
+                    $ret = $this->GetMultiBuffer('LastData');
+                    break;
+                default:
+                    $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata->Function . '"', 0);
+                    break;
+                }
+        } else {
+            $this->SendDebug(__FUNCTION__, 'unknown message-structure', 0);
+        }
 
-		$this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
-		return $ret;
+        $this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
+        return $ret;
     }
 
     public function UpdateData()
     {
-		if ($this->GetStatus() == IS_INACTIVE) {
+        if ($this->GetStatus() == IS_INACTIVE) {
             $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
             return;
         }
@@ -409,8 +409,8 @@ class NetatmoSecurityIO extends IPSModule
         if ($basename == 'event') {
             $this->SendDebug(__FUNCTION__, '_GET=' . print_r($_GET, true), 0);
             $this->SendDebug(__FUNCTION__, '_POST=' . print_r($_POST, true), 0);
-			$data = 'BLA';
-			$this->SendData($data, 'EVENT');
+            $data = 'BLA';
+            $this->SendData($data, 'EVENT');
             return;
         }
         $path = realpath($root . '/' . $basename);

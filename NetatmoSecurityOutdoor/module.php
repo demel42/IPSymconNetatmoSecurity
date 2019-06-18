@@ -70,11 +70,11 @@ class NetatmoSecurityOutdoor extends IPSModule
         $statuscode = 0;
         $do_abort = false;
 
-		$this->SendDebug(__FUNCTION__, 'source=' . $source, 0);
+        $this->SendDebug(__FUNCTION__, 'source=' . $source, 0);
 
         if ($buf != '') {
             $jdata = json_decode($buf, true);
-			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         }
 
         $now = time();

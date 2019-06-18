@@ -190,7 +190,7 @@ trait NetatmoSecurityCommon
     }
 
     private function GetFormStatus()
-	{
+    {
         $formStatus = [];
         $formStatus[] = ['code' => IS_CREATING, 'icon' => 'inactive', 'caption' => 'Instance getting created'];
         $formStatus[] = ['code' => IS_ACTIVE, 'icon' => 'active', 'caption' => 'Instance is active'];
@@ -209,6 +209,6 @@ trait NetatmoSecurityCommon
         $formStatus[] = ['code' => IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
         $formStatus[] = ['code' => IS_USEDWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook already in use)'];
 
-		return $formStatus;
-	}
+        return $formStatus;
+    }
 }

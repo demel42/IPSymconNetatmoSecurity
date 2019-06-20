@@ -24,29 +24,40 @@ class NetatmoSecurityOutdoor extends IPSModule
         $this->RegisterPropertyInteger('notification_max_age', '1');
 
         $associations = [];
-        $associations[] = ['Wert' => -1, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 0, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 1, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.CameraStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => -1, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 0, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 1, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $this->CreateVarProfile('NetatmoSecurity.CameraAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
+
+        $associations = [];
+        $associations[] = ['Wert' => LIGHT_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
+        $associations[] = ['Wert' => LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
+        $this->CreateVarProfile('NetatmoSecurity.LightModeStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
+
+        $associations = [];
+        $associations[] = ['Wert' => LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
+        $associations[] = ['Wert' => LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
+        $this->CreateVarProfile('NetatmoSecurity.LightAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
+
+        $associations = [];
+        $associations[] = ['Wert' => SDCARD_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => SDCARD_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => SDCARD_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.SDCardStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => -1, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 0, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 1, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => ALIM_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => ALIM_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => ALIM_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.AlimStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
-
-        $associations = [];
-        $associations[] = ['Wert' => -1, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 0, 'Name' => $this->Translate('off'), 'Farbe' => -1];
-        $associations[] = ['Wert' => 1, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $associations[] = ['Wert' => 2, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.LightModeStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
@@ -77,6 +88,12 @@ class NetatmoSecurityOutdoor extends IPSModule
 
         $this->MaintainVariable('Events', $this->Translate('Events'), VARIABLETYPE_STRING, '', $vpos++, true);
         $this->MaintainVariable('Notifications', $this->Translate('Notifications'), VARIABLETYPE_STRING, '', $vpos++, true);
+
+        $this->MaintainVariable('CameraAction', $this->Translate('Camera operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraAction', $vpos++, true);
+        $this->MaintainVariable('LightAction', $this->Translate('Light operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightAction', $vpos++, true);
+
+		$this->MaintainAction('CameraAction', true);
+		$this->MaintainAction('LightAction', true);
 
         $product_type = $this->ReadPropertyString('product_type');
         $product_id = $this->ReadPropertyString('product_id');
@@ -161,6 +178,8 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     $camera_status = $this->map_camera_status($this->GetArrayElem($camera, 'status', ''));
                                     if (is_int($camera_status)) {
                                         $this->SetValue('CameraStatus', $camera_status);
+										if ($camera_status != CAMERA_STATUS_UNDEFINED)
+											$this->SetValue('CameraAction', $camera_status);
                                     }
 
                                     $sd_status = $this->map_sd_status($this->GetArrayElem($camera, 'sd_status', ''));
@@ -176,6 +195,8 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     $light_mode_status = $this->map_lightmode_status($this->GetArrayElem($camera, 'light_mode_status', ''));
                                     if (is_int($light_mode_status)) {
                                         $this->SetValue('LightmodeStatus', $light_mode_status);
+										if ($light_mode_status != LIGHT_STATUS_UNDEFINED)
+											$this->SetValue('LightAction', $light_mode_status);
                                     }
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
@@ -379,9 +400,9 @@ class NetatmoSecurityOutdoor extends IPSModule
                                 break;
                             case 'webhook_activation':
                             case 'daily_summary':
-                                $new_event = 'ignore push_type "' . $push_type . '"';
-                                $this->SendDebug(__FUNCTION__, $e, 0);
-                                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_INFO);
+                                $err = 'ignore push_type "' . $push_type . '"';
+                                $this->SendDebug(__FUNCTION__, $err, 0);
+                                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_MESSAGE);
                                 break;
                             default:
                                 $err = 'unknown push_type "' . $push_type . '"';
@@ -409,6 +430,82 @@ class NetatmoSecurityOutdoor extends IPSModule
 
         $this->SetStatus(IS_ACTIVE);
     }
+
+    public function RequestAction($Ident, $Value)
+    {
+        switch ($Ident) {
+            case 'LightAction':
+                $this->SendDebug(__FUNCTION__, "$Ident=$Value", 0);
+                $this->SwitchLight($Value);
+                break;
+            case 'CameraAction':
+                $this->SendDebug(__FUNCTION__, "$Ident=$Value", 0);
+                $this->SwitchCamera($Value);
+                break;
+            default:
+                $this->SendDebug(__FUNCTION__, "invalid ident $Ident", 0);
+                break;
+        }
+    }
+
+    private function SwitchLight(int $mode)
+    {
+		$url = '/floodlight_set_config?config==';
+		switch ($mode) {
+			case LIGHT_STATUS_OFF:
+				$url .= rawurlencode('{"mode":"off"}');
+				break;
+			case LIGHT_STATUS_ON:
+				$url .= rawurlencode('{"mode":"on"}');
+				break;
+			case LIGHT_STATUS_AUTO:
+				$url .= rawurlencode('{"mode":"auto"}');
+				break;
+			default:
+				$err = 'unknown mode "' . $mode . '"';
+				$this->SendDebug(__FUNCTION__, $err, 0);
+				$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+				return;
+		}
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        return $jdata['status'];
+    }
+
+    private function SwitchCamera(int $mode)
+    {
+		$url = '/command/changestatus?status=';
+		switch ($mode) {
+			case CAMERA_STATUS_OFF:
+				$url .= 'off';
+				break;
+			case CAMERA_STATUS_ON:
+				$url .= 'on';
+				break;
+			default:
+				$err = 'unknown mode "' . $mode . '"';
+				$this->SendDebug(__FUNCTION__, $err, 0);
+				$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+				return;
+		}
+				
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        return $jdata['status'];
+    }
+
+
+
+
 
     private function cmp_events($a, $b)
     {

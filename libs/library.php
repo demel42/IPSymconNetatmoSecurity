@@ -1,21 +1,46 @@
 <?php
 
+if (!defined('CAMERA_STATUS_UNDEFINED')) {
+    define('CAMERA_STATUS_UNDEFINED', -1);
+    define('CAMERA_STATUS_OFF', 0);
+    define('CAMERA_STATUS_ON', 1);
+}
+
+if (!defined('SDCARD_STATUS_UNDEFINED')) {
+    define('SDCARD_STATUS_UNDEFINED', -1);
+    define('SDCARD_STATUS_OFF', 0);
+    define('SDCARD_STATUS_ON', 1);
+}
+
+if (!defined('ALIM_STATUS_UNDEFINED')) {
+    define('ALIM_STATUS_UNDEFINED', -1);
+    define('ALIM_STATUS_OFF', 0);
+    define('ALIM_STATUS_ON', 1);
+}
+
+if (!defined('LIGHT_STATUS_UNDEFINED')) {
+    define('LIGHT_STATUS_UNDEFINED', -1);
+    define('LIGHT_STATUS_OFF', 0);
+    define('LIGHT_STATUS_ON', 1);
+    define('LIGHT_STATUS_AUTO', 2);
+}
+
 trait NetatmoSecurityLibrary
 {
     private function map_camera_status($status)
     {
         switch ($status) {
             case 'off':
-                $val = 0;
+                $val = CAMERA_STATUS_OFF;
                 break;
             case 'on':
-                $val = 1;
+                $val = CAMERA_STATUS_ON;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = -1;
+                $val = CAMERA_STATUS_UNDEFINED;
                 break;
         }
 
@@ -26,16 +51,16 @@ trait NetatmoSecurityLibrary
     {
         switch ($status) {
             case 'off':
-                $val = 0;
+                $val = SDCARD_STATUS_OFF;
                 break;
             case 'on':
-                $val = 1;
+                $val = SDCARD_STATUS_ON;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = -1;
+                $val = SDCARD_STATUS_UNDEFINED;
                 break;
         }
 
@@ -46,16 +71,16 @@ trait NetatmoSecurityLibrary
     {
         switch ($status) {
             case 'off':
-                $val = 0;
+                $val = ALIM_STATUS_OFF;
                 break;
             case 'on':
-                $val = 1;
+                $val = ALIM_STATUS_ON;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = -1;
+                $val = ALIM_STATUS_UNDEFINED;
                 break;
         }
 
@@ -66,19 +91,19 @@ trait NetatmoSecurityLibrary
     {
         switch ($status) {
             case 'off':
-                $val = 0;
+                $val = LIGHT_STATUS_OFF;
                 break;
             case 'on':
-                $val = 1;
+                $val = LIGHT_STATUS_ON;
                 break;
             case 'auto':
-                $val = 2;
+                $val = LIGHT_STATUS_AUTO;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = -1;
+                $val = LIGHT_STATUS_UNDEFINED;
                 break;
         }
 

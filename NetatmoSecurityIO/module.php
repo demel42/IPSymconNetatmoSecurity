@@ -25,7 +25,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterPropertyInteger('ignore_http_error', '0');
 
         $this->RegisterPropertyBoolean('register_webhook', false);
-        $this->RegisterPropertyString('webhook_baseurl', false);
+        $this->RegisterPropertyString('webhook_baseurl', '');
 
         $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurityIO_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
@@ -42,6 +42,11 @@ class NetatmoSecurityIO extends IPSModule
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
             $this->RegisterHook('/hook/NetatmoSecurity');
             $this->UpdateData();
+
+			$register_webhook = $this->ReadPropertyBoolean('register_webhook');
+			if ($register_webhook) {
+				$this->AddWebhook();
+			}
         }
     }
 
@@ -56,10 +61,10 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
-        $netatmo_user = $this->ReadPropertyString('Netatmo_User');
-        $netatmo_password = $this->ReadPropertyString('Netatmo_Password');
-        $netatmo_client = $this->ReadPropertyString('Netatmo_Client');
-        $netatmo_secret = $this->ReadPropertyString('Netatmo_Secret');
+        $user = $this->ReadPropertyString('Netatmo_User');
+        $password = $this->ReadPropertyString('Netatmo_Password');
+        $client = $this->ReadPropertyString('Netatmo_Client');
+        $secret = $this->ReadPropertyString('Netatmo_Secret');
 
         $register_webhook = $this->ReadPropertyBoolean('register_webhook');
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
@@ -84,12 +89,18 @@ class NetatmoSecurityIO extends IPSModule
             }
         }
 
-        if ($netatmo_user != '' && $netatmo_password != '' && $netatmo_client != '' && $netatmo_secret != '') {
+        if ($user != '' && $password != '' && $client != '' && $secret != '') {
             $this->SetUpdateInterval();
             if (IPS_GetKernelRunlevel() == KR_READY) {
                 $this->UpdateData();
             }
             $this->SetStatus(IS_ACTIVE);
+
+			if ($register_webhook) {
+				$this->AddWebhook();
+			} else {
+				$this->DropWebhook();
+			}
         } else {
             $this->SetStatus(IS_INACTIVE);
         }
@@ -174,20 +185,14 @@ class NetatmoSecurityIO extends IPSModule
         return $ret;
     }
 
-    public function UpdateData()
-    {
-        if ($this->GetStatus() == IS_INACTIVE) {
-            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
-            return;
-        }
+    private function GetToken()
+	{
+        $auth_url = 'https://api.netatmo.net/oauth2/token';
 
-        $netatmo_auth_url = 'https://api.netatmo.net/oauth2/token';
-        $netatmo_data_url = 'https://api.netatmo.net/api/gethomedata';
-
-        $netatmo_user = $this->ReadPropertyString('Netatmo_User');
-        $netatmo_password = $this->ReadPropertyString('Netatmo_Password');
-        $netatmo_client = $this->ReadPropertyString('Netatmo_Client');
-        $netatmo_secret = $this->ReadPropertyString('Netatmo_Secret');
+        $user = $this->ReadPropertyString('Netatmo_User');
+        $password = $this->ReadPropertyString('Netatmo_Password');
+        $client = $this->ReadPropertyString('Netatmo_Client');
+        $secret = $this->ReadPropertyString('Netatmo_Secret');
 
         $dtoken = $this->GetBuffer('Token');
         $jtoken = json_decode($dtoken, true);
@@ -197,20 +202,20 @@ class NetatmoSecurityIO extends IPSModule
         if ($token_expiration < time()) {
             $postdata = [
                 'grant_type'    => 'password',
-                'client_id'     => $netatmo_client,
-                'client_secret' => $netatmo_secret,
-                'username'      => $netatmo_user,
-                'password'      => $netatmo_password,
+                'client_id'     => $client,
+                'client_secret' => $secret,
+                'username'      => $user,
+                'password'      => $password,
                 'scope'         => 'read_presence access_presence read_camera access_camera read_smokedetector'
             ];
 
-            $this->SendDebug(__FUNCTION__, "netatmo-auth-url=$netatmo_auth_url, postdata=" . print_r($postdata, true), 0);
+            $this->SendDebug(__FUNCTION__, "auth-url=$auth_url, postdata=" . print_r($postdata, true), 0);
 
             $token = '';
             $token_expiration = 0;
 
             $do_abort = false;
-            $response = $this->do_HttpRequest($netatmo_auth_url, $postdata);
+            $response = $this->do_HttpRequest($auth_url, $postdata);
             if ($response != '') {
                 $params = json_decode($response, true);
                 if ($params['access_token'] == '') {
@@ -239,15 +244,29 @@ class NetatmoSecurityIO extends IPSModule
 
             if ($do_abort) {
                 $this->SetMultiBuffer('LastData', '');
-                return -1;
+                return false;
             }
         }
+		return $token;
+	}
+
+    public function UpdateData()
+    {
+        if ($this->GetStatus() == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            return;
+        }
+
+		$token = $this->GetToken();
+		if ($token == false)
+			return;
 
         // Anfrage mit Token
-        $netatmo_data_url .= '?access_token=' . $token;
+        $url = 'https://api.netatmo.net/api/gethomedata';
+        $url .= '?access_token=' . $token;
 
         $do_abort = false;
-        $data = $this->do_HttpRequest($netatmo_data_url);
+        $data = $this->do_HttpRequest($url);
         if ($data != '') {
             $err = '';
             $statuscode = 0;
@@ -407,9 +426,15 @@ class NetatmoSecurityIO extends IPSModule
         }
         $basename = substr($uri, strlen('/hook/NetatmoSecurity/'));
         if ($basename == 'event') {
-            $this->SendDebug(__FUNCTION__, '_GET=' . print_r($_GET, true), 0);
-            $this->SendDebug(__FUNCTION__, '_POST=' . print_r($_POST, true), 0);
-            $data = 'BLA';
+			$data = file_get_contents('php://input');
+			$jdata = json_decode($data, true);
+			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            if ($jdata == '') {
+                echo 'malformed data: ' . $data;
+                $this->SendDebug(__FUNCTION__, 'malformed data: ' . $data, 0);
+                return;
+            }
+			http_response_code(200);
             $this->SendData($data, 'EVENT');
             return;
         }
@@ -424,5 +449,102 @@ class NetatmoSecurityIO extends IPSModule
         }
         header('Content-Type: ' . $this->GetMimeType(pathinfo($path, PATHINFO_EXTENSION)));
         readfile($path);
+    }
+
+    public function AddWebhook()
+    {
+        if ($this->GetStatus() == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            return;
+        }
+
+        $register_webhook = $this->ReadPropertyBoolean('register_webhook');
+		if (!$register_webhook) {
+            $this->SendDebug(__FUNCTION__, 'don\'t register webhook', 0);
+			return;
+		}
+
+		$token = $this->GetToken();
+		if ($token == false)
+			return;
+
+        $url = 'https://api.netatmo.net/api/addwebhook';
+        $url .= '?access_token=' . $token;
+
+        $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
+		if ($webhook_baseurl == '') {
+			$instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+			$webhook_baseurl = CC_GetUrl($instID);
+			if ($url == '') {
+				$this->SendDebug(__FUNCTION__, 'webhook missing', 0);
+				return;
+			}
+		}
+		$webhook_baseurl .= '/hook/NetatmoSecurity/event';
+		$url .= '&url=' . rawurlencode($webhook_baseurl);
+
+        $data = $this->do_HttpRequest($url);
+        if ($data != '') {
+            $err = '';
+            $statuscode = 0;
+            $jdata = json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            $status = $jdata['status'];
+            if ($status != 'ok') {
+                $err = "got status \"$status\"";
+                $statuscode = IS_INVALIDDATA;
+            } else {
+            }
+            if ($statuscode) {
+                $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->SetStatus($statuscode);
+                $do_abort = true;
+            }
+        } else {
+            $do_abort = true;
+        }
+
+        $this->SetStatus(IS_ACTIVE);
+    }
+
+    public function DropWebhook()
+    {
+        if ($this->GetStatus() == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            return;
+        }
+
+		$token = $this->GetToken();
+		if ($token == false)
+			return;
+
+        $url = 'https://api.netatmo.net/api/dropwebhook';
+        $url .= '?access_token=' . $token;
+        $url .= '&app_types=app_security';
+
+        $data = $this->do_HttpRequest($url);
+        if ($data != '') {
+            $err = '';
+            $statuscode = 0;
+            $jdata = json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            $status = $jdata['status'];
+            if ($status != 'ok') {
+                $err = "got status \"$status\"";
+                $statuscode = IS_INVALIDDATA;
+            } else {
+            }
+            if ($statuscode) {
+                $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->SetStatus($statuscode);
+                $do_abort = true;
+            }
+        } else {
+            $do_abort = true;
+        }
+
+        $this->SetStatus(IS_ACTIVE);
     }
 }

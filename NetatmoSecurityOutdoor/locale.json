@@ -9,6 +9,30 @@
 
 			"Module description": "Modulbeschreibung",
 
+			"optional data": "optionale Daten",
+			" ... last communication with Netatmo": " ... letzte Kommunikation mit Netatmo",
+			" ... Wifi-Signal": " ... Wifi-Signalstärke",
+
+			"Alim state": "Stromversorgung",
+			"Camera state": "Kamera",
+			"Events": "Ereignisse",
+			"Instance is disabled": "Instanz ist deaktiviert",
+			"Last communication": "letzte Kommunikation",
+			" ... last communication with Netatmo": " ... letzte Kommunikation mit Netatmo",
+			"Lightmode state": "Licht-Modus",
+			"Notifications": "Benachrichtigungen",
+			"optional data": "optionale Daten",
+			"SD-Card state": "SD-Karte",
+			"State": "Status",
+
+            "No": "Nein",
+            "Yes": "Ja",
+
+			"unknown": "unbekannt",
+			"off": "aus",
+			"on": "an",
+			"auto": "automatisch",
+
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
 			"Instance is deleted": "Instanz wird gelöscht",

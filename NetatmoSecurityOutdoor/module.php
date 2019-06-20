@@ -92,8 +92,8 @@ class NetatmoSecurityOutdoor extends IPSModule
         $this->MaintainVariable('CameraAction', $this->Translate('Camera operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraAction', $vpos++, true);
         $this->MaintainVariable('LightAction', $this->Translate('Light operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightAction', $vpos++, true);
 
-		$this->MaintainAction('CameraAction', true);
-		$this->MaintainAction('LightAction', true);
+        $this->MaintainAction('CameraAction', true);
+        $this->MaintainAction('LightAction', true);
 
         $product_type = $this->ReadPropertyString('product_type');
         $product_id = $this->ReadPropertyString('product_id');
@@ -178,8 +178,9 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     $camera_status = $this->map_camera_status($this->GetArrayElem($camera, 'status', ''));
                                     if (is_int($camera_status)) {
                                         $this->SetValue('CameraStatus', $camera_status);
-										if ($camera_status != CAMERA_STATUS_UNDEFINED)
-											$this->SetValue('CameraAction', $camera_status);
+                                        if ($camera_status != CAMERA_STATUS_UNDEFINED) {
+                                            $this->SetValue('CameraAction', $camera_status);
+                                        }
                                     }
 
                                     $sd_status = $this->map_sd_status($this->GetArrayElem($camera, 'sd_status', ''));
@@ -195,8 +196,9 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     $light_mode_status = $this->map_lightmode_status($this->GetArrayElem($camera, 'light_mode_status', ''));
                                     if (is_int($light_mode_status)) {
                                         $this->SetValue('LightmodeStatus', $light_mode_status);
-										if ($light_mode_status != LIGHT_STATUS_UNDEFINED)
-											$this->SetValue('LightAction', $light_mode_status);
+                                        if ($light_mode_status != LIGHT_STATUS_UNDEFINED) {
+                                            $this->SetValue('LightAction', $light_mode_status);
+                                        }
                                     }
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
@@ -450,23 +452,23 @@ class NetatmoSecurityOutdoor extends IPSModule
 
     private function SwitchLight(int $mode)
     {
-		$url = '/floodlight_set_config?config==';
-		switch ($mode) {
-			case LIGHT_STATUS_OFF:
-				$url .= rawurlencode('{"mode":"off"}');
-				break;
-			case LIGHT_STATUS_ON:
-				$url .= rawurlencode('{"mode":"on"}');
-				break;
-			case LIGHT_STATUS_AUTO:
-				$url .= rawurlencode('{"mode":"auto"}');
-				break;
-			default:
-				$err = 'unknown mode "' . $mode . '"';
-				$this->SendDebug(__FUNCTION__, $err, 0);
-				$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-				return;
-		}
+        $url = '/floodlight_set_config?config==';
+        switch ($mode) {
+            case LIGHT_STATUS_OFF:
+                $url .= rawurlencode('{"mode":"off"}');
+                break;
+            case LIGHT_STATUS_ON:
+                $url .= rawurlencode('{"mode":"on"}');
+                break;
+            case LIGHT_STATUS_AUTO:
+                $url .= rawurlencode('{"mode":"auto"}');
+                break;
+            default:
+                $err = 'unknown mode "' . $mode . '"';
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+                return;
+        }
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -479,21 +481,21 @@ class NetatmoSecurityOutdoor extends IPSModule
 
     private function SwitchCamera(int $mode)
     {
-		$url = '/command/changestatus?status=';
-		switch ($mode) {
-			case CAMERA_STATUS_OFF:
-				$url .= 'off';
-				break;
-			case CAMERA_STATUS_ON:
-				$url .= 'on';
-				break;
-			default:
-				$err = 'unknown mode "' . $mode . '"';
-				$this->SendDebug(__FUNCTION__, $err, 0);
-				$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-				return;
-		}
-				
+        $url = '/command/changestatus?status=';
+        switch ($mode) {
+            case CAMERA_STATUS_OFF:
+                $url .= 'off';
+                break;
+            case CAMERA_STATUS_ON:
+                $url .= 'on';
+                break;
+            default:
+                $err = 'unknown mode "' . $mode . '"';
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+                return;
+        }
+
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
 
@@ -502,10 +504,6 @@ class NetatmoSecurityOutdoor extends IPSModule
         $jdata = json_decode($data, true);
         return $jdata['status'];
     }
-
-
-
-
 
     private function cmp_events($a, $b)
     {

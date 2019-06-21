@@ -7,6 +7,10 @@ if (!defined('VARIABLETYPE_BOOLEAN')) {
     define('VARIABLETYPE_STRING', 3);
 }
 
+if (!defined('MEDIATYPE_DOCUMENT')) {
+    define('MEDIATYPE_DOCUMENT', 5);
+}
+
 if (!defined('IS_NODATA')) {
     define('IS_NODATA', IS_EBASE + 1);
     define('IS_UNAUTHORIZED', IS_EBASE + 2);
@@ -67,6 +71,43 @@ trait NetatmoSecurityCommon
             }
         }
     }
+
+	private function CreatetMedia($Name, $Type, $Cached)
+	{
+		$mediaName = $this->Translate($Name);
+        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
+        if ($mediaID == false) {
+            $mediaID = IPS_CreateMedia(MEDIATYPE_DOCUMENT);
+            $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $Name . '.dat';
+            IPS_SetMediaFile($mediaID, $filename, false);
+            IPS_SetName($mediaID, $mediaName);
+            IPS_SetParent($mediaID, $this->InstanceID);
+        }
+		IPS_SetMediaCached($mediaID, $Cached);
+	}
+
+	private function GetMediaData($Name)
+	{
+		$mediaName = $this->Translate($Name);
+        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
+        if ($mediaID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing media-object ' . $Name, 0);
+			return false;
+		}
+		$data = base64_decode(IPS_GetMediaContent($mediaID));
+		return $data;
+	}
+
+	private function SetMediaData($Name, $data)
+	{
+		$mediaName = $this->Translate($Name);
+        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
+        if ($mediaID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing media-object ' . $Name, 0);
+			return false;
+		}
+        IPS_SetMediaContent($mediaID, base64_encode($data));
+	}
 
     // Inspired from module SymconTest/HookServe
     private function RegisterHook($WebHook)

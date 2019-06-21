@@ -1,14 +1,12 @@
 <?php
 
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
-
-/*
-    https://499a98cf82f2554257fddd3d7dcf31d3.ipmagic.de/hook/NetatmoSecurity/event
-*/
+require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
 class NetatmoSecurityIO extends IPSModule
 {
     use NetatmoSecurityCommon;
+	use NetatmoSecurityLibrary;
 
     public function Create()
     {
@@ -164,17 +162,21 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
-        $jdata = json_decode($data);
+        $jdata = json_decode($data, true);
         $this->SendDebug(__FUNCTION__, 'data=' . print_r($jdata, true), 0);
 
         $ret = '';
-        if (isset($jdata->Function)) {
-            switch ($jdata->Function) {
+        if (isset($jdata['Function'])) {
+            switch ($jdata['Function']) {
                 case 'LastData':
                     $ret = $this->GetMultiBuffer('LastData');
                     break;
+                case 'CmdUrl':
+                    $ret = $this->SendCommand($jdata['Url']);
+                    $this->SetTimerInterval('UpdateData', 1000);
+                    break;
                 default:
-                    $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata->Function . '"', 0);
+                    $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
                     break;
                 }
         } else {
@@ -187,7 +189,7 @@ class NetatmoSecurityIO extends IPSModule
 
     private function GetToken()
     {
-        $auth_url = 'https://api.netatmo.net/oauth2/token';
+        $url = 'https://api.netatmo.net/oauth2/token';
 
         $user = $this->ReadPropertyString('Netatmo_User');
         $password = $this->ReadPropertyString('Netatmo_Password');
@@ -206,33 +208,34 @@ class NetatmoSecurityIO extends IPSModule
                 'client_secret' => $secret,
                 'username'      => $user,
                 'password'      => $password,
-                'scope'         => 'read_presence access_presence read_camera access_camera read_smokedetector'
+                'scope'         => 'read_presence access_presence read_camera access_camera read_smokedetector write_camera'
             ];
-
-            $this->SendDebug(__FUNCTION__, "auth-url=$auth_url, postdata=" . print_r($postdata, true), 0);
 
             $token = '';
             $token_expiration = 0;
 
-            $do_abort = false;
-            $response = $this->do_HttpRequest($auth_url, $postdata);
-            if ($response != '') {
-                $params = json_decode($response, true);
+			$data = '';
+			$err = '';
+			$statuscode = $this->do_HttpRequest($url, '', $postdata, 'POST', $data, $err);
+			if ($statuscode == 0) {
+                $params = json_decode($data, true);
                 if ($params['access_token'] == '') {
                     $statuscode = IS_INVALIDDATA;
                     $err = "no 'access_token' in response";
-                    $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-                    $this->SendDebug(__FUNCTION__, $err, 0);
-                    $this->SetStatus($statuscode);
-                    $do_abort = true;
                 } else {
                     $token = $params['access_token'];
                     $expires_in = $params['expires_in'];
                     $token_expiration = time() + $expires_in - 60;
                 }
-            } else {
-                $do_abort = true;
             }
+
+			if ($statuscode) {
+				$this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+				$this->SendDebug(__FUNCTION__, $err, 0);
+				$this->SetStatus($statuscode);
+                $this->SetMultiBuffer('LastData', '');
+                return false;
+			}
 
             $this->SendDebug(__FUNCTION__, 'token=' . $token . ', expiration=' . $token_expiration, 0);
 
@@ -242,10 +245,7 @@ class NetatmoSecurityIO extends IPSModule
                 ];
             $this->SetBuffer('Token', json_encode($jtoken));
 
-            if ($do_abort) {
-                $this->SetMultiBuffer('LastData', '');
-                return false;
-            }
+			$this->SetStatus(IS_ACTIVE);
         }
         return $token;
     }
@@ -266,11 +266,10 @@ class NetatmoSecurityIO extends IPSModule
         $url = 'https://api.netatmo.net/api/gethomedata';
         $url .= '?access_token=' . $token;
 
-        $do_abort = false;
-        $data = $this->do_HttpRequest($url);
-        if ($data != '') {
-            $err = '';
-            $statuscode = 0;
+		$data = '';
+		$err = '';
+		$statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+		if ($statuscode == 0) {
             $jdata = json_decode($data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             $status = $jdata['status'];
@@ -297,122 +296,27 @@ class NetatmoSecurityIO extends IPSModule
                         }
                     }
                 }
-                if ($empty) {
-                    $err = 'data contains no cameras or smokedetectors';
+                if ($empty) { $err = 'data contains no cameras or smokedetectors';
                     $statuscode = IS_NOPRODUCT;
                 }
             }
-            if ($statuscode) {
-                $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-                $this->SendDebug(__FUNCTION__, $err, 0);
-                $this->SetStatus($statuscode);
-                $do_abort = true;
-            }
-        } else {
-            $do_abort = true;
-        }
+		} elseif (statuscode == IS_FORBIDDEN)
+			$this->SetBuffer('Token', '');
 
-        if ($do_abort) {
+		if ($statuscode) {
+			$this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->SetStatus($statuscode);
             $this->SetMultiBuffer('LastData', '');
-            return -1;
+            return false;
         }
-
-        $this->SetStatus(IS_ACTIVE);
 
         $this->SendData($data, 'QUERY');
         $this->SetMultiBuffer('LastData', $data);
-    }
 
-    private function do_HttpRequest($url, $postdata = '')
-    {
-        $inst = IPS_GetInstance($this->InstanceID);
-        if ($inst['InstanceStatus'] == IS_INACTIVE) {
-            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
-            return;
-        }
+        $this->SetStatus(IS_ACTIVE);
 
-        $ignore_http_error = $this->ReadPropertyInteger('ignore_http_error');
-
-        $this->SendDebug(__FUNCTION__, 'http-' . ($postdata != '' ? 'post' : 'get') . ': url=' . $url, 0);
-        $time_start = microtime(true);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        if ($postdata != '') {
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-        }
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        $cdata = curl_exec($ch);
-        $cerrno = curl_errno($ch);
-        $cerror = $cerrno ? curl_error($ch) : '';
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        $duration = round(microtime(true) - $time_start, 2);
-        $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
-        $this->SendDebug(__FUNCTION__, '    cdata=' . $cdata, 0);
-
-        $statuscode = 0;
-        $err = '';
-        $data = '';
-        if ($cerrno) {
-            $statuscode = IS_SERVERERROR;
-            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        } elseif ($httpcode != 200) {
-            if ($httpcode == 401) {
-                $statuscode = IS_UNAUTHORIZED;
-                $err = 'got http-code ' . $httpcode . ' (unauthorized)';
-            } elseif ($httpcode == 403) {
-                $statuscode = IS_FORBIDDEN;
-                $err = 'got http-code ' . $httpcode . ' (forbidden)';
-                $this->SetBuffer('Token', '');
-            } elseif ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } else {
-                $statuscode = IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode;
-            }
-        } elseif ($cdata == '') {
-            $statuscode = IS_NODATA;
-            $err = 'no data';
-        } else {
-            $jdata = json_decode($cdata, true);
-            if ($jdata == '') {
-                $statuscode = IS_INVALIDDATA;
-                $err = 'malformed response';
-            } else {
-                $data = $cdata;
-            }
-        }
-
-        if ($statuscode) {
-            $cstat = $this->GetMultiBuffer('LastStatus');
-            if ($cstat != '') {
-                $jstat = json_decode($cstat, true);
-            } else {
-                $jstat = [];
-            }
-            $jstat[] = ['statuscode' => $statuscode, 'err' => $err, 'tstamp' => time()];
-            $n_stat = count($jstat);
-            $cstat = json_encode($jstat);
-            $this->LogMessage('url=' . $url . ' => statuscode=' . $statuscode . ', err=' . $err . ', status #' . $n_stat, KL_WARNING);
-
-            if ($n_stat >= $ignore_http_error) {
-                $this->SetStatus($statuscode);
-                $cstat = '';
-            }
-            $this->SendDebug(__FUNCTION__, ' => statuscode=' . $statuscode . ', err=' . $err . ', status #' . $n_stat, 0);
-        } else {
-            $cstat = '';
-        }
-        $this->SetMultiBuffer('LastStatus', $cstat);
-
-        return $data;
+		$this->SetUpdateInterval();
     }
 
     protected function ProcessHookData()
@@ -485,29 +389,26 @@ class NetatmoSecurityIO extends IPSModule
         $webhook_baseurl .= '/hook/NetatmoSecurity/event';
         $url .= '&url=' . rawurlencode($webhook_baseurl);
 
-        $data = $this->do_HttpRequest($url);
-        if ($data != '') {
-            $err = '';
-            $statuscode = 0;
+		$data = '';
+		$err = '';
+		$statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+        if ($statuscode == 0) {
             $jdata = json_decode($data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             $status = $jdata['status'];
             if ($status != 'ok') {
                 $err = "got status \"$status\"";
                 $statuscode = IS_INVALIDDATA;
-            } else {
             }
-            if ($statuscode) {
-                $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-                $this->SendDebug(__FUNCTION__, $err, 0);
-                $this->SetStatus($statuscode);
-                $do_abort = true;
-            }
-        } else {
-            $do_abort = true;
+		}
+		if ($statuscode) {
+			$this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->SetStatus($statuscode);
+			return;
         }
 
-        $this->SetStatus(IS_ACTIVE);
+		$this->SetStatus(IS_ACTIVE);
     }
 
     public function DropWebhook()
@@ -526,28 +427,56 @@ class NetatmoSecurityIO extends IPSModule
         $url .= '?access_token=' . $token;
         $url .= '&app_types=app_security';
 
-        $data = $this->do_HttpRequest($url);
-        if ($data != '') {
-            $err = '';
-            $statuscode = 0;
+		$data = '';
+		$err = '';
+		$statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+        if ($statuscode == 0) {
             $jdata = json_decode($data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             $status = $jdata['status'];
             if ($status != 'ok') {
                 $err = "got status \"$status\"";
                 $statuscode = IS_INVALIDDATA;
-            } else {
             }
-            if ($statuscode) {
-                $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-                $this->SendDebug(__FUNCTION__, $err, 0);
-                $this->SetStatus($statuscode);
-                $do_abort = true;
-            }
-        } else {
-            $do_abort = true;
+		}
+		if ($statuscode) {
+			$this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->SetStatus($statuscode);
+			return;
         }
 
-        $this->SetStatus(IS_ACTIVE);
+		$this->SetStatus(IS_ACTIVE);
+    }
+
+    public function SendCommand(string $url)
+    {
+        $inst = IPS_GetInstance($this->InstanceID);
+        if ($inst['InstanceStatus'] == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            return false;
+        }
+
+		$data = '';
+		$err = '';
+		$statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+        $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
+        if ($statuscode == 0) {
+            $jdata = json_decode($data, true);
+            if (isset($jdata['error']['messages'])) {
+                $status = 'fail';
+                $msg = $jdata['error']['messages'];
+            } else {
+				$status = 'ok';
+				$msg = '';
+			}
+        } else {
+            $status = 'fail';
+            $msg = 'no data';
+        }
+
+        $ret = json_encode(['status' => $status, 'msg' => $msg]);
+        $this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
+        return $ret;
     }
 }

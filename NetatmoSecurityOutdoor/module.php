@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
-require_once __DIR__ . '/../libs/library.php';  // globale Funktionen
+require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
 class NetatmoSecurityOutdoor extends IPSModule
 {
@@ -20,8 +20,10 @@ class NetatmoSecurityOutdoor extends IPSModule
 
         $this->RegisterPropertyBoolean('with_last_contact', false);
 
-        $this->RegisterPropertyInteger('event_max_age', '99');
-        $this->RegisterPropertyInteger('notification_max_age', '1');
+        $this->RegisterPropertyInteger('event_max_age', '14');
+        $this->RegisterPropertyBoolean('events_cached', false);
+        $this->RegisterPropertyInteger('notification_max_age', '2');
+        $this->RegisterPropertyBoolean('notifications_cached', false);
 
         $associations = [];
         $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
@@ -100,6 +102,11 @@ class NetatmoSecurityOutdoor extends IPSModule
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 
+        $events_cached = $this->ReadPropertyBoolean('events_cached');
+		$this->CreatetMedia('Events', MEDIATYPE_DOCUMENT, $events_cached);
+        $notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
+		$this->CreatetMedia('Notifications', MEDIATYPE_DOCUMENT, $notifications_cached);
+
         $this->SetStatus(IS_ACTIVE);
     }
 
@@ -113,6 +120,12 @@ class NetatmoSecurityOutdoor extends IPSModule
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
         $formElements[] = ['type' => 'Label', 'caption' => 'optional data'];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_contact', 'caption' => ' ... last communication with Netatmo'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Events'];
+        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'event_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
+        $formElements[] = ['type' => 'CheckBox', 'name' => 'events_cached', 'caption' => ' ... Media-object cached'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Notifications'];
+        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'notification_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
+        $formElements[] = ['type' => 'CheckBox', 'name' => 'notifications_cached', 'caption' => ' ... Media-object cached'];
 
         $formActions = [];
         $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
@@ -202,10 +215,16 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     }
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
-                                    $this->SetBuffer('vpn_url', $vpn_url);
+									if ($vpn_url != $this->GetBuffer('vpn_url')) {
+										$this->SetBuffer('vpn_url', $vpn_url);
+										$this->SetBuffer('local_url', '');
+									}
 
                                     $is_local = $this->GetArrayElem($camera, 'is_local', false);
-                                    $this->SetBuffer('is_local', $is_local);
+									if ($is_local != $this->GetBuffer('is_local')) {
+										$this->SetBuffer('is_local', $is_local);
+										$this->SetBuffer('local_url', '');
+									}
                                 }
                             }
                         }
@@ -214,6 +233,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
                     $new_events = [];
+					$s = $this->GetMediaData('Events');
                     $s = $this->GetValue('Events');
                     $old_events = json_decode($s, true);
                     if ($old_events != '') {
@@ -287,13 +307,13 @@ class NetatmoSecurityOutdoor extends IPSModule
                                         ];
 
                                     $snapshot = [];
-                                    if ($snapshot_id != []) {
+                                    if ($snapshot_id != '') {
                                         $snapshot['id'] = $snapshot_id;
                                     }
-                                    if ($snapshot_key != []) {
+                                    if ($snapshot_key != '') {
                                         $snapshot['key'] = $snapshot_key;
                                     }
-                                    if ($snapshot_filename != []) {
+                                    if ($snapshot_filename != '') {
                                         $snapshot['filename'] = $snapshot_filename;
                                     }
                                     if ($snapshot != []) {
@@ -301,13 +321,13 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     }
 
                                     $vignette = [];
-                                    if ($vignette_id != []) {
+                                    if ($vignette_id != '') {
                                         $vignette['id'] = $vignette_id;
                                     }
-                                    if ($vignette_key != []) {
+                                    if ($vignette_key != '') {
                                         $vignette['key'] = $vignette_key;
                                     }
-                                    if ($vignette_filename != []) {
+                                    if ($vignette_filename != '') {
                                         $vignette['filename'] = $vignette_filename;
                                     }
                                     if ($vignette != []) {
@@ -330,6 +350,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                         $s = '';
                     }
                     $this->SetValue('Events', $s);
+					$this->SetMediaData('Events', $s);
 
                     $status = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
                     $this->SetValue('Status', $status);
@@ -345,6 +366,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                     $notification = $jdata;
 
                     $new_notifications = [];
+					$s = $this->GetMediaData('Notifications');
                     $s = $this->GetValue('Notifications');
                     $old_notifications = json_decode($s, true);
                     if ($old_notifications != '') {
@@ -421,6 +443,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                         $s = '';
                     }
                     $this->SetValue('Notifications', $s);
+					$this->SetMediaData('Notifications', $s);
                     break;
                 default:
                     $err = 'unknown source "' . $source . '"';
@@ -452,23 +475,60 @@ class NetatmoSecurityOutdoor extends IPSModule
 
     private function SwitchLight(int $mode)
     {
-        $url = '/floodlight_set_config?config==';
+		$url = $this->determineUrl();
+		if ($url == false) {
+			$err = 'no url available';
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			return false;
+		}
+
         switch ($mode) {
             case LIGHT_STATUS_OFF:
-                $url .= rawurlencode('{"mode":"off"}');
+                $value = 'off';
                 break;
             case LIGHT_STATUS_ON:
-                $url .= rawurlencode('{"mode":"on"}');
+                $value = 'on';
                 break;
             case LIGHT_STATUS_AUTO:
-                $url .= rawurlencode('{"mode":"auto"}');
+                $value = 'auto';
                 break;
             default:
                 $err = 'unknown mode "' . $mode . '"';
                 $this->SendDebug(__FUNCTION__, $err, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-                return;
+                return false;
         }
+        $url .= '/command/floodlight_set_config?config=' . urlencode('{"mode":"'.$value.'"}');
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        return $jdata['status'];
+    }
+
+    private function DimLight(int $intensity)
+    {
+		$url = $this->determineUrl();
+		if ($url == false) {
+			$err = 'no url available';
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			return false;
+		}
+
+		$intensity = intval($intensity);
+        if ($intensity > 100 or $intensity < 0) {
+			$err = 'linght-intensity range from 0 to 100';
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			return false;
+		}
+
+        $url .= '/command/floodlight_set_config?intensity=' . urlencode('{"mode":"'.$intensity.'"}');
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -481,20 +541,29 @@ class NetatmoSecurityOutdoor extends IPSModule
 
     private function SwitchCamera(int $mode)
     {
-        $url = '/command/changestatus?status=';
+		$url = $this->determineUrl();
+		if ($url == false) {
+			$err = 'no url available';
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			return false;
+		}
+
         switch ($mode) {
             case CAMERA_STATUS_OFF:
-                $url .= 'off';
+                $value = 'off';
                 break;
             case CAMERA_STATUS_ON:
-                $url .= 'on';
+                $value = 'on';
                 break;
             default:
                 $err = 'unknown mode "' . $mode . '"';
                 $this->SendDebug(__FUNCTION__, $err, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-                return;
+                return false;
         }
+
+        $url .= '/command/changestatus?status=' . $value;
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -516,5 +585,65 @@ class NetatmoSecurityOutdoor extends IPSModule
         $b_id = $b['id'];
         return (strcmp($a_id, $b_id) < 0) ? -1 : 1;
     }
+
+	public function GetVpnUrl()
+    {
+        $url = $this->determineVpnUrl();
+		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        return $url;
+    }
+
+    public function GetLocalUrl()
+    {
+        $url = $this->determineLocalUrl();
+		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        return $url;
+    }
+
+	public function GetLiveVideoUrl($resolution)
+	{
+		if (!in_array($resolution, ['poor', 'low', 'medium', 'high'])) {
+			$err = 'unknown resolution "' . $resolution . '"';
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			return false;
+		}
+
+		$url = $this->determineUrl();
+		if ($url == false) {
+			$err = 'no url available';
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			return false;
+		}
+
+		$url .= '/live/files/' . $resolution . '/index.m3u8';
+		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        return $url;
+	}
+
+	public function GetLiveSnapshotUrl()
+	{
+		$url = $this->determineUrl();
+		if ($url == false) {
+			$err = 'no url available';
+			$this->SendDebug(__FUNCTION__, $err, 0);
+			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			return false;
+		}
+
+		$url .= '/live/snapshot_720.jpg';
+		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        return $url;
+	}
+
+	public function GetEvents()
+	{
+		return $this->GetMediaData('Events');
+	}
+
+	public function GetNotifications()
+	{
+		return $this->GetMediaData('Notifications');
+	}
 }
-// [vpn_url] => https://prodvpn-eu-1.netatmo.net/restricted/10.255.185.151/c9fd79f94b5db715715a24649b707c99/MTU2MDg4MDgwMDrw9KRQ_pmj5eoucTLDTEmShwW-zg,,

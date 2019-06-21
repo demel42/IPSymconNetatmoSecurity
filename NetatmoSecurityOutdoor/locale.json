@@ -11,7 +11,10 @@
 
 			"optional data": "optionale Daten",
 			" ... last communication with Netatmo": " ... letzte Kommunikation mit Netatmo",
-			" ... Wifi-Signal": " ... Wifi-Signalstärke",
+
+			" ... max. age": " ... max. Alter",
+			"days": "Tage",
+			" ... Media-object cached": " ... Medien-Object cachen",
 
 			"Alim state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",

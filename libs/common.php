@@ -72,9 +72,9 @@ trait NetatmoSecurityCommon
         }
     }
 
-	private function CreatetMedia($Name, $Type, $Cached)
-	{
-		$mediaName = $this->Translate($Name);
+    private function CreatetMedia($Name, $Type, $Cached)
+    {
+        $mediaName = $this->Translate($Name);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
             $mediaID = IPS_CreateMedia(MEDIATYPE_DOCUMENT);
@@ -83,31 +83,31 @@ trait NetatmoSecurityCommon
             IPS_SetName($mediaID, $mediaName);
             IPS_SetParent($mediaID, $this->InstanceID);
         }
-		IPS_SetMediaCached($mediaID, $Cached);
-	}
+        IPS_SetMediaCached($mediaID, $Cached);
+    }
 
-	private function GetMediaData($Name)
-	{
-		$mediaName = $this->Translate($Name);
+    private function GetMediaData($Name)
+    {
+        $mediaName = $this->Translate($Name);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
             $this->SendDebug(__FUNCTION__, 'missing media-object ' . $Name, 0);
-			return false;
-		}
-		$data = base64_decode(IPS_GetMediaContent($mediaID));
-		return $data;
-	}
+            return false;
+        }
+        $data = base64_decode(IPS_GetMediaContent($mediaID));
+        return $data;
+    }
 
-	private function SetMediaData($Name, $data)
-	{
-		$mediaName = $this->Translate($Name);
+    private function SetMediaData($Name, $data)
+    {
+        $mediaName = $this->Translate($Name);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
             $this->SendDebug(__FUNCTION__, 'missing media-object ' . $Name, 0);
-			return false;
-		}
+            return false;
+        }
         IPS_SetMediaContent($mediaID, base64_encode($data));
-	}
+    }
 
     // Inspired from module SymconTest/HookServe
     private function RegisterHook($WebHook)

@@ -112,19 +112,21 @@ trait NetatmoSecurityLibrary
 
     private function do_HttpRequest($url, $header, $postdata, $mode, &$data, &$err)
     {
-		$this->SendDebug(__FUNCTION__, 'http-' . $mode . ': url=' . $url, 0);
+        $this->SendDebug(__FUNCTION__, 'http-' . $mode . ': url=' . $url, 0);
         $time_start = microtime(true);
 
-		if ($header != '') 
-			$this->SendDebug(__FUNCTION__, '    header=' . print_r($header, true), 0);
-		if ($postdata != '') 
-			$this->SendDebug(__FUNCTION__, '    postdata=' . print_r($postdata, true), 0);
+        if ($header != '') {
+            $this->SendDebug(__FUNCTION__, '    header=' . print_r($header, true), 0);
+        }
+        if ($postdata != '') {
+            $this->SendDebug(__FUNCTION__, '    postdata=' . print_r($postdata, true), 0);
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-		if ($header) {
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-		}
+        if ($header) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        }
         switch ($mode) {
             case 'GET':
                 break;
@@ -171,7 +173,7 @@ trait NetatmoSecurityLibrary
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
                 $this->SetBuffer('Token', '');
             } elseif ($httpcode == 409) {
-				$data = $cdata;
+                $data = $cdata;
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
                 $statuscode = IS_SERVERERROR;
                 $err = 'got http-code ' . $httpcode . ' (server error)';
@@ -192,71 +194,74 @@ trait NetatmoSecurityLibrary
             }
         }
 
-		$this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
-		$this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
+        $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+        $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
         return $statuscode;
     }
 
-	private function determineVpnUrl()
-	{
-		$vpn_url = $this->GetBuffer('vpn_url');
-		return $vpn_url;
-	}
+    private function determineVpnUrl()
+    {
+        $vpn_url = $this->GetBuffer('vpn_url');
+        return $vpn_url;
+    }
 
-	private function determineLocalUrl()
-	{
-		$is_local = $this->GetBuffer('is_local');
-		if (!$is_local)
-			return false;
+    private function determineLocalUrl()
+    {
+        $is_local = $this->GetBuffer('is_local');
+        if (!$is_local) {
+            return false;
+        }
 
-		$local_url = $this->GetBuffer('local_url');
-		if ($local_url != '')
-			return $local_url;
+        $local_url = $this->GetBuffer('local_url');
+        if ($local_url != '') {
+            return $local_url;
+        }
 
-		$vpn_url = $this->GetBuffer('vpn_url');
-		if ($vpn_url == '')
-			return false;
+        $vpn_url = $this->GetBuffer('vpn_url');
+        if ($vpn_url == '') {
+            return false;
+        }
 
-		$data = '';
-		$err = '';
+        $data = '';
+        $err = '';
 
-		$url = $vpn_url . '/command/ping';
-		$statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
-		if ($statuscode == 0) {
-			$response1 = json_decode($data, true);
-			$this->SendDebug(__FUNCTION__, 'response1=' . print_r($response1, true), 0);
-			$local_url1 = $this->GetArrayElem($response1, 'local_url', '');
+        $url = $vpn_url . '/command/ping';
+        $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+        if ($statuscode == 0) {
+            $response1 = json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'response1=' . print_r($response1, true), 0);
+            $local_url1 = $this->GetArrayElem($response1, 'local_url', '');
 
-			$url = $local_url1 . '/command/ping';
-			$statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
-			if ($statuscode == 0) {
-				$response2 = json_decode($data, true);
-				$this->SendDebug(__FUNCTION__, 'response2=' . print_r($response2, true), 0);
-				$local_url2 = $this->GetArrayElem($response2, 'local_url', '');
-				if ($local_url1 == $local_url2) {
-					$local_url = $local_url1;
-				}
-			}
-		}
+            $url = $local_url1 . '/command/ping';
+            $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+            if ($statuscode == 0) {
+                $response2 = json_decode($data, true);
+                $this->SendDebug(__FUNCTION__, 'response2=' . print_r($response2, true), 0);
+                $local_url2 = $this->GetArrayElem($response2, 'local_url', '');
+                if ($local_url1 == $local_url2) {
+                    $local_url = $local_url1;
+                }
+            }
+        }
 
-		$this->SetBuffer('local_url', $local_url);
+        $this->SetBuffer('local_url', $local_url);
 
-		if ($statuscode) {
+        if ($statuscode) {
             $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->SetStatus($statuscode);
-			return false;
+            return false;
         }
 
-		return $local_url;
-	}
+        return $local_url;
+    }
 
-	private function determineUrl()
-	{
-		$url = $this->determineLocalUrl();
-        if ($url == false)
+    private function determineUrl()
+    {
+        $url = $this->determineLocalUrl();
+        if ($url == false) {
             $url = $this->determineVpnUrl();
-		return $url;
-	}
-
+        }
+        return $url;
+    }
 }

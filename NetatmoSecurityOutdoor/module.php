@@ -103,9 +103,9 @@ class NetatmoSecurityOutdoor extends IPSModule
         $this->SetSummary($product_info);
 
         $events_cached = $this->ReadPropertyBoolean('events_cached');
-		$this->CreatetMedia('Events', MEDIATYPE_DOCUMENT, $events_cached);
+        $this->CreatetMedia('Events', MEDIATYPE_DOCUMENT, $events_cached);
         $notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
-		$this->CreatetMedia('Notifications', MEDIATYPE_DOCUMENT, $notifications_cached);
+        $this->CreatetMedia('Notifications', MEDIATYPE_DOCUMENT, $notifications_cached);
 
         $this->SetStatus(IS_ACTIVE);
     }
@@ -215,16 +215,16 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     }
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
-									if ($vpn_url != $this->GetBuffer('vpn_url')) {
-										$this->SetBuffer('vpn_url', $vpn_url);
-										$this->SetBuffer('local_url', '');
-									}
+                                    if ($vpn_url != $this->GetBuffer('vpn_url')) {
+                                        $this->SetBuffer('vpn_url', $vpn_url);
+                                        $this->SetBuffer('local_url', '');
+                                    }
 
                                     $is_local = $this->GetArrayElem($camera, 'is_local', false);
-									if ($is_local != $this->GetBuffer('is_local')) {
-										$this->SetBuffer('is_local', $is_local);
-										$this->SetBuffer('local_url', '');
-									}
+                                    if ($is_local != $this->GetBuffer('is_local')) {
+                                        $this->SetBuffer('is_local', $is_local);
+                                        $this->SetBuffer('local_url', '');
+                                    }
                                 }
                             }
                         }
@@ -233,7 +233,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
                     $new_events = [];
-					$s = $this->GetMediaData('Events');
+                    $s = $this->GetMediaData('Events');
                     $s = $this->GetValue('Events');
                     $old_events = json_decode($s, true);
                     if ($old_events != '') {
@@ -350,7 +350,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                         $s = '';
                     }
                     $this->SetValue('Events', $s);
-					$this->SetMediaData('Events', $s);
+                    $this->SetMediaData('Events', $s);
 
                     $status = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
                     $this->SetValue('Status', $status);
@@ -366,7 +366,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                     $notification = $jdata;
 
                     $new_notifications = [];
-					$s = $this->GetMediaData('Notifications');
+                    $s = $this->GetMediaData('Notifications');
                     $s = $this->GetValue('Notifications');
                     $old_notifications = json_decode($s, true);
                     if ($old_notifications != '') {
@@ -443,7 +443,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                         $s = '';
                     }
                     $this->SetValue('Notifications', $s);
-					$this->SetMediaData('Notifications', $s);
+                    $this->SetMediaData('Notifications', $s);
                     break;
                 default:
                     $err = 'unknown source "' . $source . '"';
@@ -475,13 +475,13 @@ class NetatmoSecurityOutdoor extends IPSModule
 
     private function SwitchLight(int $mode)
     {
-		$url = $this->determineUrl();
-		if ($url == false) {
-			$err = 'no url available';
-			$this->SendDebug(__FUNCTION__, $err, 0);
-			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-			return false;
-		}
+        $url = $this->determineUrl();
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
 
         switch ($mode) {
             case LIGHT_STATUS_OFF:
@@ -499,7 +499,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                 $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
                 return false;
         }
-        $url .= '/command/floodlight_set_config?config=' . urlencode('{"mode":"'.$value.'"}');
+        $url .= '/command/floodlight_set_config?config=' . urlencode('{"mode":"' . $value . '"}');
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -512,23 +512,23 @@ class NetatmoSecurityOutdoor extends IPSModule
 
     private function DimLight(int $intensity)
     {
-		$url = $this->determineUrl();
-		if ($url == false) {
-			$err = 'no url available';
-			$this->SendDebug(__FUNCTION__, $err, 0);
-			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-			return false;
-		}
+        $url = $this->determineUrl();
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
 
-		$intensity = intval($intensity);
+        $intensity = intval($intensity);
         if ($intensity > 100 or $intensity < 0) {
-			$err = 'linght-intensity range from 0 to 100';
-			$this->SendDebug(__FUNCTION__, $err, 0);
-			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-			return false;
-		}
+            $err = 'linght-intensity range from 0 to 100';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
 
-        $url .= '/command/floodlight_set_config?intensity=' . urlencode('{"mode":"'.$intensity.'"}');
+        $url .= '/command/floodlight_set_config?intensity=' . urlencode('{"mode":"' . $intensity . '"}');
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -541,13 +541,13 @@ class NetatmoSecurityOutdoor extends IPSModule
 
     private function SwitchCamera(int $mode)
     {
-		$url = $this->determineUrl();
-		if ($url == false) {
-			$err = 'no url available';
-			$this->SendDebug(__FUNCTION__, $err, 0);
-			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-			return false;
-		}
+        $url = $this->determineUrl();
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
 
         switch ($mode) {
             case CAMERA_STATUS_OFF:
@@ -586,64 +586,64 @@ class NetatmoSecurityOutdoor extends IPSModule
         return (strcmp($a_id, $b_id) < 0) ? -1 : 1;
     }
 
-	public function GetVpnUrl()
+    public function GetVpnUrl()
     {
         $url = $this->determineVpnUrl();
-		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
     }
 
     public function GetLocalUrl()
     {
         $url = $this->determineLocalUrl();
-		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
     }
 
-	public function GetLiveVideoUrl($resolution)
-	{
-		if (!in_array($resolution, ['poor', 'low', 'medium', 'high'])) {
-			$err = 'unknown resolution "' . $resolution . '"';
-			$this->SendDebug(__FUNCTION__, $err, 0);
-			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-			return false;
-		}
+    public function GetLiveVideoUrl($resolution)
+    {
+        if (!in_array($resolution, ['poor', 'low', 'medium', 'high'])) {
+            $err = 'unknown resolution "' . $resolution . '"';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
 
-		$url = $this->determineUrl();
-		if ($url == false) {
-			$err = 'no url available';
-			$this->SendDebug(__FUNCTION__, $err, 0);
-			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-			return false;
-		}
+        $url = $this->determineUrl();
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
 
-		$url .= '/live/files/' . $resolution . '/index.m3u8';
-		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        $url .= '/live/files/' . $resolution . '/index.m3u8';
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
-	}
+    }
 
-	public function GetLiveSnapshotUrl()
-	{
-		$url = $this->determineUrl();
-		if ($url == false) {
-			$err = 'no url available';
-			$this->SendDebug(__FUNCTION__, $err, 0);
-			$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-			return false;
-		}
+    public function GetLiveSnapshotUrl()
+    {
+        $url = $this->determineUrl();
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
 
-		$url .= '/live/snapshot_720.jpg';
-		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        $url .= '/live/snapshot_720.jpg';
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
-	}
+    }
 
-	public function GetEvents()
-	{
-		return $this->GetMediaData('Events');
-	}
+    public function GetEvents()
+    {
+        return $this->GetMediaData('Events');
+    }
 
-	public function GetNotifications()
-	{
-		return $this->GetMediaData('Notifications');
-	}
+    public function GetNotifications()
+    {
+        return $this->GetMediaData('Notifications');
+    }
 }

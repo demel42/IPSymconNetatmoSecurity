@@ -171,7 +171,6 @@ trait NetatmoSecurityLibrary
             } elseif ($httpcode == 403) {
                 $statuscode = IS_FORBIDDEN;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
-                $this->SetBuffer('Token', '');
             } elseif ($httpcode == 409) {
                 $data = $cdata;
             } elseif ($httpcode >= 500 && $httpcode <= 599) {

@@ -116,10 +116,10 @@ class NetatmoSecurityOutdoor extends IPSModule
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
 
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
-			$events_cached = $this->ReadPropertyBoolean('events_cached');
-			$this->CreatetMedia('Events' . $this->InstanceID, MEDIATYPE_DOCUMENT, $events_cached);
-			$notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
-			$this->CreatetMedia('Notifications' . $this->InstanceID, MEDIATYPE_DOCUMENT, $notifications_cached);
+            $events_cached = $this->ReadPropertyBoolean('events_cached');
+            $this->CreatetMedia('Events' . $this->InstanceID, MEDIATYPE_DOCUMENT, $events_cached);
+            $notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
+            $this->CreatetMedia('Notifications' . $this->InstanceID, MEDIATYPE_DOCUMENT, $notifications_cached);
         }
     }
 
@@ -173,9 +173,9 @@ class NetatmoSecurityOutdoor extends IPSModule
         $product_id = $this->ReadPropertyString('product_id');
 
         $event_max_age = $this->ReadPropertyInteger('event_max_age');
-		$events_cached = $this->ReadPropertyBoolean('events_cached');
+        $events_cached = $this->ReadPropertyBoolean('events_cached');
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');
-		$notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
+        $notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
 
         $now = time();
 
@@ -373,17 +373,17 @@ class NetatmoSecurityOutdoor extends IPSModule
 /********************/
                     $s = $this->GetValue('Event');
                     $old_event = json_decode($s, true);
-					$old_id = $this->GetArrayElem($old_event, 'id', '');
-					$tstamp = $this->GetArrayElem($old_event, 'tstamp', 0);
-					$this->SendDebug(__FUNCTION__, 'old_id=' . $old_id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp), 0);
+                    $old_id = $this->GetArrayElem($old_event, 'id', '');
+                    $tstamp = $this->GetArrayElem($old_event, 'tstamp', 0);
+                    $this->SendDebug(__FUNCTION__, 'old_id=' . $old_id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp), 0);
 
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
-						$is_old = ($old_id != '');
+                        $is_old = ($old_id != '');
 
-						$n = count($events);
-						for ($i = $n - 1; $i >= 0; $i--) {
-							$event = $events[$i];
+                        $n = count($events);
+                        for ($i = $n - 1; $i >= 0; $i--) {
+                            $event = $events[$i];
                             if ($product_id != $event['camera_id']) {
                                 continue;
                             }
@@ -391,95 +391,94 @@ class NetatmoSecurityOutdoor extends IPSModule
                             $id = $this->GetArrayElem($event, 'id', '');
                             $tstamp = $this->GetArrayElem($event, 'event_list.0.time', 0);
 
-							if ($is_old && $old_id == $id) {
-								$is_old = false;
-								$this->SendDebug(__FUNCTION__, 'id=' . $id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp) . ' => last processed event', 0);
-								continue;
-							}
-							if ($is_old) {
-								$this->SendDebug(__FUNCTION__, 'id=' . $id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp) . ' => previous event', 0);
-								continue;
-							}
+                            if ($is_old && $old_id == $id) {
+                                $is_old = false;
+                                $this->SendDebug(__FUNCTION__, 'id=' . $id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp) . ' => last processed event', 0);
+                                continue;
+                            }
+                            if ($is_old) {
+                                $this->SendDebug(__FUNCTION__, 'id=' . $id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp) . ' => previous event', 0);
+                                continue;
+                            }
 
-							$this->SendDebug(__FUNCTION__, 'id=' . $id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp) . ' => processing', 0);
+                            $this->SendDebug(__FUNCTION__, 'id=' . $id . ', tstamp=' . date('d.m.Y H:i:s', $tstamp) . ' => processing', 0);
                             $this->SendDebug(__FUNCTION__, '  decode event=' . print_r($event, true), 0);
 
+                            $new_event = [
+                                    'tstamp'      => $tstamp,
+                                    'id'          => $id,
+                                ];
 
-							$new_event = [
-									'tstamp'      => $tstamp,
-									'id'          => $id,
-								];
+                            $video_id = $this->GetArrayElem($event, 'video_id', '');
+                            if ($video_id != '') {
+                                $new_event['video_id'] = $video_id;
+                            }
 
-							$video_id = $this->GetArrayElem($event, 'video_id', '');
-							if ($video_id != '') {
-								$new_event['video_id'] = $video_id;
-							}
+                            $message = $this->GetArrayElem($event, 'message', '');
+                            if ($message != '') {
+                                $new_event['message'] = $message;
+                            }
 
-							$message = $this->GetArrayElem($event, 'message', '');
-							if ($message != '') {
-								$new_event['message'] = $message;
-							}
+                            $new_subevents = [];
+                            $subevents = $this->GetArrayElem($event, 'event_list', '');
+                            if ($subevents != '') {
+                                foreach ($subevents as $subevent) {
+                                    $id = $this->GetArrayElem($subevent, 'id', '');
+                                    $type = $this->GetArrayElem($subevent, 'type', '');
+                                    $ts = $this->GetArrayElem($subevent, 'time', 0);
+                                    $message = $this->GetArrayElem($subevent, 'message', '');
+                                    $snapshot_id = $this->GetArrayElem($subevent, 'snapshot.id', '');
+                                    $snapshot_key = $this->GetArrayElem($subevent, 'snapshot.key', '');
+                                    $snapshot_filename = $this->GetArrayElem($subevent, 'snapshot.filename', '');
+                                    $vignette_id = $this->GetArrayElem($subevent, 'vignette.id', '');
+                                    $vignette_key = $this->GetArrayElem($subevent, 'vignette.key', '');
+                                    $vignette_filename = $this->GetArrayElem($subevent, 'vignette.filename', '');
 
-							$new_subevents = [];
-							$subevents = $this->GetArrayElem($event, 'event_list', '');
-							if ($subevents != '') {
-								foreach ($subevents as $subevent) {
-									$id = $this->GetArrayElem($subevent, 'id', '');
-									$type = $this->GetArrayElem($subevent, 'type', '');
-									$ts = $this->GetArrayElem($subevent, 'time', 0);
-									$message = $this->GetArrayElem($subevent, 'message', '');
-									$snapshot_id = $this->GetArrayElem($subevent, 'snapshot.id', '');
-									$snapshot_key = $this->GetArrayElem($subevent, 'snapshot.key', '');
-									$snapshot_filename = $this->GetArrayElem($subevent, 'snapshot.filename', '');
-									$vignette_id = $this->GetArrayElem($subevent, 'vignette.id', '');
-									$vignette_key = $this->GetArrayElem($subevent, 'vignette.key', '');
-									$vignette_filename = $this->GetArrayElem($subevent, 'vignette.filename', '');
+                                    $new_subevent = [
+                                            'id'        => $id,
+                                            'time'      => $ts,
+                                            'type'      => $type,
+                                            'message'   => $message,
+                                        ];
 
-									$new_subevent = [
-											'id'        => $id,
-											'time'      => $ts,
-											'type'      => $type,
-											'message'   => $message,
-										];
+                                    $snapshot = [];
+                                    if ($snapshot_id != '') {
+                                        $snapshot['id'] = $snapshot_id;
+                                    }
+                                    if ($snapshot_key != '') {
+                                        $snapshot['key'] = $snapshot_key;
+                                    }
+                                    if ($snapshot_filename != '') {
+                                        $snapshot['filename'] = $snapshot_filename;
+                                    }
+                                    if ($snapshot != []) {
+                                        $new_subevent['snapshot'] = $snapshot;
+                                    }
 
-									$snapshot = [];
-									if ($snapshot_id != '') {
-										$snapshot['id'] = $snapshot_id;
-									}
-									if ($snapshot_key != '') {
-										$snapshot['key'] = $snapshot_key;
-									}
-									if ($snapshot_filename != '') {
-										$snapshot['filename'] = $snapshot_filename;
-									}
-									if ($snapshot != []) {
-										$new_subevent['snapshot'] = $snapshot;
-									}
+                                    $vignette = [];
+                                    if ($vignette_id != '') {
+                                        $vignette['id'] = $vignette_id;
+                                    }
+                                    if ($vignette_key != '') {
+                                        $vignette['key'] = $vignette_key;
+                                    }
+                                    if ($vignette_filename != '') {
+                                        $vignette['filename'] = $vignette_filename;
+                                    }
+                                    if ($vignette != []) {
+                                        $new_subevent['vignette'] = $vignette;
+                                    }
 
-									$vignette = [];
-									if ($vignette_id != '') {
-										$vignette['id'] = $vignette_id;
-									}
-									if ($vignette_key != '') {
-										$vignette['key'] = $vignette_key;
-									}
-									if ($vignette_filename != '') {
-										$vignette['filename'] = $vignette_filename;
-									}
-									if ($vignette != []) {
-										$new_subevent['vignette'] = $vignette;
-									}
+                                    $new_subevents[] = $new_subevent;
+                                }
+                                $new_event['subevents'] = $new_subevents;
+                            }
 
-									$new_subevents[] = $new_subevent;
-								}
-								$new_event['subevents'] = $new_subevents;
-							}
-
-							$this->SendDebug(__FUNCTION__, '  new_event=' . print_r($new_event, true), 0);
-							$s = json_encode($new_event);
-							$this->SetValue('Event', $s);
-						}
-					}
+                            $this->SendDebug(__FUNCTION__, '  new_event=' . print_r($new_event, true), 0);
+                            $s = json_encode($new_event);
+                            $this->SetValue('Event', $s);
+                        }
+                    }
 /********************/
                     $status = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
                     $this->SetValue('Status', $status);
@@ -577,7 +576,7 @@ class NetatmoSecurityOutdoor extends IPSModule
 /********************/
 
 /********************/
-					$new_notification = [];
+                    $new_notification = [];
                     $camera_id = $this->GetArrayElem($notification, 'camera_id', '');
                     if ($camera_id == '' || $product_id == $camera_id) {
                         $this->SendDebug(__FUNCTION__, 'decode notification=' . print_r($notification, true), 0);
@@ -635,7 +634,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                     }
                     if ($new_notification != []) {
                         $s = json_encode($new_notification);
-						$this->SetValue('Notification', $s);
+                        $this->SetValue('Notification', $s);
                     }
 /********************/
                     break;

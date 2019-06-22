@@ -95,10 +95,10 @@ trait NetatmoSecurityCommon
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
             $mediaID = IPS_CreateMedia(MEDIATYPE_DOCUMENT);
-			if ($mediaID == false) {
-				$this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $Name, 0);
-				return false;
-			}
+            if ($mediaID == false) {
+                $this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $Name, 0);
+                return false;
+            }
             $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $Name . '.dat';
             IPS_SetMediaFile($mediaID, $filename, false);
             IPS_SetName($mediaID, $mediaName);

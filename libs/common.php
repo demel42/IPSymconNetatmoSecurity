@@ -72,20 +72,6 @@ trait NetatmoSecurityCommon
         }
     }
 
-    private function CreatetMedia($Name, $Type, $Cached)
-    {
-        $mediaName = $this->Translate($Name);
-        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
-        if ($mediaID == false) {
-            $mediaID = IPS_CreateMedia(MEDIATYPE_DOCUMENT);
-            $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $Name . '.dat';
-            IPS_SetMediaFile($mediaID, $filename, false);
-            IPS_SetName($mediaID, $mediaName);
-            IPS_SetParent($mediaID, $this->InstanceID);
-        }
-        IPS_SetMediaCached($mediaID, $Cached);
-    }
-
     private function GetMediaData($Name)
     {
         $mediaName = $this->Translate($Name);
@@ -98,14 +84,27 @@ trait NetatmoSecurityCommon
         return $data;
     }
 
-    private function SetMediaData($Name, $data)
+    private function SetMediaData($Name, $data, $Cached)
     {
         $mediaName = $this->Translate($Name);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
-            $this->SendDebug(__FUNCTION__, 'missing media-object ' . $Name, 0);
             return false;
         }
+        $mediaName = $this->Translate($Name);
+        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
+        if ($mediaID == false) {
+            $mediaID = IPS_CreateMedia(MEDIATYPE_DOCUMENT);
+			if ($mediaID == false) {
+				$this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $Name, 0);
+				return false;
+			}
+            $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $Name . '.dat';
+            IPS_SetMediaFile($mediaID, $filename, false);
+            IPS_SetName($mediaID, $mediaName);
+            IPS_SetParent($mediaID, $this->InstanceID);
+        }
+        IPS_SetMediaCached($mediaID, $Cached);
         IPS_SetMediaContent($mediaID, base64_encode($data));
     }
 

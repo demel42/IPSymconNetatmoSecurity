@@ -343,7 +343,7 @@ class NetatmoSecurityIO extends IPSModule
             }
             http_response_code(200);
             $this->SendData($data, 'EVENT');
-			$this->SetTimerInterval('UpdateData', 5000);
+            $this->SetTimerInterval('UpdateData', 5000);
             return;
         }
         $path = realpath($root . '/' . $basename);

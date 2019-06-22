@@ -25,6 +25,9 @@ class NetatmoSecurityOutdoor extends IPSModule
         $this->RegisterPropertyInteger('notification_max_age', '2');
         $this->RegisterPropertyBoolean('notifications_cached', false);
 
+        $this->RegisterPropertyString('video_path', '');
+        $this->RegisterPropertyInteger('video_max_age', '14');
+
         $associations = [];
         $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
         $associations[] = ['Wert' => CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
@@ -126,6 +129,9 @@ class NetatmoSecurityOutdoor extends IPSModule
         $formElements[] = ['type' => 'Label', 'caption' => 'Notifications'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'notification_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'notifications_cached', 'caption' => ' ... Media-object cached'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of videos from Netatmo'];
+        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'video_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
+        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'video_path', 'caption' => ' ... path'];
 
         $formActions = [];
         $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
@@ -646,4 +652,72 @@ class NetatmoSecurityOutdoor extends IPSModule
     {
         return $this->GetMediaData('Notifications');
     }
+
+	public function CleanupVideoPath($fulldebug = false)
+	{
+		$dt = new DateTime(date('d.m.Y 00:00:00', time()));
+		$now = $dt->format('U');
+
+        $path = $this->ReadPropertyString('video_path');
+        $max_age = $this->ReadPropertyInteger('video_max_age');
+
+		if ($path == '' || $max_age < 1) {
+			$this->SendDebug(__FUNCTION__, 'no path or no max_age', 0);
+			return false;
+		}
+
+		$this->SendDebug(__FUNCTION__, 'cleanup viedeo_path ' . $path, 0);
+		$age = $max_age * 24 * 60 * 60;
+		$this->SendDebug(__FUNCTION__, '* cleanup files', 0);
+		$directory = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
+		$objects = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
+		foreach ($objects as $object) {
+			$isFile = $object->isFile();
+			if (!$isFile)
+				continue;
+			$pathname = $object->getPathname();
+			$a = $now - filemtime($pathname);
+			$skip = ($a < $age);
+			if (!$fulldebug && $skip)
+				continue;
+			$this->SendDebug(__FUNCTION__, '  name=' . $object->getPathname() . ', age=' . floor(($a / 86400)) . ' => ' . ($skip ? 'skip' : 'delete'), 0);
+			if ($skip)
+				continue;
+			if (!unlink($pathname)) {
+				$err = 'unable to delete file ' . $pathname;
+				$this->SendDebug(__FUNCTION__, $err, 0);
+				$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			}
+		}
+		$this->SendDebug(__FUNCTION__, '* cleanup dirs', 0);
+		$directory = new RecursiveDirectoryIterator($path);
+		$objects = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
+		foreach ($objects as $object) {
+			$pathname = $object->getPathname();
+			$basename = basename($pathname);
+			if ($basename == '.' || $basename == '..')
+				continue;
+			$isDir = $object->isDir();
+			if (!$isDir)
+				continue;
+			$chld = 0;
+			$dp = opendir($pathname);
+			while ($f = readdir($dp)) {
+				if (is_dir($path . DIRECTORY_SEPARATOR . $f))
+					continue;
+				$chld++;
+			}
+			$skip = ($chld > 0);
+			if (!$fulldebug && $skip)
+				continue;
+			$this->SendDebug(__FUNCTION__, '  name=' . $pathname . ', child=' . $chld . ' => ' . ($skip ? 'skip' : 'delete'), 0);
+			if ($skip)
+				continue;
+			if (!rmdir($pathname)) {
+				$err = 'unable to delete directory ' . $pathname;
+				$this->SendDebug(__FUNCTION__, $err, 0);
+				$this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+			}
+		}
+	}
 }

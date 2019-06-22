@@ -669,6 +669,11 @@ class NetatmoSecurityOutdoor extends IPSModule
         $this->SendDebug(__FUNCTION__, 'cleanup viedeo_path ' . $path, 0);
         $age = $max_age * 24 * 60 * 60;
         $this->SendDebug(__FUNCTION__, '* cleanup files', 0);
+
+		$n_files_total = 0;
+		$n_files_deleted = 0;
+		$n_dirs_total = 0;
+		$n_dirs_deleted = 0;
         $directory = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
         $objects = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($objects as $object) {
@@ -679,6 +684,7 @@ class NetatmoSecurityOutdoor extends IPSModule
             $pathname = $object->getPathname();
             $a = $now - filemtime($pathname);
             $skip = ($a < $age);
+			$n_files_total++;
             if (!$fulldebug && $skip) {
                 continue;
             }
@@ -686,6 +692,7 @@ class NetatmoSecurityOutdoor extends IPSModule
             if ($skip) {
                 continue;
             }
+			$n_files_deleted++;
             if (!unlink($pathname)) {
                 $err = 'unable to delete file ' . $pathname;
                 $this->SendDebug(__FUNCTION__, $err, 0);
@@ -705,6 +712,7 @@ class NetatmoSecurityOutdoor extends IPSModule
             if (!$isDir) {
                 continue;
             }
+			$n_dirs_total++;
             $chld = 0;
             $dp = opendir($pathname);
             while ($f = readdir($dp)) {
@@ -721,11 +729,15 @@ class NetatmoSecurityOutdoor extends IPSModule
             if ($skip) {
                 continue;
             }
+			$n_dirs_deleted++;
             if (!rmdir($pathname)) {
                 $err = 'unable to delete directory ' . $pathname;
                 $this->SendDebug(__FUNCTION__, $err, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
             }
         }
+		$msg = 'files deleted=' . $n_files_deleted . '/' . $n_files_total . ', dirs deleted=' . $n_dirs_deleted . '/' . $n_dirs_total;
+		$this->SendDebug(__FUNCTION__, $msg, 0);
+		$this->LogMessage(__FUNCTION__ . ': path=' . $path . ', ' . $msg, KL_MESSAGE);
     }
 }

@@ -1022,46 +1022,46 @@ class NetatmoSecurityOutdoor extends IPSModule
     }
 
     public function GetVideoFilename(string $video_id, int $tstamp)
-	{
+    {
         $ftp_path = $this->ReadPropertyString('ftp_path');
-		if ($ftp_path == '') {
-			$this->SendDebug(__FUNCTION__, '"ftp_path" is not defined', 0);
-			return false;
-		}
+        if ($ftp_path == '') {
+            $this->SendDebug(__FUNCTION__, '"ftp_path" is not defined', 0);
+            return false;
+        }
 
-		if ($video_id == '') {
-			$this->SendDebug(__FUNCTION__, 'empty video_id "' . $video_id . '"', 0);
-			return false;
-		}
-		$ids = explode('-', $video_id);
-		if ($ids == false) {
-			$this->SendDebug(__FUNCTION__, 'invalid video_id "' . $video_id . '"', 0);
-			return false;
-		}
-		$id = $ids[0];
+        if ($video_id == '') {
+            $this->SendDebug(__FUNCTION__, 'empty video_id "' . $video_id . '"', 0);
+            return false;
+        }
+        $ids = explode('-', $video_id);
+        if ($ids == false) {
+            $this->SendDebug(__FUNCTION__, 'invalid video_id "' . $video_id . '"', 0);
+            return false;
+        }
+        $id = $ids[0];
 
-		$path = IPS_GetKernelDir() . $ftp_path . DIRECTORY_SEPARATOR;
+        $path = IPS_GetKernelDir() . $ftp_path . DIRECTORY_SEPARATOR;
 
-		for ($i = 0, $ok = false; $i < 2 && ! $ok; $i++) {
-			$y = date('Y', $tstamp);
-			$m = date('m', $tstamp);
-			$d = date('d', $tstamp);
-			$H = date('H', $tstamp);
-			$M = date('i', $tstamp);
-			
-			$filename = $path;
-			$filename .= $y . DIRECTORY_SEPARATOR . $m . DIRECTORY_SEPARATOR . $d . DIRECTORY_SEPARATOR;
-			$filename .= $y . '-' . $m . '-' . $d . '_' . $H  . '.' . $M . '_' . $id . '.mp4';
-			
-			$ok = is_file($filename);
-			if (!$ok) {
-				// der zeitpunkt der Erstellung der Datei ist nkcht unbedingt der des Sub-Events
-				$tstamp += 30;
-			}
-		}
+        for ($i = 0, $ok = false; $i < 2 && !$ok; $i++) {
+            $y = date('Y', $tstamp);
+            $m = date('m', $tstamp);
+            $d = date('d', $tstamp);
+            $H = date('H', $tstamp);
+            $M = date('i', $tstamp);
 
-		$this->SendDebug(__FUNCTION__, 'tstamp=' . date('d.m.Y H:i:s', $tstamp) . ', video_id=' . $video_id . 'filename=' . $filename . ' => ' . ($ok ? 'exists' : 'MISSING'), 0);
+            $filename = $path;
+            $filename .= $y . DIRECTORY_SEPARATOR . $m . DIRECTORY_SEPARATOR . $d . DIRECTORY_SEPARATOR;
+            $filename .= $y . '-' . $m . '-' . $d . '_' . $H . '.' . $M . '_' . $id . '.mp4';
 
-		return $ok ? $filename : false;
-	}
+            $ok = is_file($filename);
+            if (!$ok) {
+                // der zeitpunkt der Erstellung der Datei ist nkcht unbedingt der des Sub-Events
+                $tstamp += 30;
+            }
+        }
+
+        $this->SendDebug(__FUNCTION__, 'tstamp=' . date('d.m.Y H:i:s', $tstamp) . ', video_id=' . $video_id . 'filename=' . $filename . ' => ' . ($ok ? 'exists' : 'MISSING'), 0);
+
+        return $ok ? $filename : false;
+    }
 }

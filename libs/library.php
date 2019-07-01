@@ -4,6 +4,7 @@ if (!defined('CAMERA_STATUS_UNDEFINED')) {
     define('CAMERA_STATUS_UNDEFINED', -1);
     define('CAMERA_STATUS_OFF', 0);
     define('CAMERA_STATUS_ON', 1);
+    define('CAMERA_STATUS_DISCONNECTED', 2);
 }
 
 if (!defined('LIGHT_STATUS_UNDEFINED')) {
@@ -35,6 +36,9 @@ trait NetatmoSecurityLibrary
                 break;
             case 'on':
                 $val = CAMERA_STATUS_ON;
+                break;
+            case 'disconnected':
+                $val = CAMERA_STATUS_DISCONNECTED;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';

@@ -5,7 +5,7 @@ require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
 define('EVENTS_VARIABLE_TOTAL', false);
 define('EVENTS_VARIABLE_ARCHIVE', false);
-	define('EVENTS_AS_MEDIA', true);
+    define('EVENTS_AS_MEDIA', true);
 
 class NetatmoSecurityOutdoor extends IPSModule
 {
@@ -141,11 +141,11 @@ class NetatmoSecurityOutdoor extends IPSModule
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 
-		if (IPS_GetKernelRunlevel() == KR_READY) {
-			$hook = $this->ReadPropertyString('hook');
-			if ($hook != '') {
-				$this->RegisterHook($hook);
-			}
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+            $hook = $this->ReadPropertyString('hook');
+            if ($hook != '') {
+                $this->RegisterHook($hook);
+            }
         }
 
         $this->SetStatus(IS_ACTIVE);
@@ -156,10 +156,10 @@ class NetatmoSecurityOutdoor extends IPSModule
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
 
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
-			$hook = $this->ReadPropertyString('hook');
-			if ($hook != '') {
-				$this->RegisterHook($hook);
-			}
+            $hook = $this->ReadPropertyString('hook');
+            if ($hook != '') {
+                $this->RegisterHook($hook);
+            }
         }
     }
 
@@ -707,8 +707,8 @@ class NetatmoSecurityOutdoor extends IPSModule
                                                 'vignette_key' => $vignette_key,
                                             ];
                                         break;
-									case 'NOC-connection':
-									case 'NOC-disconnection':
+                                    case 'NOC-connection':
+                                    case 'NOC-disconnection':
                                     case 'NOC-light_mode':
                                     case 'NOC-off':
                                     case 'NOC-on':
@@ -916,7 +916,7 @@ class NetatmoSecurityOutdoor extends IPSModule
             return false;
         }
 
-		$url = $this->determineUrl();
+        $url = $this->determineUrl();
         if ($url == false) {
             $err = 'no url available';
             $this->SendDebug(__FUNCTION__, $err, 0);
@@ -953,12 +953,12 @@ class NetatmoSecurityOutdoor extends IPSModule
             return false;
         }
 
-		$url = $this->determineUrl();
-		$fn = 'index_local.m3u8';
-		if ($url == false) {
-			$url = $this->determineVpnUrl();
-			$fn = 'index.m3u8';
-		}
+        $url = $this->determineUrl();
+        $fn = 'index_local.m3u8';
+        if ($url == false) {
+            $url = $this->determineVpnUrl();
+            $fn = 'index.m3u8';
+        }
         if ($url == false) {
             $err = 'no url available';
             $this->SendDebug(__FUNCTION__, $err, 0);
@@ -1122,96 +1122,96 @@ class NetatmoSecurityOutdoor extends IPSModule
             http_response_code(404);
             die('File not found!');
         }
-		$hook = $this->ReadPropertyString('hook');
-		if ($hook == '') {
+        $hook = $this->ReadPropertyString('hook');
+        if ($hook == '') {
             http_response_code(404);
             die('File not found!');
-		}
-		$path = parse_url($uri, PHP_URL_PATH);
+        }
+        $path = parse_url($uri, PHP_URL_PATH);
         $basename = substr($path, strlen($hook));
 
-		$this->SendDebug(__FUNCTION__, 'basename=' . $basename, 0);
-		if ($basename == 'video') {
-			if (isset($_GET['video_id'])) {
-				$video_id = $_GET['video_id'];
-				$event_id = '';
-			} elseif (isset($_GET['video_id'])) {
-				$event_id = $_GET['event_id'];
-				$video_id = '';
-			}
+        $this->SendDebug(__FUNCTION__, 'basename=' . $basename, 0);
+        if ($basename == 'video') {
+            if (isset($_GET['video_id'])) {
+                $video_id = $_GET['video_id'];
+                $event_id = '';
+            } elseif (isset($_GET['video_id'])) {
+                $event_id = $_GET['event_id'];
+                $video_id = '';
+            }
 
-			$tstamp = '';
+            $tstamp = '';
 
-			$data = $this->GetMediaData('Events');
-			$events = json_decode($data, true);
-			foreach ($events as $event) {
-				if ($video_id != '') {
-					if (!isset($event['video_id']))
-						continue;
-					if ($event['video_id'] != $video_id) {
-						continue;
-					}
-					$tstamp = $event['tstamp'];
-				}
-				if ($event_id != '') {
-					if ($event['id'] != $event_id) {
-						continue;
-					}
-					$video_id = event['video_id'];
-					$tstamp = $event['tstamp'];
-					break;
-				}	
-			}
+            $data = $this->GetMediaData('Events');
+            $events = json_decode($data, true);
+            foreach ($events as $event) {
+                if ($video_id != '') {
+                    if (!isset($event['video_id'])) {
+                        continue;
+                    }
+                    if ($event['video_id'] != $video_id) {
+                        continue;
+                    }
+                    $tstamp = $event['tstamp'];
+                }
+                if ($event_id != '') {
+                    if ($event['id'] != $event_id) {
+                        continue;
+                    }
+                    $video_id = event['video_id'];
+                    $tstamp = $event['tstamp'];
+                    break;
+                }
+            }
 
-			if ($video_id == '') {
-				http_response_code(404);
-				die('File not found!');
-			}
+            if ($video_id == '') {
+                http_response_code(404);
+                die('File not found!');
+            }
 
-			if ($tstamp != '') {
-				$filename = $this->GetVideoFilename($video_id, $tstamp);
-				$this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
-				if ($filename != '') {
-					$path = IPS_GetKernelDir() . 'webfront';
-					$path = substr($filename, strlen($path));
+            if ($tstamp != '') {
+                $filename = $this->GetVideoFilename($video_id, $tstamp);
+                $this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
+                if ($filename != '') {
+                    $path = IPS_GetKernelDir() . 'webfront';
+                    $path = substr($filename, strlen($path));
 
-					$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
-					$url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+                    $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+                    $url .= '://' . $_SERVER['HTTP_HOST'] . $path;
 
-					$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+                    $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
 
-					http_response_code(200);
+                    http_response_code(200);
 
-					echo '<html>';
-					echo '<body>';
-					echo '<video>';
-					echo '  <source src="' . $url . '" type="video/mp4" />';
-					echo '</video>';
-					echo '</body>';
-					echo '</html>';
-					
-					return;
-				}
-			}
+                    echo '<html>';
+                    echo '<body>';
+                    echo '<video>';
+                    echo '  <source src="' . $url . '" type="video/mp4" />';
+                    echo '</video>';
+                    echo '</body>';
+                    echo '</html>';
 
-			$url = $this->GetVideoUrl($video_id, 'high');
-			if ($url != false) {
+                    return;
+                }
+            }
 
-				$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+            $url = $this->GetVideoUrl($video_id, 'high');
+            if ($url != false) {
+                $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
 
-				http_response_code(200);
+                http_response_code(200);
 
-				echo '<html>';
-				echo '<head>';
-				echo '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-				echo '</head>';
-				echo '<body>';
-				echo '</body>';
-				echo '</html>';
-				
-				return;
-			}
-		}
+                echo '<html>';
+                echo '<head>';
+                echo '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+                echo '</head>';
+                echo '<body>';
+                echo '</body>';
+                echo '</html>';
+
+                return;
+            }
+        }
         $path = realpath($root . '/' . $basename);
         if ($path === false) {
             http_response_code(404);

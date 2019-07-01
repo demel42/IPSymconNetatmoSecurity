@@ -5,7 +5,7 @@ require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
 define('EVENTS_VARIABLE_TOTAL', false);
 define('EVENTS_VARIABLE_ARCHIVE', false);
-define('EVENTS_AS_MEDIA', true);
+	define('EVENTS_AS_MEDIA', true);
 
 class NetatmoSecurityOutdoor extends IPSModule
 {
@@ -25,6 +25,8 @@ class NetatmoSecurityOutdoor extends IPSModule
         $this->RegisterPropertyBoolean('with_last_contact', false);
         $this->RegisterPropertyBoolean('with_last_event', false);
         $this->RegisterPropertyBoolean('with_last_notification', false);
+
+        $this->RegisterPropertyString('hook', '');
 
         if (EVENTS_VARIABLE_ARCHIVE) {
             $this->RegisterPropertyBoolean('archive_events', true);
@@ -46,6 +48,7 @@ class NetatmoSecurityOutdoor extends IPSModule
         $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
         $associations[] = ['Wert' => CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
         $associations[] = ['Wert' => CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => CAMERA_STATUS_DISCONNECTED, 'Name' => $this->Translate('disconnected'), 'Farbe' => 0xEE0000];
         $this->CreateVarProfile('NetatmoSecurity.CameraStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
@@ -138,6 +141,13 @@ class NetatmoSecurityOutdoor extends IPSModule
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 
+		if (IPS_GetKernelRunlevel() == KR_READY) {
+			$hook = $this->ReadPropertyString('hook');
+			if ($hook != '') {
+				$this->RegisterHook($hook);
+			}
+        }
+
         $this->SetStatus(IS_ACTIVE);
     }
 
@@ -146,6 +156,10 @@ class NetatmoSecurityOutdoor extends IPSModule
         parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
 
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
+			$hook = $this->ReadPropertyString('hook');
+			if ($hook != '') {
+				$this->RegisterHook($hook);
+			}
         }
     }
 
@@ -161,6 +175,7 @@ class NetatmoSecurityOutdoor extends IPSModule
         $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_contact', 'caption' => ' ... last communication with Netatmo'];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_event', 'caption' => ' ... last event from Netatmo'];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_notification', 'caption' => ' ... last notification from Netatmo'];
+        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'hook', 'caption' => 'WebHook'];
 
         if (EVENTS_VARIABLE_TOTAL || EVENTS_AS_MEDIA) {
             $formElements[] = ['type' => 'Label', 'caption' => 'Events'];
@@ -608,10 +623,12 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     $new_notifications[] = $new_notification;
                                     $got_new_notification = true;
                                     break;
+                                case 'NOC-connection':
+                                case 'NOC-disconnection':
                                 case 'NOC-light_mode':
+                                case 'NOC-movement':
                                 case 'NOC-off':
                                 case 'NOC-on':
-                                case 'NOC-movement':
                                     $id = $this->GetArrayElem($notification, 'id', '');
                                     $message = $this->GetArrayElem($notification, 'message', '');
                                     $event_type = $this->GetArrayElem($notification, 'event_type', '');
@@ -625,9 +642,9 @@ class NetatmoSecurityOutdoor extends IPSModule
                                     $new_notifications[] = $new_notification;
                                     $got_new_notification = true;
                                     break;
-                                case 'webhook_activation':
                                 case 'daily_summary':
-                                // case 'topology_changed':
+                                case 'topology_changed':
+                                case 'webhook_activation':
                                     $err = 'ignore push_type "' . $push_type . '"';
                                     $this->SendDebug(__FUNCTION__, $err, 0);
                                     $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_MESSAGE);
@@ -690,6 +707,8 @@ class NetatmoSecurityOutdoor extends IPSModule
                                                 'vignette_key' => $vignette_key,
                                             ];
                                         break;
+									case 'NOC-connection':
+									case 'NOC-disconnection':
                                     case 'NOC-light_mode':
                                     case 'NOC-off':
                                     case 'NOC-on':
@@ -707,9 +726,9 @@ class NetatmoSecurityOutdoor extends IPSModule
                                         $new_notifications[] = $new_notification;
                                         $got_new_notification = true;
                                         break;
-                                    case 'webhook_activation':
                                     case 'daily_summary':
-                                    // case 'topology_changed':
+                                    case 'topology_changed':
+                                    case 'webhook_activation':
                                         $err = 'ignore push_type "' . $push_type . '"';
                                         $this->SendDebug(__FUNCTION__, $err, 0);
                                         $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_MESSAGE);
@@ -897,7 +916,7 @@ class NetatmoSecurityOutdoor extends IPSModule
             return false;
         }
 
-        $url = $this->determineUrl();
+		$url = $this->determineUrl();
         if ($url == false) {
             $err = 'no url available';
             $this->SendDebug(__FUNCTION__, $err, 0);
@@ -921,6 +940,33 @@ class NetatmoSecurityOutdoor extends IPSModule
         }
 
         $url .= '/live/snapshot_720.jpg';
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        return $url;
+    }
+
+    public function GetVideoUrl(string $video_id, string $resolution)
+    {
+        if (!in_array($resolution, ['poor', 'low', 'medium', 'high'])) {
+            $err = 'unknown resolution "' . $resolution . '"';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
+
+		$url = $this->determineUrl();
+		$fn = 'index_local.m3u8';
+		if ($url == false) {
+			$url = $this->determineVpnUrl();
+			$fn = 'index.m3u8';
+		}
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
+
+        $url .= '/vod/' . $video_id . '/files/' . $resolution . '/index.m3u8';
         $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
     }
@@ -1063,5 +1109,119 @@ class NetatmoSecurityOutdoor extends IPSModule
         $this->SendDebug(__FUNCTION__, 'tstamp=' . date('d.m.Y H:i:s', $tstamp) . ', video_id=' . $video_id . 'filename=' . $filename . ' => ' . ($ok ? 'exists' : 'MISSING'), 0);
 
         return $ok ? $filename : false;
+    }
+
+    protected function ProcessHookData()
+    {
+        $this->SendDebug(__FUNCTION__, '_SERVER=' . print_r($_SERVER, true), 0);
+        $this->SendDebug(__FUNCTION__, '_GET=' . print_r($_GET, true), 0);
+
+        $root = realpath(__DIR__);
+        $uri = $_SERVER['REQUEST_URI'];
+        if (substr($uri, -1) == '/') {
+            http_response_code(404);
+            die('File not found!');
+        }
+		$hook = $this->ReadPropertyString('hook');
+		if ($hook == '') {
+            http_response_code(404);
+            die('File not found!');
+		}
+		$path = parse_url($uri, PHP_URL_PATH);
+        $basename = substr($path, strlen($hook));
+
+		$this->SendDebug(__FUNCTION__, 'basename=' . $basename, 0);
+		if ($basename == 'video') {
+			if (isset($_GET['video_id'])) {
+				$video_id = $_GET['video_id'];
+				$event_id = '';
+			} elseif (isset($_GET['video_id'])) {
+				$event_id = $_GET['event_id'];
+				$video_id = '';
+			}
+
+			$tstamp = '';
+
+			$data = $this->GetMediaData('Events');
+			$events = json_decode($data, true);
+			foreach ($events as $event) {
+				if ($video_id != '') {
+					if (!isset($event['video_id']))
+						continue;
+					if ($event['video_id'] != $video_id) {
+						continue;
+					}
+					$tstamp = $event['tstamp'];
+				}
+				if ($event_id != '') {
+					if ($event['id'] != $event_id) {
+						continue;
+					}
+					$video_id = event['video_id'];
+					$tstamp = $event['tstamp'];
+					break;
+				}	
+			}
+
+			if ($video_id == '') {
+				http_response_code(404);
+				die('File not found!');
+			}
+
+			if ($tstamp != '') {
+				$filename = $this->GetVideoFilename($video_id, $tstamp);
+				$this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
+				if ($filename != '') {
+					$path = IPS_GetKernelDir() . 'webfront';
+					$path = substr($filename, strlen($path));
+
+					$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+					$url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+
+					$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+
+					http_response_code(200);
+
+					echo '<html>';
+					echo '<body>';
+					echo '<video>';
+					echo '  <source src="' . $url . '" type="video/mp4" />';
+					echo '</video>';
+					echo '</body>';
+					echo '</html>';
+					
+					return;
+				}
+			}
+
+			$url = $this->GetVideoUrl($video_id, 'high');
+			if ($url != false) {
+
+				$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+
+				http_response_code(200);
+
+				echo '<html>';
+				echo '<head>';
+				echo '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+				echo '</head>';
+				echo '<body>';
+				echo '</body>';
+				echo '</html>';
+				
+				return;
+			}
+		}
+        $path = realpath($root . '/' . $basename);
+        if ($path === false) {
+            http_response_code(404);
+            die('File not found!');
+        }
+        if (substr($path, 0, strlen($root)) != $root) {
+            http_response_code(403);
+            die('Security issue. Cannot leave root folder!');
+        }
+        header('Content-Type: ' . $this->GetMimeType(pathinfo($path, PATHINFO_EXTENSION)));
+        readfile($path);
     }
 }

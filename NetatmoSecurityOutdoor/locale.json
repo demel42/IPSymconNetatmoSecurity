@@ -42,6 +42,7 @@
 			"unknown": "unbekannt",
 			"off": "aus",
 			"on": "an",
+			"disconnected": "getrennt",
 			"auto": "automatisch",
 
 			"Instance getting created": "Instanz wird erstellt",

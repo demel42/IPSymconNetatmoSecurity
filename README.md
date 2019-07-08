@@ -76,7 +76,7 @@ Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert we
 #### Variablen
 
 | Eigenschaft               | Typ      | Standardwert | Beschreibung |
-| :-----------------------: | :-----:  | :----------: | :----------------------------------------------------------------------------------------------------------: |
+| :------------------------ | :------  | :----------- | :----------- |
 | Netatmo-Zugangsdaten      | string   |              | Benutzername und Passwort von https://my.netatmo.com sowie Client-ID und -Secret von https://dev.netatmo.com |
 |                           |          |              | |
 | Ignoriere HTTP-Fehler     | integer  | 0            | Da Netatmo häufiger HTTP-Fehler meldet, wird erst ab dem X. Fehler in Folge reagiert |
@@ -86,8 +86,8 @@ Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert we
 #### Schaltflächen
 
 | Bezeichnung                  | Beschreibung |
-| :--------------------------: | :------------------------------------------------: |
-| Aktualisiere Wetterdaten     | führt eine sofortige Aktualisierung durch |
+| :--------------------------- | :----------- |
+| Aktualisiere Daten           | führt eine sofortige Aktualisierung durch |
 
 ### Konfigurator
 
@@ -98,7 +98,7 @@ Es werden alle Stationen zu dem konfigurierten Account zur Auswahl angeboten. Es
 #### Schaltflächen
 
 | Bezeichnung                  | Beschreibung |
-| :--------------------------: | :------------------------------------------------: |
+| :--------------------------- | :----------- |
 | Import xxxxxxxxxxx           | richtet die Geräte-Instanzen ein |
 
 ### Geräte
@@ -107,24 +107,24 @@ Es werden alle Stationen zu dem konfigurierten Account zur Auswahl angeboten. Es
 
 werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 
-| Eigenschaft            | Typ     | Standardwert | Beschreibung                               |
-| :--------------------: | :-----: | :----------: | :----------------------------------------: |
-| home_id                | string  |              | ID des "Hauses"                            |
-| module_id              | string  |              | ID des Moduls                              |
+| Eigenschaft            | Typ     | Standardwert | Beschreibung |
+| :--------------------- | :------ | :----------- | :----------- |
+| home_id                | string  |              | ID des "Hauses" |
+| module_id              | string  |              | ID des Moduls |
 
 #### Variablen
 
 stehen je nach Typ des Moduls zur Verfügung
 
 | Eigenschaft               | Typ     | Standardwert | Beschreibung                               |
-| :-----------------------: | :-----: | :----------: | :----------------------------------------: |
+| :------------------------ | :------ | :----------- | :----------------------------------------- |
 
 ### Statusvariablen
 
 folgende Variable werden angelegt, zum Teil optional
 
 | Name                    | Typ            | Beschreibung                                    | Option                 | Module    |
-| :---------------------: | :------------: | :---------------------------------------------: | :--------------------: | :-------: |
+| :---------------------- | :------------- | :---------------------------------------------- | :--------------------- | :-------- |
 
 
 _Module_: O=Outdoor, I=Indoor, R=Rauchmelder
@@ -147,10 +147,10 @@ GUIDs
 - Instanzen:
   - NetatmoSecurityIO: `{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}`
   - NetatmoSecurityConfig: `{C4834515-843B-4B91-A998-6EA29FD9E7A8}`
-  - NetatmoSecurityOutdoor: `{06D589CF-7789-44B1-A0EC-6F51428352E6}`
+  - NetatmoSecurityCamera: `{06D589CF-7789-44B1-A0EC-6F51428352E6}`
 - Nachrichten:
   - `{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}`: an NetatmoSecurityIO
-  - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityOutdoor
+  - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera
 
 ## 7. Versions-Historie
 

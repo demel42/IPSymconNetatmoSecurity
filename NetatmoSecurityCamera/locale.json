@@ -1,8 +1,10 @@
 {
 	"translations": {
 		"de": {
-
+			"Netatmo camera": "Netatmo Kamera",
+			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",
 			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
+
 			"Product-Type": "Produkt-Typ",
 			"Product-ID": "Produkt-ID",
 			"Home-ID": "Haus-ID",

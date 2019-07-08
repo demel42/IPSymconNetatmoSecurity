@@ -7,7 +7,7 @@ define('EVENTS_VARIABLE_TOTAL', false);
 define('EVENTS_VARIABLE_ARCHIVE', false);
     define('EVENTS_AS_MEDIA', true);
 
-class NetatmoSecurityOutdoor extends IPSModule
+class NetatmoSecurityCamera extends IPSModule
 {
     use NetatmoSecurityCommon;
     use NetatmoSecurityLibrary;
@@ -167,7 +167,21 @@ class NetatmoSecurityOutdoor extends IPSModule
     {
         $formElements = [];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'module_disable', 'caption' => 'Instance is disabled'];
-        $formElements[] = ['type' => 'Label', 'caption' => 'Netatmo Outdoor camera (Presence)'];
+
+        $product_type = $this->ReadPropertyString('product_type');
+		switch ($product_type) {
+			case 'NACamera':
+				$product_type_s = 'Netatmo Indoor camera (Welcome)';
+				break;
+			case 'NOC':
+				$product_type_s = 'Netatmo Outdoor camera (Presence)';
+				break;
+			default:
+				$product_type_s = 'Netatmo Camera';
+				break;
+		}
+        $formElements[] = ['type' => 'Label', 'caption' => $product_type_s];
+
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'product_type', 'caption' => 'Product-Type'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'product_id', 'caption' => 'Product-ID'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
@@ -424,7 +438,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                         }
 
                         if ($new_events != []) {
-                            usort($new_events, ['NetatmoSecurityOutdoor', 'cmp_events']);
+                            usort($new_events, ['NetatmoSecurityCamera', 'cmp_events']);
                             $s = json_encode($new_events);
                         } else {
                             $s = '';
@@ -658,7 +672,7 @@ class NetatmoSecurityOutdoor extends IPSModule
                         }
 
                         if ($new_notifications != []) {
-                            usort($new_notifications, ['NetatmoSecurityOutdoor', 'cmp_events']);
+                            usort($new_notifications, ['NetatmoSecurityCamera', 'cmp_events']);
                             $s = json_encode($new_notifications);
                         } else {
                             $s = '';

@@ -23,9 +23,12 @@
 ## 2. Voraussetzungen
 
  - IP-Symcon ab Version 5<br>
- - Netatmo Security-Modul und ein entsprechenden Account bei Netatmo.
-
-   Es wird sowohl der "normalen" Benutzer-Account, der bei der Anmeldung der Geräte bei Netatmo erzeugt wird (https://my.netatmo.com) als auch einen Account sowie eine "App" bei Netatmo Connect benötigt, um die Werte abrufen zu können (https://dev.netatmo.com).
+ - ein Netatmo Security-Modul (also Kamera oder Rauchmelder)
+ - den "normalen" Benutzer-Account, der bei der Anmeldung der Geräte bei Netatmo erzeugt wird (https://my.netatmo.com)
+ - einen Account sowie eine "App" bei Netatmo Connect, um die Werte abrufen zu können (https://dev.netatmo.com)<br>
+   Achtung: diese App ist nur für den Zugriff auf Netatmo-Security-Produkte gedacht; das Modul benutzt die Scopes _read_presence access_presence read_camera write_camera access_camera read_smokedetector_.
+   Eine gleichzeitige Benutzung der gleichen Netatmo-App für andere Bereiche (z.B. Weather) stört sich gegenseitig.<br>
+   Die Angabe des WebHook ist nicht erforderlich, das führt das IO-Modul selbst durch.
 
 ## 3. Installation
 
@@ -51,27 +54,79 @@ In dem Konfigurationsdialog die Netatmo-Zugangsdaten eintragen.
 
 Dann unter _Konfigurator Instanzen_ analog den Konfigurator _NetatmoSecurity Konfigurator_ hinzufügen.
 
-Hier werden alle Security-Produkte, die mit dem, in der I/O-Instanz angegebenen, Netatmo-Konto verknüpft sind, angeboten; aus denen wählt man eine aus.
+Hier werden alle Security-Produkte, die mit dem, in der I/O-Instanz angegebenen, Netatmo-Konto verknüpft sind, angeboten; aus denen wählt man ein Produkt aus.
 
-Mit Betätigen der Schaltfläche _Importieren der Station_ werden für jedes Modul, das zu dieser Station im Netatmo registriert ist, eine Geräte-Instanzen unterhalb von _IP-Symcon_ angelegt.
-Der Namen der Instanzen ist der der Netatmo-Module, in derm Feld _Beschreibung_ der Instanzen ist der Modultyp sowie der Namen der Station und des Moduls eingetragen.
+Mit den Schaltflächen _Erstellen_ bzw. _Alle erstellen_ werden das/die gewählne Produkt anlegt.
 
-Der Aufruf des Konfigurators kann jederzeit wiederholt werden, es werden dann fehlende Module angelegt.
+Zur Zeit werden die Produkttypen
+| Produkt-Typ | Bezeichnung               | Modul |
+| :---------- | :------------------------ | :---- | 
+| NOC         | Outdoor Camera (Presence) | NetatmoSecurityCamera |
+| NACamera    | Indoor Camera (Welcome)   | NetatmoSecurityCamera |
 
-Die Module werden aufgrund der internen _ID_ der Module identifiziert, d.h. eine Änderung des Modulnamens muss in IPS nachgeführt werden.
-Ein Ersatz eines Moduls wird beim Aufruf des Konfigurators dazuführen, das eine weitere Instanz angelegt wird.
+unterstützt.
 
-Die im Netatmo eingetragenen Höhe der Station sowie die geographische Position wird als Property zu dem virtuellen Modul _Station_ eingetragen.
+Der Aufruf des Konfigurators kann jederzeit wiederholt werden.
 
-Zu den Geräte-Instanzen werden im Rahmen der Konfiguration Modultyp-abhängig Variablen angelegt. Zusätzlich kann man in den Modultyp-spezifischen Konfigurationsdialog weitere Variablen aktivieren.
+Die Produkte werden aufgrund der _Produkt-ID_ sowie der _Haus-ID_ identifiziert.
+
+Zu den Geräte-Instanzen werden im Rahmen der Konfiguration Produkttyp-abhängig Variablen angelegt. Zusätzlich kann man in den Modultyp-spezifischen Konfigurationsdialog weitere Variablen aktivieren.
 
 Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert werden.
 
 ## 4. Funktionsreferenz
 
+### NetatmoSecurityIO
+
+`NetatmoSecurityIO_UpdateData(int $InstanzID)`
+ruft die Daten der Netatmo-Security-Produkte ab. Wird automatisch zyklisch durch die Instanz durchgeführt im Abstand wie in der Konfiguration angegeben.
+
+### NetatmoSecurityCamera
+
+`NetatmoSecurityCamera_GetVpnUrl(int $InstanzID)`
+liefert die externe URL der Kamera zurück
+
+`NetatmoSecurityCamera_GetLocalUrl(int $InstanzID)`
+liefert die interne URL der Kamera zurück oder _false_, wenn nicht vorhanden
+
+`NetatmoSecurityCamera_GetLiveVideoUrl(int $InstanzID, string $resolution)`
+liefert die (interne oder externe) URL des Live-Videos der Kamera zurück oder _false_, wenn nicht vorhanden.
+_resolution_ ist _poor_, _low_, _medium_, _high_.
+
+`NetatmoSecurityCamera_GetLiveSnapshotUrl(int $InstanzID)`
+liefert die (interne oder externe) URL des Live-Snapshots der Kamera zurück oder _false_, wenn nicht vorhanden
+
+`NetatmoSecurityCamera_GetVideoUrl(int $InstanzID, string $video_id, string $resolution)`
+liefert die (interne oder externe) URL eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden.
+_resolution_ ist _poor_, _low_, _medium_, _high_.
+
+`NetatmoSecurityCamera_GetPictureUrl(int $InstanzID, string $id, string $key)`
+liefert die URL eines gespeicherten Bildes (_snapshot_ oder _vignette_) zurück oder _false_, wenn nicht vorhanden
+
+`NetatmoSecurityCamera_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`
+liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden (setzt die Übertragung der Videos per FTP voraus)
+
+`NetatmoSecurityCamera_GetEvents(int $InstanzID)`
+liefert alle gespeicherten Ereingnisse der Kamera
+
+`NetatmoSecurityCamera_GetNotifications(int $InstanzID)`
+liefert alle gespeicherten Benachrichtigungen der Kamera
+
+`NetatmoSecurityCamera_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`
+bereinigt das Verzeichnis der (per FTP übertragenen) Videos
+
+`NetatmoSecurityCamera_SwitchLight(int $InstanzID, int $mode)`
+schaltet das Licht (0=aus, 1=ein, 2=auto)
+
+`NetatmoSecurityCamera_DimLight(int $InstanzID, int $intensity)`
+dimmt das Licht (0..100%)
+
+`NetatmoSecurityCamera_SwitchCamera(int $InstanzID, int $mode)`
+schaltet die Kamera (0=aus, 1=ein)
+
 ## 5. Konfiguration
 
-### I/O-Modul
+### NetatmoSecurityIO
 
 #### Variablen
 
@@ -82,6 +137,11 @@ Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert we
 | Ignoriere HTTP-Fehler     | integer  | 0            | Da Netatmo häufiger HTTP-Fehler meldet, wird erst ab dem X. Fehler in Folge reagiert |
 |                           |          |              | |
 | Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
+|                           |          |              | |
+| Webbook registrieren      | boolean  | Nein         | Webhook zur Übernahme der Benachrichtigungen von Netatmo |
+| Basis-URL                 |          |              | URL, unter der IPS erreichbar ist; wird nichts angegeben, wird die IPS-Connect-URL verwendet|
+|                           |          |              | |
+| Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
 
 #### Schaltflächen
 
@@ -89,52 +149,43 @@ Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert we
 | :--------------------------- | :----------- |
 | Aktualisiere Daten           | führt eine sofortige Aktualisierung durch |
 
-### Konfigurator
-
-#### Auswahl
-
-Es werden alle Stationen zu dem konfigurierten Account zur Auswahl angeboten. Es muss allerdings nur eine Auswahl getroffen werden, wenn es mehr als eine Station gibt.
-
-#### Schaltflächen
-
-| Bezeichnung                  | Beschreibung |
-| :--------------------------- | :----------- |
-| Import xxxxxxxxxxx           | richtet die Geräte-Instanzen ein |
-
-### Geräte
+### NetatmoSecurityCamera
 
 #### Properties
 
 werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 
-| Eigenschaft            | Typ     | Standardwert | Beschreibung |
-| :--------------------- | :------ | :----------- | :----------- |
-| home_id                | string  |              | ID des "Hauses" |
-| module_id              | string  |              | ID des Moduls |
-
-#### Variablen
-
-stehen je nach Typ des Moduls zur Verfügung
-
-| Eigenschaft               | Typ     | Standardwert | Beschreibung                               |
-| :------------------------ | :------ | :----------- | :----------------------------------------- |
-
-### Statusvariablen
-
-folgende Variable werden angelegt, zum Teil optional
-
-| Name                    | Typ            | Beschreibung                                    | Option                 | Module    |
-| :---------------------- | :------------- | :---------------------------------------------- | :--------------------- | :-------- |
-
-
-_Module_: O=Outdoor, I=Indoor, R=Rauchmelder
+| Eigenschaft              | Typ            | Standardwert | Beschreibung |
+| :----------------------- | :------------- | :----------- | :----------- |
+| Produkt-Typ              | string         |              | Identifikation, z.Zt _NACamera_, _NOC_ |
+| Produkt-ID               | string         |              | ID des Produktes |
+| Haus-ID                  | string         |              | ID des "Hauses" |
+|                          |                |              | |
+| letzte Kommunikation     | UNIX-Timestamp | Nein         | |
+| letztes Ereignis         | UNIX-Timestamp | Nein         | |
+| letzte Benachrichtigung  | UNIX-Timestamp | Nein         | |
+|                          |                |              | |
+| Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
+|                          |                |              | |
+| Ereignisse               |                |              | |
+|  ... max. Alter          | integer        |              | |
+|  ... Medienobjekt cachen | boolean        |              | |
+| Benachrichtigung         |                |              | |
+|  ... max. Alter          | integer        |              | |
+|  ... Medienobjekt cachen | boolean        |              | |
+|                          |                |              | |
+| FTP-Verzeichnis          |                |              | |
+|  ... Verzeichnis         | path           |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
+|  ... max. Alter          | integer        |              | |
+|                          |                |              | |
 
 ### Variablenprofile
 
-Es werden folgende Variableprofile angelegt:
+Es werden folgende Variablenprofile angelegt:
 * Boolean<br>
 
 * Integer<br>
+NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.SDCardStatus
 
 * Float<br>
 
@@ -154,5 +205,5 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.0 @ xx.xx.xxxx xx:xx<br>
+- 1.0 @ dd.mm.yyyy HH:MM<br>
   Initiale Version

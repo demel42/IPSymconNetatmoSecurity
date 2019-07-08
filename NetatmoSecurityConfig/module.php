@@ -79,7 +79,7 @@ class NetatmoSecurityConfig extends IPSModule
                             $product_type = $camera['type'];
                             switch ($product_type) {
                                 case 'NACamera':
-                                    $guid = '';
+                                    $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
                                     $product_category = 'Indoor camera';
                                     break;
                                 case 'NOC':

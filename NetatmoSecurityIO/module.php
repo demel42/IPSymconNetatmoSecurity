@@ -208,7 +208,7 @@ class NetatmoSecurityIO extends IPSModule
                 'client_secret' => $secret,
                 'username'      => $user,
                 'password'      => $password,
-                'scope'         => 'read_presence access_presence read_camera access_camera read_smokedetector write_camera'
+                'scope'         => 'read_presence access_presence read_camera access_camera write_camera read_smokedetector'
             ];
 
             $token = '';

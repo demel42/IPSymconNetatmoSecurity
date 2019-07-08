@@ -169,17 +169,17 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'CheckBox', 'name' => 'module_disable', 'caption' => 'Instance is disabled'];
 
         $product_type = $this->ReadPropertyString('product_type');
-		switch ($product_type) {
-			case 'NACamera':
-				$product_type_s = 'Netatmo Indoor camera (Welcome)';
-				break;
-			case 'NOC':
-				$product_type_s = 'Netatmo Outdoor camera (Presence)';
-				break;
-			default:
-				$product_type_s = 'Netatmo Camera';
-				break;
-		}
+        switch ($product_type) {
+            case 'NACamera':
+                $product_type_s = 'Netatmo Indoor camera (Welcome)';
+                break;
+            case 'NOC':
+                $product_type_s = 'Netatmo Outdoor camera (Presence)';
+                break;
+            default:
+                $product_type_s = 'Netatmo Camera';
+                break;
+        }
         $formElements[] = ['type' => 'Label', 'caption' => $product_type_s];
 
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'product_type', 'caption' => 'Product-Type'];

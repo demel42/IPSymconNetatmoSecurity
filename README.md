@@ -100,13 +100,13 @@ liefert die (interne oder externe) URL eines gespeicherten Videos zurück oder _
 _resolution_ ist _poor_, _low_, _medium_, _high_.
 
 `NetatmoSecurityCamera_GetPictureUrl(int $InstanzID, string $id, string $key)`<br>
-liefert die URL eines gespeicherten Bildes (_snapshot_ oder _vignette_) zurück oder _false_, wenn nicht vorhanden
+liefert die URL eines gespeicherten Bildes (_Snapshot_ oder _Vignette_) zurück oder _false_, wenn nicht vorhanden
 
 `NetatmoSecurityCamera_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`<br>
 liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden (setzt die Übertragung der Videos per FTP voraus)
 
 `NetatmoSecurityCamera_GetEvents(int $InstanzID)`<br>
-liefert alle gespeicherten Ereingnisse der Kamera; Datentyp siehe _Events_
+liefert alle gespeicherten Ereignisse der Kamera; Datentyp siehe _Events_
 
 `NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`<br>
 Sucht einen Event in den gespeicherten Events
@@ -131,10 +131,10 @@ Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
 schaltet die Kamera (0=aus, 1=ein)
 
 `NetatmoSecurityCamera_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution)`<br>
-Liefert die URL des Videos zu einem bestimmten Sub-Event
+Liefert die URL des Videos zu einem bestimmten Event
 
 `NetatmoSecurityCamera_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id)`<br>
-Liefert die URL des Snapshot zu einem bestimmten Event.
+Liefert die URL des Snapshot zu einem bestimmten Sub-Event.
 Anmerkung: als Snapshot bezeichnet Netatmo in diesem Zusammenhang das Bild, das zum Erzeugen eines Ereingnisses geführt hat
 
 `NetatmoSecurityCamera_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id)`<br>

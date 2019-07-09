@@ -28,7 +28,7 @@
  - einen Account sowie eine "App" bei Netatmo Connect, um die Werte abrufen zu können (https://dev.netatmo.com)<br>
    Achtung: diese App ist nur für den Zugriff auf Netatmo-Security-Produkte gedacht; das Modul benutzt die Scopes _read_presence access_presence read_camera write_camera access_camera read_smokedetector_.
    Eine gleichzeitige Benutzung der gleichen Netatmo-App für andere Bereiche (z.B. Weather) stört sich gegenseitig.<br>
-   Die Angabe des WebHook ist nicht erforderlich, das führt das IO-Modul selbst durch.
+   Die Angabe des WebHook in der App-Definition ist nicht erforderlich, das führt das IO-Modul selbst durch.
 
 ## 3. Installation
 
@@ -58,13 +58,12 @@ Hier werden alle Security-Produkte, die mit dem, in der I/O-Instanz angegebenen,
 
 Mit den Schaltflächen _Erstellen_ bzw. _Alle erstellen_ werden das/die gewählne Produkt anlegt.
 
-Zur Zeit werden die Produkttypen
+Zur Zeit werden die folgende Produkttypen unterstützt:
+
 | Produkt-Typ | Bezeichnung               | Modul |
 | :---------- | :------------------------ | :---- | 
 | NOC         | Outdoor Camera (Presence) | NetatmoSecurityCamera |
 | NACamera    | Indoor Camera (Welcome)   | NetatmoSecurityCamera |
-
-unterstützt.
 
 Der Aufruf des Konfigurators kann jederzeit wiederholt werden.
 
@@ -109,6 +108,12 @@ liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nich
 `NetatmoSecurityCamera_GetEvents(int $InstanzID)`
 liefert alle gespeicherten Ereingnisse der Kamera
 
+`NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`
+Sucht einen Event in den gespeicherten Events
+
+`NetatmoSecurityCamera_SearchSubEvent(int $InstanzID, string $subevent_id)`
+Sucht einen Sub-Event in den gespeicherten Events
+
 `NetatmoSecurityCamera_GetNotifications(int $InstanzID)`
 liefert alle gespeicherten Benachrichtigungen der Kamera
 
@@ -119,16 +124,48 @@ bereinigt das Verzeichnis der (per FTP übertragenen) Videos
 schaltet das Licht (0=aus, 1=ein, 2=auto)
 
 `NetatmoSecurityCamera_DimLight(int $InstanzID, int $intensity)`
-dimmt das Licht (0..100%)
+dimmt das Licht (0..100%). <br>
+Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
 
 `NetatmoSecurityCamera_SwitchCamera(int $InstanzID, int $mode)`
 schaltet die Kamera (0=aus, 1=ein)
+
+`NetatmoSecurityCamera_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution)`
+Liefert die URL des Videos zu einem bestimmten Sub-Event
+
+`NetatmoSecurityCamera_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id)`
+Liefert die URL des Snapshot zu einem bestimmten Event.
+Anmerkung: als Snapshot bezeichnet Netatmo in diesem Zusammenhang das Bild, das zum Ergennen eines Ereingnisses geführt hat
+
+`NetatmoSecurityCamera_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id)`
+Liefert die URL der Vignette zu einem bestimmten Sub-Event.
+Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildausschnitt, das zum Ergennen eines Ereingnisses geführt hat
+
+#### WebHook
+
+Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder zurückgegriffen werden kann (siehe Konfigurationsdialog).
+
+| Command                            | Bedeutung |
+| :--------------------------------- | :-------- |
+| video?life                         | liefert die (interne oder externe) URL zu dem Life-Video |
+| video?event_id=<event-id>          | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
+|                                    | |
+| snapshot?life                      | liefert die (interne oder externe) URL zu dem Life-Snapshot |
+| snapshot?subevent_id=<subevent-id> | liefert die (interne oder externe) URL zu dem Snapshot |
+|                                    | |
+| vignette?subevent_id=<subevent-id> | liefert die (interne oder externe) URL zu der Vignette |
+
+Bei allen Aufrufen zu Videos kann die Option _resolution=<resolution>_ hinzugefügt werden; mögliche Werte sind  _poor_, _low_, _medium_, _high_, Standardwert ist _high_.
+
+Bei allen Aufrufen kann Option _result=url_ hinzugefügt werden; dann wird die reine URL, ansonsten ein einbettbarer HTML-Code geliefert.
+
+Hinweis zu dem Video: die lokalen Kopien der Viでeos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktionier nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
 ## 5. Konfiguration
 
 ### NetatmoSecurityIO
 
-#### Variablen
+#### Properties
 
 | Eigenschaft               | Typ      | Standardwert | Beschreibung |
 | :------------------------ | :------  | :----------- | :----------- |
@@ -161,9 +198,9 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | Produkt-ID               | string         |              | ID des Produktes |
 | Haus-ID                  | string         |              | ID des "Hauses" |
 |                          |                |              | |
-| letzte Kommunikation     | UNIX-Timestamp | Nein         | |
-| letztes Ereignis         | UNIX-Timestamp | Nein         | |
-| letzte Benachrichtigung  | UNIX-Timestamp | Nein         | |
+| letzte Kommunikation     | UNIX-Timestamp | Nein         | letzte Kommunikation mit dem Netatmo-Server |
+| letztes Ereignis         | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
+| letzte Benachrichtigung  | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
 |                          |                |              | |
 | Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
 |                          |                |              | |
@@ -179,13 +216,16 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... max. Alter          | integer        |              | |
 |                          |                |              | |
 
+Hinweis: damit die Videos abgerufen werden können müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt).
+Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden. Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
+
 ### Variablenprofile
 
 Es werden folgende Variablenprofile angelegt:
 * Boolean<br>
 
 * Integer<br>
-NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.SDCardStatus
+NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.LightIntensity, NetatmoSecurity.SDCardStatus, NetatmoSecurity.PowerStatus
 
 * Float<br>
 

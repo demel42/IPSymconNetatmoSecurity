@@ -106,7 +106,7 @@ liefert die URL eines gespeicherten Bildes (_snapshot_ oder _vignette_) zurück 
 liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden (setzt die Übertragung der Videos per FTP voraus)
 
 `NetatmoSecurityCamera_GetEvents(int $InstanzID)`<br>
-liefert alle gespeicherten Ereingnisse der Kamera
+liefert alle gespeicherten Ereingnisse der Kamera; Datentyp siehe _Events_
 
 `NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`<br>
 Sucht einen Event in den gespeicherten Events
@@ -115,7 +115,7 @@ Sucht einen Event in den gespeicherten Events
 Sucht einen Sub-Event in den gespeicherten Events
 
 `NetatmoSecurityCamera_GetNotifications(int $InstanzID)`<br>
-liefert alle gespeicherten Benachrichtigungen der Kamera
+liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_
 
 `NetatmoSecurityCamera_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
 bereinigt das Verzeichnis der (per FTP übertragenen) Videos
@@ -229,6 +229,57 @@ NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, <br>
 NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.LightIntensity, <br>
 NetatmoSecurity.SDCardStatus, <br>
 NetatmoSecurity.PowerStatus
+
+### Datenstrukturen
+
+#### Ereignisse (Events)
+
+| Variable          | Datenty        | optional | Bedeutung |
+| :-----------      | :------------- | :------- | :-------- |
+| id                | string         | nein     | ID de Ereignisses |
+| tstamp            | UNIX-Timestamp | nein     | Zeitpunkt des Ereignisses |
+| message           | string         | nein     | Nachrichtentext |
+| video_id          | string         | ja       | |
+| subevents         | Objekt-Liste   | ja       | Liste der Einzel-Ereignisse |
+
+#### Einzel-Ereignisse (Sub-Events)
+
+| Variable          | Datenty        | optional | Bedeutung |
+| :---------------- | :------------- | :------- | :-------- |
+| id                | string         | ja       | ID des Einzel-Erignisses (siehe Events) |
+| tstamp            | UNIX-Timestamp | nein     | Zeitpunkt des Ereignisses |
+| event_type        | string         | nein     | Type des Ereignisses |
+| message           | string         | nein     | Nachrichtentext |
+|                   |                |          | |
+| snapshot.id       | string         | ja       | es gibt entweder _id_ + _key_ oder _filename_ |
+| snapshot.key      | string         | ja       | |
+| snapshot.filename | string         | ja       | |
+| vignette.id       | string         | ja       | es gibt entweder _id_ + _key_ oder _filename_ |
+| vignette.key      | string         | ja       | |
+| vignette.filename | string         | ja       | |
+
+- _event_types_: _human, _animal_, _vehicle_
+
+#### Benachrichtigungen (Notifications)
+
+| Variable     | Datenty        | optional | Bedeutung |
+| :----------- | :------------- | :------- | :-------- |
+| id           | string         | nein     | ID der Benachrichtigung |
+| tstamp       | UNIX-Timestamp | nein     | Zeitpunkt der Benachrichtigung |
+| push_type    | string         | nein     | Art der Benachrichtigung |
+| event_type   | string         | nein     | Art des Ereignisses |
+| message      | string         | nein     | Nachrichtentext |
+| subevent_id  | string         | ja       | ID des Einzel-Erignisses (siehe _Sub-Events_) |
+| snapshot_id  | string         | ja       | siehe _Sub-Events_ |
+| snapshot_key | string         | ja       | siehe _Sub-Events_ |
+| vignette_id  | string         | ja       | siehe _Sub-Events_ |
+| vignette_key | string         | ja       | siehe _Sub-Events_ |
+
+- _push_type_:
+  - Benachrichtigung mit _Sub-Event_<br>
+    _NOC-human_, _NOC-animal_, _NOC-vehicle_
+  - sonstige Benachrichtigung:<br>^
+    _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-movement_, _NOC-off_, _NOC-on_
 
 * Float<br>
 

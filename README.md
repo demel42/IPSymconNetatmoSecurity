@@ -26,7 +26,7 @@
  - ein Netatmo Security-Modul (also Kamera oder Rauchmelder)
  - den "normalen" Benutzer-Account, der bei der Anmeldung der Geräte bei Netatmo erzeugt wird (https://my.netatmo.com)
  - einen Account sowie eine "App" bei Netatmo Connect, um die Werte abrufen zu können (https://dev.netatmo.com)<br>
-   Achtung: diese App ist nur für den Zugriff auf Netatmo-Security-Produkte gedacht; das Modul benutzt die Scopes _read_presence access_presence read_camera write_camera access_camera read_smokedetector_.
+   Achtung: diese App ist nur für den Zugriff auf Netatmo-Security-Produkte gedacht; das Modul benutzt die Scopes _read_presence access_presence read_camera write_camera access_camera read_smokedetector_.<br>
    Eine gleichzeitige Benutzung der gleichen Netatmo-App für andere Bereiche (z.B. Weather) stört sich gegenseitig.<br>
    Die Angabe des WebHook in der App-Definition ist nicht erforderlich, das führt das IO-Modul selbst durch.
 
@@ -82,64 +82,64 @@ ruft die Daten der Netatmo-Security-Produkte ab. Wird automatisch zyklisch durch
 
 ### NetatmoSecurityCamera
 
-`NetatmoSecurityCamera_GetVpnUrl(int $InstanzID)`
+`NetatmoSecurityCamera_GetVpnUrl(int $InstanzID)`<br>
 liefert die externe URL der Kamera zurück
 
-`NetatmoSecurityCamera_GetLocalUrl(int $InstanzID)`
+`NetatmoSecurityCamera_GetLocalUrl(int $InstanzID)`<br>
 liefert die interne URL der Kamera zurück oder _false_, wenn nicht vorhanden
 
 `NetatmoSecurityCamera_GetLiveVideoUrl(int $InstanzID, string $resolution)`
 liefert die (interne oder externe) URL des Live-Videos der Kamera zurück oder _false_, wenn nicht vorhanden.
 _resolution_ ist _poor_, _low_, _medium_, _high_.
 
-`NetatmoSecurityCamera_GetLiveSnapshotUrl(int $InstanzID)`
+`NetatmoSecurityCamera_GetLiveSnapshotUrl(int $InstanzID)`<br>
 liefert die (interne oder externe) URL des Live-Snapshots der Kamera zurück oder _false_, wenn nicht vorhanden
 
-`NetatmoSecurityCamera_GetVideoUrl(int $InstanzID, string $video_id, string $resolution)`
+`NetatmoSecurityCamera_GetVideoUrl(int $InstanzID, string $video_id, string $resolution)`<br>
 liefert die (interne oder externe) URL eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden.
 _resolution_ ist _poor_, _low_, _medium_, _high_.
 
-`NetatmoSecurityCamera_GetPictureUrl(int $InstanzID, string $id, string $key)`
+`NetatmoSecurityCamera_GetPictureUrl(int $InstanzID, string $id, string $key)`<br>
 liefert die URL eines gespeicherten Bildes (_snapshot_ oder _vignette_) zurück oder _false_, wenn nicht vorhanden
 
-`NetatmoSecurityCamera_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`
+`NetatmoSecurityCamera_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`<br>
 liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden (setzt die Übertragung der Videos per FTP voraus)
 
-`NetatmoSecurityCamera_GetEvents(int $InstanzID)`
+`NetatmoSecurityCamera_GetEvents(int $InstanzID)`<br>
 liefert alle gespeicherten Ereingnisse der Kamera
 
-`NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`
+`NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`<br>
 Sucht einen Event in den gespeicherten Events
 
-`NetatmoSecurityCamera_SearchSubEvent(int $InstanzID, string $subevent_id)`
+`NetatmoSecurityCamera_SearchSubEvent(int $InstanzID, string $subevent_id)`<br>
 Sucht einen Sub-Event in den gespeicherten Events
 
-`NetatmoSecurityCamera_GetNotifications(int $InstanzID)`
+`NetatmoSecurityCamera_GetNotifications(int $InstanzID)`<br>
 liefert alle gespeicherten Benachrichtigungen der Kamera
 
-`NetatmoSecurityCamera_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`
+`NetatmoSecurityCamera_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
 bereinigt das Verzeichnis der (per FTP übertragenen) Videos
 
-`NetatmoSecurityCamera_SwitchLight(int $InstanzID, int $mode)`
+`NetatmoSecurityCamera_SwitchLight(int $InstanzID, int $mode)`<br>
 schaltet das Licht (0=aus, 1=ein, 2=auto)
 
-`NetatmoSecurityCamera_DimLight(int $InstanzID, int $intensity)`
+`NetatmoSecurityCamera_DimLight(int $InstanzID, int $intensity)`<br>
 dimmt das Licht (0..100%). <br>
 Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
 
-`NetatmoSecurityCamera_SwitchCamera(int $InstanzID, int $mode)`
+`NetatmoSecurityCamera_SwitchCamera(int $InstanzID, int $mode)`<br>
 schaltet die Kamera (0=aus, 1=ein)
 
-`NetatmoSecurityCamera_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution)`
+`NetatmoSecurityCamera_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution)`<br>
 Liefert die URL des Videos zu einem bestimmten Sub-Event
 
-`NetatmoSecurityCamera_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id)`
+`NetatmoSecurityCamera_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id)`<br>
 Liefert die URL des Snapshot zu einem bestimmten Event.
-Anmerkung: als Snapshot bezeichnet Netatmo in diesem Zusammenhang das Bild, das zum Ergennen eines Ereingnisses geführt hat
+Anmerkung: als Snapshot bezeichnet Netatmo in diesem Zusammenhang das Bild, das zum Erzeugen eines Ereingnisses geführt hat
 
-`NetatmoSecurityCamera_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id)`
+`NetatmoSecurityCamera_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id)`<br>
 Liefert die URL der Vignette zu einem bestimmten Sub-Event.
-Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildausschnitt, das zum Ergennen eines Ereingnisses geführt hat
+Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildausschnitt, das zum Erzeugen eines Ereingnisses geführt hat
 
 #### WebHook
 
@@ -176,7 +176,7 @@ Hinweis zu dem Video: die lokalen Kopien der Viでeos werden als MP4 von Netatmo
 | Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
 |                           |          |              | |
 | Webbook registrieren      | boolean  | Nein         | Webhook zur Übernahme der Benachrichtigungen von Netatmo |
-| Basis-URL                 |          |              | URL, unter der IPS erreichbar ist; wird nichts angegeben, wird die IPS-Connect-URL verwendet|
+| Basis-URL                 | string   |              | URL, unter der IPS erreichbar ist; wird nichts angegeben, wird die IPS-Connect-URL verwendet|
 |                           |          |              | |
 | Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
 
@@ -216,8 +216,8 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... max. Alter          | integer        |              | |
 |                          |                |              | |
 
-Hinweis: damit die Videos abgerufen werden können müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt).
-Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden. Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
+Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
+Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
 
 ### Variablenprofile
 
@@ -225,7 +225,10 @@ Es werden folgende Variablenprofile angelegt:
 * Boolean<br>
 
 * Integer<br>
-NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.LightIntensity, NetatmoSecurity.SDCardStatus, NetatmoSecurity.PowerStatus
+NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, <br>
+NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.LightIntensity, <br>
+NetatmoSecurity.SDCardStatus, <br>
+NetatmoSecurity.PowerStatus
 
 * Float<br>
 

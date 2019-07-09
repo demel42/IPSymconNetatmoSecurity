@@ -76,9 +76,9 @@ class NetatmoSecurityIO extends IPSModule
                     return;
                 }
             }
-			if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
-				$this->SetStatus(IS_USEDWEBHOOK);
-				return;
+            if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
+                $this->SetStatus(IS_USEDWEBHOOK);
+                return;
             }
         }
 

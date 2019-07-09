@@ -145,21 +145,23 @@ Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildaussch
 
 Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder zurückgegriffen werden kann (siehe Konfigurationsdialog).
 
-| Command                            | Bedeutung |
+| Kommando                           | Bedeutung |
 | :--------------------------------- | :-------- |
 | video?life                         | liefert die (interne oder externe) URL zu dem Life-Video |
-| video?event_id=<event-id>          | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
+| video?event_id=\<event-id\>          | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
 |                                    | |
 | snapshot?life                      | liefert die (interne oder externe) URL zu dem Life-Snapshot |
-| snapshot?subevent_id=<subevent-id> | liefert die (interne oder externe) URL zu dem Snapshot |
+| snapshot?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu dem Snapshot |
 |                                    | |
-| vignette?subevent_id=<subevent-id> | liefert die (interne oder externe) URL zu der Vignette |
+| vignette?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu der Vignette |
 
-Bei allen Aufrufen zu Videos kann die Option _resolution=<resolution>_ hinzugefügt werden; mögliche Werte sind  _poor_, _low_, _medium_, _high_, Standardwert ist _high_.
+Das _Kommando_ wird an den angegenegen WebHook angehängt.
+
+Bei allen Aufrufen zu Videos kann die Option _resolution=\<resolution\>_ hinzugefügt werden; mögliche Werte sind  _poor_, _low_, _medium_, _high_, Standardwert ist _high_.
 
 Bei allen Aufrufen kann Option _result=url_ hinzugefügt werden; dann wird die reine URL, ansonsten ein einbettbarer HTML-Code geliefert.
 
-Hinweis zu dem Video: die lokalen Kopien der Viでeos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktionier nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
+Hinweis zu dem Video: die lokalen Kopien der Viでeos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
 ## 5. Konfiguration
 
@@ -258,7 +260,7 @@ NetatmoSecurity.PowerStatus
 | vignette.key      | string         | ja       | |
 | vignette.filename | string         | ja       | |
 
-- _event_types_: _human, _animal_, _vehicle_
+- _event_types_: _human_, _animal_, _vehicle_
 
 #### Benachrichtigungen (Notifications)
 
@@ -278,7 +280,7 @@ NetatmoSecurity.PowerStatus
 - _push_type_:
   - Benachrichtigung mit _Sub-Event_<br>
     _NOC-human_, _NOC-animal_, _NOC-vehicle_
-  - sonstige Benachrichtigung:<br>^
+  - sonstige Benachrichtigung:<br>
     _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-movement_, _NOC-off_, _NOC-on_
 
 * Float<br>

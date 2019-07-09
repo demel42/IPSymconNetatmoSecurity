@@ -394,11 +394,10 @@ class NetatmoSecurityCamera extends IPSModule
                                     $vignette_filename = $this->GetArrayElem($subevent, 'vignette.filename', '');
 
                                     $new_subevent = [
-                                            'id'        => $id,
-                                            'tstamp'    => $ts,
-                                            'type'      => $type,
-                                            'message'   => $message,
-                                            'type'      => $type,
+                                            'id'         => $id,
+                                            'tstamp'     => $ts,
+                                            'event_type' => $type,
+                                            'message'    => $message,
                                         ];
 
                                     $snapshot = [];

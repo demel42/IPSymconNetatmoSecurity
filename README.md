@@ -69,7 +69,7 @@ Der Aufruf des Konfigurators kann jederzeit wiederholt werden.
 
 Die Produkte werden aufgrund der _Produkt-ID_ sowie der _Haus-ID_ identifiziert.
 
-Zu den Geräte-Instanzen werden im Rahmen der Konfiguration Produkttyp-abhängig Variablen angelegt. Zusätzlich kann man in den Modultyp-spezifischen Konfigurationsdialog weitere Variablen aktivieren.
+Zu den Geräte-Instanzen werden im Rahmen der Konfiguration Produkttyp-abhängig Variablen angelegt. Zusätzlich kann man in dem Modultyp-spezifischen Konfigurationsdialog weitere Variablen aktivieren.
 
 Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert werden.
 

@@ -16,14 +16,14 @@ if (!defined('LIGHT_STATUS_UNDEFINED')) {
 
 if (!defined('SDCARD_STATUS_UNDEFINED')) {
     define('SDCARD_STATUS_UNDEFINED', -1);
-    define('SDCARD_STATUS_OFF', 0);
-    define('SDCARD_STATUS_ON', 1);
+    define('SDCARD_STATUS_UNUSABLE', 0);
+    define('SDCARD_STATUS_READY', 1);
 }
 
-if (!defined('ALIM_STATUS_UNDEFINED')) {
-    define('ALIM_STATUS_UNDEFINED', -1);
-    define('ALIM_STATUS_OFF', 0);
-    define('ALIM_STATUS_ON', 1);
+if (!defined('POWER_STATUS_UNDEFINED')) {
+    define('POWER_STATUS_UNDEFINED', -1);
+    define('POWER_STATUS_BAD', 0);
+    define('POWER_STATUS_GOOD', 1);
 }
 
 trait NetatmoSecurityLibrary
@@ -78,10 +78,10 @@ trait NetatmoSecurityLibrary
     {
         switch ($status) {
             case 'off':
-                $val = SDCARD_STATUS_OFF;
+                $val = SDCARD_STATUS_UNUSABLE;
                 break;
             case 'on':
-                $val = SDCARD_STATUS_ON;
+                $val = SDCARD_STATUS_READY;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
@@ -94,20 +94,20 @@ trait NetatmoSecurityLibrary
         return $val;
     }
 
-    private function map_alim_status($status)
+    private function map_power_status($status)
     {
         switch ($status) {
             case 'off':
-                $val = ALIM_STATUS_OFF;
+                $val = POWER_STATUS_BAD;
                 break;
             case 'on':
-                $val = ALIM_STATUS_ON;
+                $val = POWER_STATUS_GOOD;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = ALIM_STATUS_UNDEFINED;
+                $val = POWER_STATUS_UNDEFINED;
                 break;
         }
 

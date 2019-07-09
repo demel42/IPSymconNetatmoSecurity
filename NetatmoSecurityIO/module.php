@@ -76,14 +76,9 @@ class NetatmoSecurityIO extends IPSModule
                     return;
                 }
             }
-
-            $instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
-            $hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
-            foreach ($hooks as $index => $hook) {
-                if ($hook['Hook'] == '/hook/NetatmoSecurity' && $hook['TargetID'] != $this->InstanceID) {
-                    $this->SetStatus(IS_DUPWEBHOOK);
-                    return;
-                }
+			if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
+				$this->SetStatus(IS_USEDWEBHOOK);
+				return;
             }
         }
 

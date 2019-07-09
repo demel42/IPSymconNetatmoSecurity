@@ -61,17 +61,19 @@ class NetatmoSecurityCamera extends IPSModule
         $associations[] = ['Wert' => LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.LightAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
+        $this->CreateVarProfile('NetatmoSecurity.LightIntensity', VARIABLETYPE_INTEGER, ' %', 0, 100, 1, 0, '');
+
         $associations = [];
         $associations[] = ['Wert' => SDCARD_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => SDCARD_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => SDCARD_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => SDCARD_STATUS_UNUSABLE, 'Name' => $this->Translate('unusable'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => SDCARD_STATUS_READY, 'Name' => $this->Translate('ready'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.SDCardStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => ALIM_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => ALIM_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => ALIM_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.AlimStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
+        $associations[] = ['Wert' => POWER_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => POWER_STATUS_BAD, 'Name' => $this->Translate('bad'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => POWER_STATUS_GOOD, 'Name' => $this->Translate('good'), 'Farbe' => -1];
+        $this->CreateVarProfile('NetatmoSecurity.PowerStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
@@ -92,6 +94,22 @@ class NetatmoSecurityCamera extends IPSModule
         $with_last_event = $this->ReadPropertyBoolean('with_last_event');
         $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
 
+        $product_type = $this->ReadPropertyString('product_type');
+        switch ($product_type) {
+            case 'NACamera':
+                $with_light = false;
+                $with_power = true;
+                break;
+            case 'NOC':
+                $with_light = true;
+                $with_power = false;
+                break;
+            default:
+                $with_light = false;
+                $with_power = false;
+                break;
+		}
+
         $vpos = 1;
 
         $this->MaintainVariable('Status', $this->Translate('State'), VARIABLETYPE_BOOLEAN, '~Alert.Reversed', $vpos++, true);
@@ -101,21 +119,24 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->MaintainVariable('CameraStatus', $this->Translate('Camera state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraStatus', $vpos++, true);
         $this->MaintainVariable('SDCardStatus', $this->Translate('SD-Card state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.SDCardStatus', $vpos++, true);
-        $this->MaintainVariable('AlimStatus', $this->Translate('Alim state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.AlimStatus', $vpos++, true);
-        $this->MaintainVariable('LightmodeStatus', $this->Translate('Lightmode state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightModeStatus', $vpos++, true);
+        $this->MaintainVariable('PowerStatus', $this->Translate('Power state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.PowerStatus', $vpos++, $with_power);
+        $this->MaintainVariable('LightmodeStatus', $this->Translate('Lightmode state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightModeStatus', $vpos++, $with_light);
 
         $this->MaintainVariable('CameraAction', $this->Translate('Camera operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraAction', $vpos++, true);
-        $this->MaintainVariable('LightAction', $this->Translate('Light operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightAction', $vpos++, true);
+        $this->MaintainVariable('LightAction', $this->Translate('Light operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightAction', $vpos++, $with_light);
+        $this->MaintainVariable('LightIntensity', $this->Translate('Light intensity'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightIntensity', $vpos++, $with_light);
 
         $this->MaintainAction('CameraAction', true);
-        $this->MaintainAction('LightAction', true);
+		if ($with_light) {
+			$this->MaintainAction('LightAction', true);
+			$this->MaintainAction('LightIntensity', true);
+		}
 
         if (!EVENTS_AS_MEDIA) {
             $this->MaintainVariable('Events', $this->Translate('Events'), VARIABLETYPE_STRING, '', $vpos++, true);
             $this->MaintainVariable('Notifications', $this->Translate('Notifications'), VARIABLETYPE_STRING, '', $vpos++, true);
         }
 
-        $product_type = $this->ReadPropertyString('product_type');
         $product_id = $this->ReadPropertyString('product_id');
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
@@ -123,6 +144,10 @@ class NetatmoSecurityCamera extends IPSModule
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
+				if ($this->HookIsUsed($hook)) {
+					$this->SetStatus(IS_USEDWEBHOOK);
+					return;
+				}
                 $this->RegisterHook($hook);
             }
         }
@@ -137,6 +162,10 @@ class NetatmoSecurityCamera extends IPSModule
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
+				if ($this->HookIsUsed($hook)) {
+					$this->SetStatus(IS_USEDWEBHOOK);
+					return;
+				}
                 $this->RegisterHook($hook);
             }
         }
@@ -212,6 +241,22 @@ class NetatmoSecurityCamera extends IPSModule
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
 
+        $product_type = $this->ReadPropertyString('product_type');
+        switch ($product_type) {
+            case 'NACamera':
+                $with_light = false;
+                $with_power = true;
+                break;
+            case 'NOC':
+                $with_light = true;
+                $with_power = false;
+                break;
+            default:
+                $with_light = false;
+                $with_power = false;
+                break;
+		}
+
         $event_max_age = $this->ReadPropertyInteger('event_max_age');
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');
 
@@ -260,21 +305,25 @@ class NetatmoSecurityCamera extends IPSModule
                                         $this->SetValue('SDCardStatus', $sd_status);
                                     }
 
-                                    $alim_status = $this->map_alim_status($this->GetArrayElem($camera, 'alim_status', ''));
-                                    if (is_int($alim_status)) {
-                                        $this->SetValue('AlimStatus', $alim_status);
+									if ($with_power) {
+										$power_status = $this->map_power_status($this->GetArrayElem($camera, 'power_status', ''));
+										if (is_int($alim_status)) {
+											$this->SetValue('PowerStatus', $alim_status);
+										}
                                     }
 
-                                    $light_mode_status = $this->map_lightmode_status($this->GetArrayElem($camera, 'light_mode_status', ''));
-                                    if (is_int($light_mode_status)) {
-                                        $this->SetValue('LightmodeStatus', $light_mode_status);
-                                        if ($light_mode_status == LIGHT_STATUS_ON) {
-                                            $v = LIGHT_STATUS_OFF;
-                                        } else {
-                                            $v = LIGHT_STATUS_ON;
-                                        }
-                                        $this->SetValue('LightAction', $v);
-                                    }
+									if ($with_light) {
+										$light_mode_status = $this->map_lightmode_status($this->GetArrayElem($camera, 'light_mode_status', ''));
+										if (is_int($light_mode_status)) {
+											$this->SetValue('LightmodeStatus', $light_mode_status);
+											if ($light_mode_status == LIGHT_STATUS_ON) {
+												$v = LIGHT_STATUS_OFF;
+											} else {
+												$v = LIGHT_STATUS_ON;
+											}
+											$this->SetValue('LightAction', $v);
+										}
+									}
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
                                     if ($vpn_url != $this->GetBuffer('vpn_url')) {
@@ -302,14 +351,6 @@ class NetatmoSecurityCamera extends IPSModule
                         $s = $this->GetValue('Events');
                     }
                     $old_events = json_decode($s, true);
-                    if ($old_events != '') {
-                        foreach ($old_events as $old_event) {
-                            if ($old_event['tstamp'] < $ref_ts) {
-                                continue;
-                            }
-                            $new_events[] = $old_event;
-                        }
-                    }
 
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
@@ -321,17 +362,6 @@ class NetatmoSecurityCamera extends IPSModule
 
                             $id = $this->GetArrayElem($event, 'id', '');
                             $tstamp = $this->GetArrayElem($event, 'event_list.0.time', 0);
-
-                            $fnd = false;
-                            foreach ($new_events as $new_event) {
-                                if ($new_event['id'] == $id) {
-                                    $fnd = true;
-                                    break;
-                                }
-                            }
-                            if ($fnd) {
-                                continue;
-                            }
 
                             $new_event = [
                                     'tstamp'      => $tstamp,
@@ -365,7 +395,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                                     $new_subevent = [
                                             'id'        => $id,
-                                            'time'      => $ts,
+                                            'tstamp'    => $ts,
                                             'type'      => $type,
                                             'message'   => $message,
                                             'type'      => $type,
@@ -406,6 +436,25 @@ class NetatmoSecurityCamera extends IPSModule
                             }
 
                             $new_events[] = $new_event;
+                        }
+                    }
+
+                    if ($old_events != '') {
+                        foreach ($old_events as $old_event) {
+                            $fnd = false;
+                            foreach ($new_events as $new_event) {
+                                if ($new_event['id'] == $old_event['id']) {
+                                    $fnd = true;
+                                    break;
+                                }
+                            }
+                            if ($fnd) {
+                                continue;
+                            }
+                            if ($old_event['tstamp'] < $ref_ts) {
+                                continue;
+                            }
+                            $new_events[] = $old_event;
                         }
                     }
 
@@ -562,14 +611,23 @@ class NetatmoSecurityCamera extends IPSModule
         switch ($Ident) {
             case 'LightAction':
                 if ($product_type == 'NOC') {
-                    $this->SendDebug(__FUNCTION__, '$Ident=' . $Value, 0);
+                    $this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
                     $this->SwitchLight($Value);
                 } else {
                     $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident . ' for product ' . $product_type, 0);
                 }
                 break;
+            case 'LightIntensity':
+                if ($product_type == 'NOC') {
+                    $this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
+                    if ($this->DimLight($Value)) 
+						$this->SetValue('LightIntensity', $Value);
+                } else {
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident . ' for product ' . $product_type, 0);
+                }
+                break;
             case 'CameraAction':
-                $this->SendDebug(__FUNCTION__, '$Ident=' . $Value, 0);
+				$this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
                 $this->SwitchCamera($Value);
                 break;
             default:
@@ -911,7 +969,10 @@ class NetatmoSecurityCamera extends IPSModule
         }
         $id = $ids[0];
 
-        $path = IPS_GetKernelDir() . $ftp_path . DIRECTORY_SEPARATOR;
+        $path = IPS_GetKernelDir() . $ftp_path;
+        if (substr($path, -1) != DIRECTORY_SEPARATOR) {
+			$path .= DIRECTORY_SEPARATOR;
+		}
 
         for ($i = 0, $ok = false; $i < 2 && !$ok; $i++) {
             $y = date('Y', $tstamp);
@@ -936,6 +997,120 @@ class NetatmoSecurityCamera extends IPSModule
         return $ok ? $filename : false;
     }
 
+    public function SearchEvent(string $event_id)
+	{
+		$event = false;
+		if (EVENTS_AS_MEDIA) {
+			$data = $this->GetMediaData('Events');
+		} else {
+			$data = $this->GetValue('Events');
+		}
+		$events = json_decode($data, true);
+		foreach ($events as $e) {
+			if ($e['id'] == $event_id) {
+				$event = $e;
+				break;
+			}
+		}
+		$this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', event=' . print_r($event, true), 0);
+		return $event;
+	}
+
+    public function SearchSubEvent(string $subevent_id)
+	{
+		$subevent = false;
+		if (EVENTS_AS_MEDIA) {
+			$data = $this->GetMediaData('Events');
+		} else {
+			$data = $this->GetValue('Events');
+		}
+		$events = json_decode($data, true);
+		foreach ($events as $event) {
+			if (!isset($event['subevents'])) continue;
+			foreach ($event['subevents'] as $e) {
+				if ($e['id'] == $subevent_id) {
+					$subevent = $e;
+					break;
+				}
+			}
+			if ($subevent != false)
+				break;
+		}
+		$this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id . ', subevent=' . print_r($subevent, true), 0);
+		return $subevent;
+	}
+
+    public function GetVideoUrl4Event(string $event_id, string $resolution)
+	{
+		global $_SERVER;
+
+		$url = false;
+		$event = $this->SearchEvent($event_id);
+		if ($event != false) {
+			if (isset($event['video_id'])) {
+				$video_id = $event['video_id'];
+				$tstamp = $event['tstamp'];
+				$searchFile = isset($_SERVER) && $_SERVER != '' && $tstamp != '';
+				if ($searchFile && IPS_GetKernelVersion() < 5.2 && !preg_match('/firefox/i',$_SERVER['HTTP_USER_AGENT'])) {
+					$this->SendDebug(__FUNCTION__, 'IPS < 5.2 and browser is not Firefox (' . $_SERVER['HTTP_USER_AGENT'] . ')', 0);
+					$searchFile = false;
+				}
+				if ($searchFile) {
+					$filename = $this->GetVideoFilename($video_id, $tstamp);
+					$this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
+					if ($filename != '') {
+						$path = IPS_GetKernelDir() . 'webfront';
+						$path = substr($filename, strlen($path));
+
+						$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+						$url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+					}
+				}
+				if ($url == false) {
+					$url = $this->GetVideoUrl($video_id, $resolution);
+				}
+			}
+		}
+		$this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', url=' . $url, 0);
+		return $url;
+	}
+
+    public function GetSnapshotUrl4Subevent(string $subevent_id)
+	{
+		$url = false;
+		$subevent = $this->SearchSubEvent($subevent_id);
+		if ($subevent != false) {
+			$snapshot = $subevent['snapshot'];
+			if (isset($snapshot['id']) && isset($snapshot['key'])) {
+				$url = $this->GetPictureUrl($snapshot['id'], $snapshot['key']);
+			}
+			if (isset($snapshot['filename'])) {
+				$url = $this->GetPictureUrl4Filename($snapshot['filename']);
+			}
+		}
+
+		$this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id . ', url=' . $url, 0);
+		return $url;
+	}
+
+    public function GetVignetteUrl4Subevent(string $subevent_id)
+	{
+		$url = false;
+		$subevent = $this->SearchSubEvent($subevent_id);
+		if ($subevent != false) {
+			$vignette = $subevent['vignette'];
+			if (isset($vignette['id']) && isset($vignette['key'])) {
+				$url = $this->GetPictureUrl($vignette['id'], $vignette['key']);
+			}
+			if (isset($vignette['filename'])) {
+				$url = $this->GetPictureUrl4Filename($vignette['filename']);
+			}
+		}
+
+		$this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id . ', url=' . $url, 0);
+		return $url;
+	}
+
     protected function ProcessHookData()
     {
         $this->SendDebug(__FUNCTION__, '_SERVER=' . print_r($_SERVER, true), 0);
@@ -954,94 +1129,153 @@ class NetatmoSecurityCamera extends IPSModule
         }
         $path = parse_url($uri, PHP_URL_PATH);
         $basename = substr($path, strlen($hook));
+        if (substr($basename, 0, 1) == '/') {
+			$basename = substr($basename, 1);
+		}
 
         $this->SendDebug(__FUNCTION__, 'basename=' . $basename, 0);
         switch ($basename) {
             case 'video':
-                if (isset($_GET['video_id'])) {
-                    $video_id = $_GET['video_id'];
-                    $event_id = '';
-                } elseif (isset($_GET['video_id'])) {
-                    $event_id = $_GET['event_id'];
-                    $video_id = '';
-                }
-                $tstamp = '';
-
-                if (EVENTS_AS_MEDIA) {
-                    $data = $this->GetMediaData('Events');
-                } else {
-                    $data = $this->GetValue('Events');
-                }
-                $events = json_decode($data, true);
-                foreach ($events as $event) {
-                    if ($video_id != '') {
-                        if (!isset($event['video_id'])) {
-                            continue;
-                        }
-                        if ($event['video_id'] != $video_id) {
-                            continue;
-                        }
-                        $tstamp = $event['tstamp'];
-                    }
-                    if ($event_id != '') {
-                        if ($event['id'] != $event_id) {
-                            continue;
-                        }
-                        $video_id = $event['video_id'];
-                        $tstamp = $event['tstamp'];
-                        break;
-                    }
-                }
-
-                if ($video_id == '') {
-                    http_response_code(404);
-                    die('File not found!');
-                }
-
-                if ($tstamp != '') {
-                    $filename = $this->GetVideoFilename($video_id, $tstamp);
-                    $this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
-                    if ($filename != '') {
-                        $path = IPS_GetKernelDir() . 'webfront';
-                        $path = substr($filename, strlen($path));
-
-                        $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
-                        $url .= '://' . $_SERVER['HTTP_HOST'] . $path;
-
-                        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
-
-                        http_response_code(200);
-
-                        echo '<html>';
-                        echo '<body>';
-                        echo '<video>';
-                        echo '  <source src="' . $url . '" type="video/mp4" />';
-                        echo '</video>';
-                        echo '</body>';
-                        echo '</html>';
-
-                        return;
-                    }
-                }
-
-                $url = $this->GetVideoUrl($video_id, 'high');
-                if ($url != false) {
+				if (isset($_GET['life'])) {
+					$resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
+					$this->SendDebug(__FUNCTION__, 'life, resolution=' . $resolution, 0);
+					$url = $this->GetLiveVideoUrl($resolution);
+					if ($url == false) {
+						http_response_code(404);
+						die('File not found!');
+					}
                     $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
-
-                    http_response_code(200);
-
-                    echo '<html>';
-                    echo '<head>';
-                    echo '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-                    echo '</head>';
-                    echo '<body>';
-                    echo '</body>';
-                    echo '</html>';
-
+					if (isset($_GET['result']) && $_GET['result'] == 'url') {
+						$html = $url;
+					} else {
+						$html = '';
+						$html .= '<html>';
+						$html .= '<head>';
+						$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+						$html .= '</head>';
+						$html .= '<body>';
+						$html .= '</body>';
+						$html .= '</html>';
+					}
+					$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+					echo $html;
                     return;
+				}
+
+				$event_id = isset($_GET['event_id']) ? $_GET['event_id'] : '';
+				$resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
+				$this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', resolution=' . $resolution, 0);
+				if ($event_id != '') {
+					$url = $this->GetVideoUrl4Event($event_id, $resolution);
+					$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+					if ($url != false) {
+						if (isset($_GET['result']) && $_GET['result'] == 'url') {
+							$html = $url;
+						} else {
+							if (preg_match('/\.mp4$/',$url)) {
+								$html = '';
+								$html .= '<html>';
+								$html .= '<body>';
+								$html .= '<video>';
+								$html .= '  <source src="' . $url . '" type="video/mp4" />';
+								$html .= '</video>';
+								$html .= '</body>';
+								$html .= '</html>';
+							} else {
+								$html = '';
+								$html .= '<html>';
+								$html .= '<head>';
+								$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+								$html .= '</head>';
+								$html .= '<body>';
+								$html .= '</body>';
+								$html .= '</html>';
+							}
+						}
+						$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+						echo $html;
+						return;
+					}
                 }
                 break;
             case 'snapshot':
+				if (isset($_GET['life'])) {
+					$this->SendDebug(__FUNCTION__, 'life', 0);
+					$url = $this->GetLiveSnapshotUrl();
+					if ($url == false) {
+						http_response_code(404);
+						die('File not found!');
+					}
+                    $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+					if (isset($_GET['result']) && $_GET['result'] == 'url') {
+						$html = $url;
+					} else {
+						$html = '';
+						$html .= '<html>';
+						$html .= '<head>';
+						$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+						$html .= '</head>';
+						$html .= '<body>';
+						$html .= '</body>';
+						$html .= '</html>';
+					}
+					$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+					echo $html;
+                    return;
+				}
+
+				$subevent_id = isset($_GET['subevent_id']) ? $_GET['subevent_id'] : '';
+				$this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
+				if ($subevent_id != '') {
+					$url = $this->GetSnapshotUrl4Subevent($subevent_id);
+					if ($url == false) {
+						http_response_code(404);
+						die('File not found!');
+					}
+                    $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+					if (isset($_GET['result']) && $_GET['result'] == 'url') {
+						$html = $url;
+					} else {
+						$html = '';
+						$html .= '<html>';
+						$html .= '<head>';
+						$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+						$html .= '</head>';
+						$html .= '<body>';
+						$html .= '</body>';
+						$html .= '</html>';
+					}
+					$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+					echo $html;
+					return;
+                }
+                break;
+            case 'vignette':
+				$subevent_id = isset($_GET['subevent_id']) ? $_GET['subevent_id'] : '';
+				$this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
+				if ($subevent_id != '') {
+					$url = $this->GetVignetteUrl4Subevent($subevent_id);
+					if ($url == false) {
+						http_response_code(404);
+						die('File not found!');
+					}
+                    $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+					if (isset($_GET['result']) && $_GET['result'] == 'url') {
+						$html = $url;
+					} else {
+						$html = '';
+						$html .= '<html>';
+						$html .= '<head>';
+						$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+						$html .= '</head>';
+						$html .= '<body>';
+						$html .= '</body>';
+						$html .= '</html>';
+					}
+					$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+					echo $html;
+					return;
+                }
                 break;
             default:
                 $path = realpath($root . '/' . $basename);
@@ -1056,6 +1290,6 @@ class NetatmoSecurityCamera extends IPSModule
                 header('Content-Type: ' . $this->GetMimeType(pathinfo($path, PATHINFO_EXTENSION)));
                 readfile($path);
                 break;
-            }
+		}
     }
 }

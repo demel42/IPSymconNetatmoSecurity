@@ -236,6 +236,22 @@ trait NetatmoSecurityCommon
         return $inst['InstanceStatus'];
     }
 
+    private function HookIsUsed($newHook)
+	{
+		$used = false;
+		$instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
+		$hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
+		foreach ($hooks as $hook) {
+			if ($hook['Hook'] == $newHook)  {
+				if ($hook['TargetID'] != $this->InstanceID) {
+					$used = true;
+				}
+				break;
+			}
+		}
+		return $used;
+	}
+
     private function GetFormStatus()
     {
         $formStatus = [];

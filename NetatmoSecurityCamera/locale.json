@@ -20,7 +20,7 @@
 			"Local copy of videos from Netatmo via FTP": "lokale Kopien der Videos von Netatmo per FTP",
 			" ... path": " ... Verzeichnis",
 
-			"Alim state": "Stromversorgung",
+			"Power state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",
 			"Camera state": "Kamera",
 			"Events": "Ereignisse",
@@ -31,6 +31,7 @@
 			"Last communication": "letzte Kommunikation",
 			"Last event": "letzes Ereignis",
 			"Last notification": "letzte Benachrichtgigung",
+			"Light intensity": "Licht-Intensität",
 			"Lightmode state": "Licht-Modus",
 			"Light operation": "Licht schalten",
 			"Notifications": "Benachrichtigungen",
@@ -46,6 +47,10 @@
 			"on": "an",
 			"disconnected": "getrennt",
 			"auto": "automatisch",
+			"ready": "bereit",
+			"unusable": "unbrauchbar",
+			"good": "gut",
+			"bad": "schlecht",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

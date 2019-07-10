@@ -36,7 +36,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyString('ftp_path', '');
         $this->RegisterPropertyInteger('ftp_max_age', '14');
 
-		$this->RegisterPropertyInteger('notify_script', 0);
+        $this->RegisterPropertyInteger('notify_script', 0);
 
         $associations = [];
         $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
@@ -213,8 +213,8 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of videos from Netatmo via FTP'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'ftp_path', 'caption' => ' ... path'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
-		$formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
-		$formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
+        $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
 
         $formActions = [];
         $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
@@ -553,31 +553,31 @@ class NetatmoSecurityCamera extends IPSModule
                                 $event_type = $this->GetArrayElem($notification, 'event_type', '');
                                 $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                                 $message = $this->GetArrayElem($notification, 'message', '');
-								if ($message == '') {
-									switch ($push_type) {
-										case 'NOC-connection':
-											$message = $this->Translate('Camera connected');
-											break;
-										case 'NOC-disconnection':
-											$message = $this->Translate('Camera disconnected');
-											break;
-										case 'NOC-light_mode':
-											$message = $this->Translate('Light-mode changed') . ' : ' . $this->Translate($sub_type);
-											break;
-										case 'NOC-movement':
-											$message = $this->Translate('Movement detected');
-											break;
-										case 'NOC-off':
-											$message = $this->Translate('Monitoring disabled');
-											break;
-										case 'NOC-on':
-											$message = $this->Translate('Monitoring enabled');
-											break;
-										default:
-											$message = $event_type . '-' . $sub_type;
-											break;
-									}
-								}
+                                if ($message == '') {
+                                    switch ($push_type) {
+                                        case 'NOC-connection':
+                                            $message = $this->Translate('Camera connected');
+                                            break;
+                                        case 'NOC-disconnection':
+                                            $message = $this->Translate('Camera disconnected');
+                                            break;
+                                        case 'NOC-light_mode':
+                                            $message = $this->Translate('Light-mode changed') . ' : ' . $this->Translate($sub_type);
+                                            break;
+                                        case 'NOC-movement':
+                                            $message = $this->Translate('Movement detected');
+                                            break;
+                                        case 'NOC-off':
+                                            $message = $this->Translate('Monitoring disabled');
+                                            break;
+                                        case 'NOC-on':
+                                            $message = $this->Translate('Monitoring enabled');
+                                            break;
+                                        default:
+                                            $message = $event_type . '-' . $sub_type;
+                                            break;
+                                    }
+                                }
                                 $new_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $id,
@@ -621,11 +621,11 @@ class NetatmoSecurityCamera extends IPSModule
                     if ($with_last_notification && $got_new_notification) {
                         $this->SetValue('LastNotification', $now);
                     }
-					$notify_script = $this->ReadPropertyInteger('notify_script');
-					if ($got_new_notification && $notify_script > 0) {
-						$r = IPS_RunScriptWaitEx($notify_script, ['InstanceID' => $this->InstanceID]);
-						$this->SendDebug(__FUNCTION__, 'notify_script=' . IPS_GetName($notify_script) . ', ret=' . $r, 0);
-					}
+                    $notify_script = $this->ReadPropertyInteger('notify_script');
+                    if ($got_new_notification && $notify_script > 0) {
+                        $r = IPS_RunScriptWaitEx($notify_script, ['InstanceID' => $this->InstanceID]);
+                        $this->SendDebug(__FUNCTION__, 'notify_script=' . IPS_GetName($notify_script) . ', ret=' . $r, 0);
+                    }
                     break;
                 default:
                     $err = 'unknown source "' . $source . '"';

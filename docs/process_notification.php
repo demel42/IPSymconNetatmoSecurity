@@ -1,4 +1,4 @@
-<?
+<?php
 
 $max_lines = 20;
 
@@ -16,15 +16,15 @@ $html .= '</tr>' . PHP_EOL;
 
 $data = NetatmoSecurityCamera_GetNotifications($instID);
 if ($data != '') {
-	$notifications = json_decode($data, true);
-	$n_notifications = count($notifications);
-	$msg = 'n_notifications=' . $n_notifications . PHP_EOL;
-	for ($n = 0, $i = $n_notifications - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
-		$notification = $notifications[$i];
-		$tstamp = $notification['tstamp'];
-		$message = $notification['message'];
-		
-		$html .= '<tr>' . PHP_EOL;
+    $notifications = json_decode($data, true);
+    $n_notifications = count($notifications);
+    $msg = 'n_notifications=' . $n_notifications . PHP_EOL;
+    for ($n = 0, $i = $n_notifications - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
+        $notification = $notifications[$i];
+        $tstamp = $notification['tstamp'];
+        $message = $notification['message'];
+
+        $html .= '<tr>' . PHP_EOL;
         $html .= '<td>' . date('d.m. H:i:s', $tstamp) . '</td>' . PHP_EOL;
         $html .= '<td>' . $message . '</td>' . PHP_EOL;
         $html .= '</tr>' . PHP_EOL;

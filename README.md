@@ -65,6 +65,11 @@ Zur Zeit werden die folgende Produkttypen unterstützt:
 | NOC         | Outdoor Camera (Presence) | NetatmoSecurityCamera |
 | NACamera    | Indoor Camera (Welcome)   | NetatmoSecurityCamera |
 
+Hinweis:
+- _Presence_ konnte ich selbst testen
+- _Welcome_ ist, soweit es die Kamera betrifft, implementiert, da fehlt aber sicherlich noch das ein oder andere. Wenn jemand testet, würde ich das gerne ergänzen
+- _Rauchmelder_ würde ich ergänzen, wenn jemand teste.
+
 Der Aufruf des Konfigurators kann jederzeit wiederholt werden.
 
 Die Produkte werden aufgrund der _Produkt-ID_ sowie der _Haus-ID_ identifiziert.
@@ -209,15 +214,15 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
 |                          |                |              | |
 | Ereignisse               |                |              | |
-|  ... max. Alter          | integer        |              | |
-|  ... Medienobjekt cachen | boolean        |              | |
+|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters |
+|  ... Medienobjekt cachen | boolean        | Nein         | Medien-Objekt cachen, spart Resource, gehlt aber bei einem Absturz verloren |
 | Benachrichtigung         |                |              | |
-|  ... max. Alter          | integer        |              | |
-|  ... Medienobjekt cachen | boolean        |              | |
+|  ... max. Alter          | integer        | 2            | automatisches Löschen nach Überschreitung des Alters |
+|  ... Medienobjekt cachen | boolean        | Nein         | Medien-Objekt cachen, spart Resource, gehlt aber bei einem Absturz verloren |
 |                          |                |              | |
 | FTP-Verzeichnis          |                |              | |
 |  ... Verzeichnis         | path           |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
-|  ... max. Alter          | integer        |              | |
+|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters |
 |                          |                |              | |
 |  ... Script              | integer        |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
 |                          |                |              | |

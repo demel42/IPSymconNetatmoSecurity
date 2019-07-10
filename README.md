@@ -240,8 +240,6 @@ Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit de
 ### Variablenprofile
 
 Es werden folgende Variablenprofile angelegt:
-* Boolean<br>
-
 * Integer<br>
 NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, <br>
 NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.LightIntensity, <br>
@@ -298,10 +296,6 @@ NetatmoSecurity.PowerStatus
     _NOC-human_, _NOC-animal_, _NOC-vehicle_
   - sonstige Benachrichtigung:<br>
     _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-movement_, _NOC-off_, _NOC-on_
-
-* Float<br>
-
-* String<br>
 
 ## 6. Anhang
 

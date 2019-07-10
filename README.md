@@ -106,7 +106,8 @@ liefert die URL eines gespeicherten Bildes (_Snapshot_ oder _Vignette_) zurück 
 liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden (setzt die Übertragung der Videos per FTP voraus)
 
 `NetatmoSecurityCamera_GetEvents(int $InstanzID)`<br>
-liefert alle gespeicherten Ereignisse der Kamera; Datentyp siehe _Events_
+liefert alle gespeicherten Ereignisse der Kamera; Datentyp siehe _Events_.
+Die Liste ist aufsteigend zeitlich sortiert.
 
 `NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`<br>
 Sucht einen Event in den gespeicherten Events
@@ -115,7 +116,8 @@ Sucht einen Event in den gespeicherten Events
 Sucht einen Sub-Event in den gespeicherten Events
 
 `NetatmoSecurityCamera_GetNotifications(int $InstanzID)`<br>
-liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_
+liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_.
+Die Liste ist aufsteigend zeitlich sortiert.
 
 `NetatmoSecurityCamera_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
 bereinigt das Verzeichnis der (per FTP übertragenen) Videos
@@ -217,9 +219,17 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... Verzeichnis         | path           |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
 |  ... max. Alter          | integer        |              | |
 |                          |                |              | |
+|  ... Script              | integer        |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
+|                          |                |              | |
 
 Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
+
+##### Script
+Das Script wird bei Empfang der Nachrіchten ganz am Schluss aufgerufen.
+Ihm wird die _InstanceID_ übergeben.
+
+Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit den Benachrichtigungen siehe _docs/process_notification.php_
 
 ### Variablenprofile
 

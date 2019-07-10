@@ -16,9 +16,12 @@
 
 			" ... max. age": " ... max. Alter",
 			"days": "Tage",
-			" ... Media-object cached": " ... Medien-Object cachen",
+			" ... Cache media-object": " ... Medien-Object cachen",
 			"Local copy of videos from Netatmo via FTP": "lokale Kopien der Videos von Netatmo per FTP",
 			" ... path": " ... Verzeichnis",
+
+			"Call upon receipt of a notification": "Aufruf bei Empfang einer Benachrichtigung",
+			" ... Script": " ... Script",
 
 			"Power state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",
@@ -38,6 +41,13 @@
 			"optional data": "optionale Daten",
 			"SD-Card state": "SD-Karte",
 			"State": "Status",
+
+			"Camera connected": "Kamera verbunden",
+			"Camera disconnected": "Kamera getrennt",
+			"Light-mode changed": "Licht-Modus geändert",
+			"Movement detected": "Bewegung erkannt",
+			"Monitoring disabled": "Überwachung deaktiviert",
+			"Monitoring enabled": "Überwachung aktiviert",
 
             "No": "Nein",
             "Yes": "Ja",

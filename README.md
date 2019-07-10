@@ -112,7 +112,7 @@ liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nich
 
 `NetatmoSecurityCamera_GetEvents(int $InstanzID)`<br>
 liefert alle gespeicherten Ereignisse der Kamera; Datentyp siehe _Events_.
-Die Liste ist aufsteigend zeitlich sortiert.
+Die Liste ist zeitlich aufsteigend sortiert.
 
 `NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`<br>
 Sucht einen Event in den gespeicherten Events
@@ -122,7 +122,7 @@ Sucht einen Sub-Event in den gespeicherten Events
 
 `NetatmoSecurityCamera_GetNotifications(int $InstanzID)`<br>
 liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_.
-Die Liste ist aufsteigend zeitlich sortiert.
+Die Liste ist zeitlich aufsteigend sortiert.
 
 `NetatmoSecurityCamera_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
 bereinigt das Verzeichnis der (per FTP übertragenen) Videos

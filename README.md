@@ -230,9 +230,10 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
 
+Warum gibt es die Möglichkeit die per FTP übertragenen Videos einzubinden? Der Zugriff ist schneller und die Darstellung besser, da die Daten nicht von der SD-Karte der Kamera geholt werden müssen.
+
 ##### Script
-Das Script wird bei Empfang der Nachrіchten ganz am Schluss aufgerufen.
-Ihm wird die _InstanceID_ übergeben.
+Das Script wird bei Empfang der Nachrіchten ganz am Schluss aufgerufen; ihm wird die _InstanceID_ übergeben.
 
 Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit den Benachrichtigungen siehe _docs/process_notification.php_
 

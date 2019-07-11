@@ -71,8 +71,8 @@ class NetatmoSecurityIO extends IPSModule
             if ($register_webhook) {
                 if ($webhook_baseurl == '') {
                     $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-                    $url = CC_GetUrl($instID);
-                    if ($url == '') {
+                    $webhook_baseurl = CC_GetUrl($instID);
+                    if ($webhook_baseurl == '') {
                         $this->SetStatus(IS_NOWEBHOOK);
                         return;
                     }
@@ -383,7 +383,7 @@ class NetatmoSecurityIO extends IPSModule
         if ($webhook_baseurl == '') {
             $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
             $webhook_baseurl = CC_GetUrl($instID);
-            if ($url == '') {
+            if ($webhook_baseurl == '') {
                 $this->SendDebug(__FUNCTION__, 'webhook missing', 0);
                 return;
             }

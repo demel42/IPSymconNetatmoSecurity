@@ -25,7 +25,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterPropertyBoolean('register_webhook', false);
         $this->RegisterPropertyString('webhook_baseurl', '');
 
-        $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurityIO_UpdateData(' . $this->InstanceID . ');');
+        $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurity_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
@@ -67,19 +67,21 @@ class NetatmoSecurityIO extends IPSModule
         $register_webhook = $this->ReadPropertyBoolean('register_webhook');
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
 
-        if ($register_webhook) {
-            if ($webhook_baseurl == '') {
-                $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-                $url = CC_GetUrl($instID);
-                if ($url == '') {
-                    $this->SetStatus(IS_NOWEBHOOK);
-                    return;
-                }
-            }
-            if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
-                $this->SetStatus(IS_USEDWEBHOOK);
-                return;
-            }
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+			if ($register_webhook) {
+				if ($webhook_baseurl == '') {
+					$instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+					$url = CC_GetUrl($instID);
+					if ($url == '') {
+						$this->SetStatus(IS_NOWEBHOOK);
+						return;
+					}
+				}
+				if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
+					$this->SetStatus(IS_USEDWEBHOOK);
+					return;
+				}
+			}
         }
 
         if ($user != '' && $password != '' && $client != '' && $secret != '') {
@@ -89,11 +91,13 @@ class NetatmoSecurityIO extends IPSModule
             }
             $this->SetStatus(IS_ACTIVE);
 
-            if ($register_webhook) {
-                $this->AddWebhook();
-            } else {
-                $this->DropWebhook();
-            }
+			if (IPS_GetKernelRunlevel() == KR_READY) {
+				if ($register_webhook) {
+					$this->AddWebhook();
+				} else {
+					$this->DropWebhook();
+				}
+			}
         } else {
             $this->SetStatus(IS_INACTIVE);
         }
@@ -128,7 +132,7 @@ class NetatmoSecurityIO extends IPSModule
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'UpdateDataInterval', 'caption' => 'Minutes'];
 
         $formActions = [];
-        $formActions[] = ['type' => 'Button', 'label' => 'Update data', 'onClick' => 'NetatmoSecurityIO_UpdateData($id);'];
+        $formActions[] = ['type' => 'Button', 'label' => 'Update data', 'onClick' => 'NetatmoSecurity_UpdateData($id);'];
         $formActions[] = ['type' => 'Label', 'label' => '____________________________________________________________________________________________________'];
         $formActions[] = ['type' => 'Button', 'label' => 'Module description', 'onClick' => 'echo \'https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md\';'];
 

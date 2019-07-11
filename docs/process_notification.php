@@ -14,7 +14,7 @@ $html .= '<th>Zeitpunkt</th>' . PHP_EOL;
 $html .= '<th>Meldung</th>' . PHP_EOL;
 $html .= '</tr>' . PHP_EOL;
 
-$data = NetatmoSecurityCamera_GetNotifications($instID);
+$data = NetatmoSecurity_GetNotifications($instID);
 if ($data != '') {
     $notifications = json_decode($data, true);
     $n_notifications = count($notifications);

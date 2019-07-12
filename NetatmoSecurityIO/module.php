@@ -68,20 +68,20 @@ class NetatmoSecurityIO extends IPSModule
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
-			if ($register_webhook) {
-				if ($webhook_baseurl == '') {
-					$instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-					$url = CC_GetUrl($instID);
-					if ($url == '') {
-						$this->SetStatus(IS_NOWEBHOOK);
-						return;
-					}
-				}
-				if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
-					$this->SetStatus(IS_USEDWEBHOOK);
-					return;
-				}
-			}
+            if ($register_webhook) {
+                if ($webhook_baseurl == '') {
+                    $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+                    $webhook_baseurl = CC_GetUrl($instID);
+                    if ($webhook_baseurl == '') {
+                        $this->SetStatus(IS_NOWEBHOOK);
+                        return;
+                    }
+                }
+                if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
+                    $this->SetStatus(IS_USEDWEBHOOK);
+                    return;
+                }
+            }
         }
 
         if ($user != '' && $password != '' && $client != '' && $secret != '') {
@@ -91,13 +91,13 @@ class NetatmoSecurityIO extends IPSModule
             }
             $this->SetStatus(IS_ACTIVE);
 
-			if (IPS_GetKernelRunlevel() == KR_READY) {
-				if ($register_webhook) {
-					$this->AddWebhook();
-				} else {
-					$this->DropWebhook();
-				}
-			}
+            if (IPS_GetKernelRunlevel() == KR_READY) {
+                if ($register_webhook) {
+                    $this->AddWebhook();
+                } else {
+                    $this->DropWebhook();
+                }
+            }
         } else {
             $this->SetStatus(IS_INACTIVE);
         }
@@ -383,7 +383,7 @@ class NetatmoSecurityIO extends IPSModule
         if ($webhook_baseurl == '') {
             $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
             $webhook_baseurl = CC_GetUrl($instID);
-            if ($url == '') {
+            if ($webhook_baseurl == '') {
                 $this->SendDebug(__FUNCTION__, 'webhook missing', 0);
                 return;
             }

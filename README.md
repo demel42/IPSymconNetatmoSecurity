@@ -168,7 +168,7 @@ Bei allen Aufrufen zu Videos kann die Option _resolution=\<resolution\>_ hinzuge
 
 Bei allen Aufrufen kann Option _result=url_ hinzugefügt werden; dann wird die reine URL, ansonsten ein einbettbarer HTML-Code geliefert.
 
-Hinweis zu dem Video: die lokalen Kopien der Viでeos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
+Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
 ## 5. Konfiguration
 

@@ -345,7 +345,7 @@ class NetatmoSecurityCamera extends IPSModule
                         }
                     }
 
-					$n_new_events = 0;
+                    $n_new_events = 0;
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
                     $new_events = [];
@@ -355,7 +355,7 @@ class NetatmoSecurityCamera extends IPSModule
                         $s = $this->GetValue('Events');
                     }
                     $old_events = json_decode($s, true);
-					$this->SendDebug(__FUNCTION__, 'old_events=' . print_r($old_events, true), 0);
+                    $this->SendDebug(__FUNCTION__, 'old_events=' . print_r($old_events, true), 0);
 
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
@@ -456,20 +456,20 @@ class NetatmoSecurityCamera extends IPSModule
                             $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
                             $new_events[] = $new_event;
 
-							$fnd = false;
-							foreach ($old_events as $old_event) {
-								if ($old_event['id'] == $new_event['id']) {
-									$fnd = true;
-									break;
-								}
-							}
-							if ($fnd == false) {
-								$n_new_events++;
-							}
-						}
+                            $fnd = false;
+                            foreach ($old_events as $old_event) {
+                                if ($old_event['id'] == $new_event['id']) {
+                                    $fnd = true;
+                                    break;
+                                }
+                            }
+                            if ($fnd == false) {
+                                $n_new_events++;
+                            }
+                        }
                     }
 
-					$this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($new_events), 0);
+                    $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($new_events), 0);
 
                     if ($old_events != '') {
                         foreach ($old_events as $old_event) {

@@ -23,6 +23,10 @@
 			"Call upon receipt of a notification": "Aufruf bei Empfang einer Benachrichtigung",
 			" ... Script": " ... Script",
 
+			" ... Custom script": " ... Benutzerdefiniertes Script",
+
+			"create Persons": "Personen anlegen",
+
 			"Power state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",
 			"Camera state": "Kamera",

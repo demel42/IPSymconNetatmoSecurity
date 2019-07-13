@@ -270,6 +270,9 @@ NetatmoSecurity.PowerStatus
 | tstamp            | UNIX-Timestamp | nein     | Zeitpunkt des Ereignisses |
 | message           | string         | nein     | Nachrichtentext |
 | video_id          | string         | ja       | |
+| video_status      | string         | ja       | Ausprägungen: recording, available, deleted |
+| person_id         | string         | ja       | |
+| is_arrival        | boolen         | ja       | |
 | subevents         | Objekt-Liste   | ja       | Liste der Einzel-Ereignisse |
 
 #### Einzel-Ereignisse (Sub-Events)

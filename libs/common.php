@@ -89,11 +89,6 @@ trait NetatmoSecurityCommon
         $mediaName = $this->Translate($Name);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
-            return false;
-        }
-        $mediaName = $this->Translate($Name);
-        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
-        if ($mediaID == false) {
             $mediaID = IPS_CreateMedia(MEDIATYPE_DOCUMENT);
             if ($mediaID == false) {
                 $this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $Name, 0);

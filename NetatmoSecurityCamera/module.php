@@ -220,9 +220,9 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
         $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
-		if ($product_type == 'NACamera') {
-			$formElements[] = ['type' => 'CheckBox', 'name' => 'create_persons', 'caption' => 'create Persons'];
-		}
+        if ($product_type == 'NACamera') {
+            $formElements[] = ['type' => 'CheckBox', 'name' => 'create_persons', 'caption' => 'create Persons'];
+        }
 
         $formActions = [];
         $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
@@ -1208,15 +1208,15 @@ class NetatmoSecurityCamera extends IPSModule
             $basename = substr($basename, 1);
         }
 
-		$webhook_script = $this->ReadPropertyInteger('webhook_script');
+        $webhook_script = $this->ReadPropertyInteger('webhook_script');
 
-		$mode = isset($_GET['result']) ? $_GET['result'] : 'html';
-		$opts = [
-				'InstanceID' => $this->InstanceID,
-				'function' => $basename,
-				'_SERVER' => json_encode($_SERVER),
-				'_GET' => json_encode($_GET),
-			];
+        $mode = isset($_GET['result']) ? $_GET['result'] : 'html';
+        $opts = [
+                'InstanceID' => $this->InstanceID,
+                'function'   => $basename,
+                '_SERVER'    => json_encode($_SERVER),
+                '_GET'       => json_encode($_GET),
+            ];
 
         $this->SendDebug(__FUNCTION__, 'basename=' . $basename, 0);
         switch ($basename) {
@@ -1231,32 +1231,32 @@ class NetatmoSecurityCamera extends IPSModule
                     }
                     $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
                     switch ($mode) {
-						case 'url':
-							$html = $url;
-							break;
-						case 'custom':
-							if ($webhook_script == 0) {
-								http_response_code(404);
-								die('no custom-script not found!');
-							}
-							$opts['url'] = $url;
-							$this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
-							$html = IPS_RunScriptWaitEx($webhook_script, $opts);
-							$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
-							break;
-						case 'html':
-							$html = '<html>';
-							$html .= '<head>';
-							$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-							$html .= '</head>';
-							$html .= '<body>';
-							$html .= '</body>';
-							$html .= '</html>';
-							break;
-						default:
-							http_response_code(404);
-							die('unknown result-mode!');
-					}
+                        case 'url':
+                            $html = $url;
+                            break;
+                        case 'custom':
+                            if ($webhook_script == 0) {
+                                http_response_code(404);
+                                die('no custom-script not found!');
+                            }
+                            $opts['url'] = $url;
+                            $this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
+                            $html = IPS_RunScriptWaitEx($webhook_script, $opts);
+                            $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+                            break;
+                        case 'html':
+                            $html = '<html>';
+                            $html .= '<head>';
+                            $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+                            $html .= '</head>';
+                            $html .= '<body>';
+                            $html .= '</body>';
+                            $html .= '</html>';
+                            break;
+                        default:
+                            http_response_code(404);
+                            die('unknown result-mode!');
+                    }
                     $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
                     echo $html;
                     return;
@@ -1265,54 +1265,54 @@ class NetatmoSecurityCamera extends IPSModule
                 $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
                 $this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', resolution=' . $resolution, 0);
                 if ($event_id == '') {
-					http_response_code(404);
-					die('event_id missing');
-				}
-				$url = $this->GetVideoUrl4Event($event_id, $resolution);
-				if ($url == false) {
-					http_response_code(404);
-					die('File not found!');
-				}
-				$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
-				switch ($mode) {
-					case 'url':
-						$html = $url;
-						break;
-					case 'custom':
-						if ($webhook_script == 0) {
-							http_response_code(404);
-							die('no custom-script not found!');
-						}
-						$opts['url'] = $url;
-						$html = IPS_RunScriptWaitEx($webhook_script, $opts);
-						$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
-						break;
-					case 'html':
-						if (preg_match('/\.mp4$/', $url)) {
-							$html = '<html>';
-							$html .= '<body>';
-							$html .= '<video>';
-							$html .= '  <source src="' . $url . '" type="video/mp4" />';
-							$html .= '</video>';
-							$html .= '</body>';
-							$html .= '</html>';
-						} else {
-							$html = '<html>';
-							$html .= '<head>';
-							$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-							$html .= '</head>';
-							$html .= '<body>';
-							$html .= '</body>';
-							$html .= '</html>';
-						}
-						break;
-					default:
-						http_response_code(404);
-						die('unknown result-mode!');
-				}
-				$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
-				echo $html;
-				return;
+                    http_response_code(404);
+                    die('event_id missing');
+                }
+                $url = $this->GetVideoUrl4Event($event_id, $resolution);
+                if ($url == false) {
+                    http_response_code(404);
+                    die('File not found!');
+                }
+                $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+                switch ($mode) {
+                    case 'url':
+                        $html = $url;
+                        break;
+                    case 'custom':
+                        if ($webhook_script == 0) {
+                            http_response_code(404);
+                            die('no custom-script not found!');
+                        }
+                        $opts['url'] = $url;
+                        $html = IPS_RunScriptWaitEx($webhook_script, $opts);
+                        $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+                        break;
+                    case 'html':
+                        if (preg_match('/\.mp4$/', $url)) {
+                            $html = '<html>';
+                            $html .= '<body>';
+                            $html .= '<video>';
+                            $html .= '  <source src="' . $url . '" type="video/mp4" />';
+                            $html .= '</video>';
+                            $html .= '</body>';
+                            $html .= '</html>';
+                        } else {
+                            $html = '<html>';
+                            $html .= '<head>';
+                            $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+                            $html .= '</head>';
+                            $html .= '<body>';
+                            $html .= '</body>';
+                            $html .= '</html>';
+                        }
+                        break;
+                    default:
+                        http_response_code(404);
+                        die('unknown result-mode!');
+                }
+                $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+                echo $html;
+                return;
                 break;
             case 'snapshot':
                 if (isset($_GET['life'])) {
@@ -1323,31 +1323,31 @@ class NetatmoSecurityCamera extends IPSModule
                         die('File not found!');
                     }
                     switch ($mode) {
-						case 'url':
-							$html = $url;
-							break;
-						case 'custom':
-							if ($webhook_script == 0) {
-								http_response_code(404);
-								die('no custom-script not found!');
-							}
-							$opts['url'] = $url;
-							$html = IPS_RunScriptWaitEx($webhook_script, $opts);
-							$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
-							break;
-						case 'html':
-							$html = '<html>';
-							$html .= '<head>';
-							$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-							$html .= '</head>';
-							$html .= '<body>';
-							$html .= '</body>';
-							$html .= '</html>';
-							break;
-						default:
-							http_response_code(404);
-							die('unknown result-mode!');
-					}
+                        case 'url':
+                            $html = $url;
+                            break;
+                        case 'custom':
+                            if ($webhook_script == 0) {
+                                http_response_code(404);
+                                die('no custom-script not found!');
+                            }
+                            $opts['url'] = $url;
+                            $html = IPS_RunScriptWaitEx($webhook_script, $opts);
+                            $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+                            break;
+                        case 'html':
+                            $html = '<html>';
+                            $html .= '<head>';
+                            $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+                            $html .= '</head>';
+                            $html .= '<body>';
+                            $html .= '</body>';
+                            $html .= '</html>';
+                            break;
+                        default:
+                            http_response_code(404);
+                            die('unknown result-mode!');
+                    }
                     $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
                     echo $html;
                     return;
@@ -1355,86 +1355,86 @@ class NetatmoSecurityCamera extends IPSModule
                 $subevent_id = isset($_GET['subevent_id']) ? $_GET['subevent_id'] : '';
                 $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
                 if ($subevent_id == '') {
-					http_response_code(404);
-					die('subevent_id missing');
-				}
-				$url = $this->GetSnapshotUrl4Subevent($subevent_id);
-				if ($url == false) {
-					http_response_code(404);
-					die('File not found!');
-				}
-				$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
-				switch ($mode) {
-					case 'url':
-						$html = $url;
-						break;
-					case 'custom':
-						if ($webhook_script == 0) {
-							http_response_code(404);
-							die('no custom-script not found!');
-						}
-						$opts['url'] = $url;
-						$html = IPS_RunScriptWaitEx($webhook_script, $opts);
-						$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
-						break;
-					case 'html':
-						$html = '<html>';
-						$html .= '<head>';
-						$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-						$html .= '</head>';
-						$html .= '<body>';
-						$html .= '</body>';
-						$html .= '</html>';
-						break;
-					default:
-						http_response_code(404);
-						die('unknown result-mode!');
-				}
-				echo $html;
-				return;
+                    http_response_code(404);
+                    die('subevent_id missing');
+                }
+                $url = $this->GetSnapshotUrl4Subevent($subevent_id);
+                if ($url == false) {
+                    http_response_code(404);
+                    die('File not found!');
+                }
+                $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+                switch ($mode) {
+                    case 'url':
+                        $html = $url;
+                        break;
+                    case 'custom':
+                        if ($webhook_script == 0) {
+                            http_response_code(404);
+                            die('no custom-script not found!');
+                        }
+                        $opts['url'] = $url;
+                        $html = IPS_RunScriptWaitEx($webhook_script, $opts);
+                        $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+                        break;
+                    case 'html':
+                        $html = '<html>';
+                        $html .= '<head>';
+                        $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+                        $html .= '</head>';
+                        $html .= '<body>';
+                        $html .= '</body>';
+                        $html .= '</html>';
+                        break;
+                    default:
+                        http_response_code(404);
+                        die('unknown result-mode!');
+                }
+                echo $html;
+                return;
                 break;
             case 'vignette':
                 $subevent_id = isset($_GET['subevent_id']) ? $_GET['subevent_id'] : '';
                 $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
                 if ($subevent_id == '') {
-					http_response_code(404);
-					die('subevent_id missing');
-				}
-				$url = $this->GetVignetteUrl4Subevent($subevent_id);
-				if ($url == false) {
-					http_response_code(404);
-					die('File not found!');
-				}
-				$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
-				switch ($mode) {
-					case 'url':
-						$html = $url;
-						break;
-					case 'custom':
-						if ($webhook_script == 0) {
-							http_response_code(404);
-							die('no custom-script not found!');
-						}
-						$opts['url'] = $url;
-						$html = IPS_RunScriptWaitEx($webhook_script, $opts);
-						$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
-						break;
-					case 'html':
-						$html = '<html>';
-						$html .= '<head>';
-						$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-						$html .= '</head>';
-						$html .= '<body>';
-						$html .= '</body>';
-						$html .= '</html>';
-						break;
-					default:
-						http_response_code(404);
-						die('unknown result-mode!');
-				}
-				$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
-				echo $html;
-				return;
+                    http_response_code(404);
+                    die('subevent_id missing');
+                }
+                $url = $this->GetVignetteUrl4Subevent($subevent_id);
+                if ($url == false) {
+                    http_response_code(404);
+                    die('File not found!');
+                }
+                $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+                switch ($mode) {
+                    case 'url':
+                        $html = $url;
+                        break;
+                    case 'custom':
+                        if ($webhook_script == 0) {
+                            http_response_code(404);
+                            die('no custom-script not found!');
+                        }
+                        $opts['url'] = $url;
+                        $html = IPS_RunScriptWaitEx($webhook_script, $opts);
+                        $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+                        break;
+                    case 'html':
+                        $html = '<html>';
+                        $html .= '<head>';
+                        $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+                        $html .= '</head>';
+                        $html .= '<body>';
+                        $html .= '</body>';
+                        $html .= '</html>';
+                        break;
+                    default:
+                        http_response_code(404);
+                        die('unknown result-mode!');
+                }
+                $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+                echo $html;
+                return;
                 break;
             default:
                 $path = realpath($root . '/' . $basename);

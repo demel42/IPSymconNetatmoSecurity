@@ -20,6 +20,20 @@
 
 ## 1. Funktionsumfang
 
+Anschluss der Geräte, die von Netatmo unter dem Beriff _Security_ zusammengefasst sind:
+- Aussenkamera (_Outdoor_ bzw. _Presence_)
+- Innenkamera (_Indoor_ bzw. _Welcome_)
+- Rauchmelder
+Hinweis: für den Rauchmelder gibt es mangels Testmöglichkeit noch keine Implementierung.
+
+Je nach Produktyp umfasst das Modul folgende Funktionen:
+- Abruf des Status
+- Speicherung der Ereignisse für eine definierbaren Zeitraum
+- Empfang von Mitteilungen vua WebHook
+- Ermittlung der URL's zu Abruf von Videos und Snapshots (Life und historisch)
+- Einbindung der optional von Netatmo per _ftp_ übertragenen Videos
+- Steuerung (Kamera aus/ein, Licht)
+
 ## 2. Voraussetzungen
 
  - IP-Symcon ab Version 5<br>

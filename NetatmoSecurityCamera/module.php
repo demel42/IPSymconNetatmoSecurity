@@ -310,7 +310,7 @@ class NetatmoSecurityCamera extends IPSModule
                                     }
 
                                     if ($with_power) {
-                                        $power_status = $this->map_power_status($this->GetArrayElem($camera, 'power_status', ''));
+                                        $power_status = $this->map_power_status($this->GetArrayElem($camera, 'alim_status', ''));
                                         if (is_int($power_status)) {
                                             $this->SetValue('PowerStatus', $power_status);
                                         }

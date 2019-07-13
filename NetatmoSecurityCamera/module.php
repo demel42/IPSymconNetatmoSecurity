@@ -345,7 +345,7 @@ class NetatmoSecurityCamera extends IPSModule
                         }
                     }
 
-                    $got_new_event = false;
+					$n_new_events = 0;
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
                     $new_events = [];
@@ -355,6 +355,7 @@ class NetatmoSecurityCamera extends IPSModule
                         $s = $this->GetValue('Events');
                     }
                     $old_events = json_decode($s, true);
+					$this->SendDebug(__FUNCTION__, 'old_events=' . print_r($old_events, true), 0);
 
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
@@ -377,9 +378,24 @@ class NetatmoSecurityCamera extends IPSModule
                                 $new_event['video_id'] = $video_id;
                             }
 
+                            $person_id = $this->GetArrayElem($event, 'person_id', '');
+                            if ($person_id != '') {
+                                $new_event['person_id'] = $person_id;
+                            }
+
                             $message = $this->GetArrayElem($event, 'message', '');
                             if ($message != '') {
                                 $new_event['message'] = $message;
+                            }
+
+                            $video_status = $this->GetArrayElem($event, 'video_status', '');
+                            if ($video_status != '') {
+                                $new_event['video_status'] = $video_status;
+                            }
+
+                            $is_arrival = $this->GetArrayElem($event, 'is_arrival', '');
+                            if ($is_arrival != '') {
+                                $new_event['is_arrival'] = $is_arrival;
                             }
 
                             $new_subevents = [];
@@ -435,12 +451,25 @@ class NetatmoSecurityCamera extends IPSModule
                                     $new_subevents[] = $new_subevent;
                                 }
                                 $new_event['subevents'] = $new_subevents;
-                                $got_new_event = true;
                             }
 
+                            $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
                             $new_events[] = $new_event;
-                        }
+
+							$fnd = false;
+							foreach ($old_events as $old_event) {
+								if ($old_event['id'] == $new_event['id']) {
+									$fnd = true;
+									break;
+								}
+							}
+							if ($fnd == false) {
+								$n_new_events++;
+							}
+						}
                     }
+
+					$this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($new_events), 0);
 
                     if ($old_events != '') {
                         foreach ($old_events as $old_event) {
@@ -485,7 +514,7 @@ class NetatmoSecurityCamera extends IPSModule
                     }
 
                     $with_last_event = $this->ReadPropertyBoolean('with_last_event');
-                    if ($with_last_event && $got_new_event) {
+                    if ($with_last_event && $n_new_events > 0) {
                         $this->SetValue('LastEvent', $now);
                     }
 

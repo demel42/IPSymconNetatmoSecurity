@@ -40,7 +40,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyInteger('webhook_script', 0);
 
-        $this->RegisterPropertyBoolean('create_persons', 0);
+        $this->RegisterPropertyBoolean('create_persons', false);
 
         $associations = [];
         $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
@@ -465,12 +465,14 @@ class NetatmoSecurityCamera extends IPSModule
                             $new_events[] = $new_event;
 
                             $fnd = false;
-                            foreach ($old_events as $old_event) {
-                                if ($old_event['id'] == $new_event['id']) {
-                                    $fnd = true;
-                                    break;
-                                }
-                            }
+							if ($old_events != '') {
+								foreach ($old_events as $old_event) {
+									if ($old_event['id'] == $new_event['id']) {
+										$fnd = true;
+										break;
+									}
+								}
+							}
                             if ($fnd == false) {
                                 $n_new_events++;
                             }
@@ -512,6 +514,36 @@ class NetatmoSecurityCamera extends IPSModule
                         $this->SetValue('Events', $s);
                     }
 
+                    $with_last_event = $this->ReadPropertyBoolean('with_last_event');
+                    if ($with_last_event && $n_new_events > 0) {
+                        $this->SetValue('LastEvent', $now);
+                    }
+
+					$create_persons = $this->ReadPropertyBoolean('create_persons');
+					if ($create_persons) { 
+						$persons = $this->GetArrayElem($home, 'persons', '');
+						if ($persons != '') {
+							foreach ($persons as $person) {
+								$this->SendDebug(__FUNCTION__, 'decode person=' . print_r($person, true), 0);
+
+								$id = $person['id'];
+								$pseudo = $person['pseudo'];
+
+								/*
+								$last_seen = $this->GetArrayElem($person, 'last_seen', 0);
+								$var = 'PersonLastSeen_' . $id;
+								$this->MaintainVariable($var, $pseudo . ' ' . $this->Translate('last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', 0, true);
+								$this->SetValue($var, $last_seen);
+
+								$out_of_sight = $this->GetArrayElem($person, 'out_of_sight', false);
+								$var = 'PersonPresence_' . $id;
+								$this->MaintainVariable($var, $pseudo . ' ' . $this->Translate('presence'), VARIABLETYPE_BOOLEAN, '', 0, true);
+								$this->SetValue($var, ! $out_of_sight);
+								*/
+							}
+						}
+					}
+
                     $status = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
                     $this->SetValue('Status', $status);
 
@@ -520,12 +552,6 @@ class NetatmoSecurityCamera extends IPSModule
                         $tstamp = $this->GetArrayElem($jdata, 'time_server', 0);
                         $this->SetValue('LastContact', $tstamp);
                     }
-
-                    $with_last_event = $this->ReadPropertyBoolean('with_last_event');
-                    if ($with_last_event && $n_new_events > 0) {
-                        $this->SetValue('LastEvent', $now);
-                    }
-
                     break;
                 case 'EVENT':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
@@ -580,6 +606,28 @@ class NetatmoSecurityCamera extends IPSModule
                                 $new_notifications[] = $new_notification;
                                 $got_new_notification = true;
                                 break;
+                            case 'NACamera-movement':
+                            case 'NACamera-person':
+                                $event_id = $this->GetArrayElem($notification, 'event_id', '');
+                                $event_type = $this->GetArrayElem($notification, 'event_type', '');
+                                $message = $this->GetArrayElem($notification, 'message', '');
+                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
+                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
+                                $new_notification = [
+                                        'tstamp'       => $now,
+                                        'id'           => $event_id,
+                                        'push_type'    => $push_type,
+                                        'event_type'   => $event_type,
+                                        'message'      => $message,
+                                        'snapshot_id'  => $snapshot_id,
+                                        'snapshot_key' => $snapshot_key,
+                                    ];
+                                $new_notifications[] = $new_notification;
+                                $got_new_notification = true;
+                                break;
+							case 'NACamera-alarm_started':
+                            case 'NACamera-off':
+                            case 'NACamera-on':
                             case 'NOC-connection':
                             case 'NOC-disconnection':
                             case 'NOC-light_mode':
@@ -604,11 +652,16 @@ class NetatmoSecurityCamera extends IPSModule
                                         case 'NOC-movement':
                                             $message = $this->Translate('Movement detected');
                                             break;
+										case 'NACamera-on':
                                         case 'NOC-off':
                                             $message = $this->Translate('Monitoring disabled');
                                             break;
+										case 'NACamera-off':
                                         case 'NOC-on':
                                             $message = $this->Translate('Monitoring enabled');
+                                            break;
+										case 'NACamera-alarm_started':
+                                            $message = $this->Translate('Alarm started');
                                             break;
                                         default:
                                             $message = $event_type . '-' . $sub_type;
@@ -1203,9 +1256,9 @@ class NetatmoSecurityCamera extends IPSModule
             die('File not found!');
         }
         $path = parse_url($uri, PHP_URL_PATH);
-        $basename = substr($path, strlen($hook));
-        if (substr($basename, 0, 1) == '/') {
-            $basename = substr($basename, 1);
+        $command = substr($path, strlen($hook));
+        if (substr($command, 0, 1) == '/') {
+            $command = substr($command, 1);
         }
 
         $webhook_script = $this->ReadPropertyInteger('webhook_script');
@@ -1213,13 +1266,13 @@ class NetatmoSecurityCamera extends IPSModule
         $mode = isset($_GET['result']) ? $_GET['result'] : 'html';
         $opts = [
                 'InstanceID' => $this->InstanceID,
-                'function'   => $basename,
+                'command'    => $command,
                 '_SERVER'    => json_encode($_SERVER),
                 '_GET'       => json_encode($_GET),
             ];
 
-        $this->SendDebug(__FUNCTION__, 'basename=' . $basename, 0);
-        switch ($basename) {
+        $this->SendDebug(__FUNCTION__, 'command=' . $command, 0);
+        switch ($command) {
             case 'video':
                 if (isset($_GET['life'])) {
                     $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
@@ -1437,7 +1490,7 @@ class NetatmoSecurityCamera extends IPSModule
                 return;
                 break;
             default:
-                $path = realpath($root . '/' . $basename);
+                $path = realpath($root . '/' . $command);
                 if ($path === false) {
                     http_response_code(404);
                     die('File not found!');

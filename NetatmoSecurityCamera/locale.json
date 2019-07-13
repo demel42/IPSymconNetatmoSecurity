@@ -52,6 +52,7 @@
 			"Movement detected": "Bewegung erkannt",
 			"Monitoring disabled": "Überwachung deaktiviert",
 			"Monitoring enabled": "Überwachung aktiviert",
+			"Alarm started": "Alarm aktiviert",
 
             "No": "Nein",
             "Yes": "Ja",
@@ -65,6 +66,9 @@
 			"unusable": "unbrauchbar",
 			"good": "gut",
 			"bad": "schlecht",
+
+			"last seen": "zuletzt gesehen",
+			"presence": "Anwesenheit",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

@@ -180,7 +180,14 @@ Das _Kommando_ wird an den angegenegen WebHook angehängt.
 
 Bei allen Aufrufen zu Videos kann die Option _resolution=\<resolution\>_ hinzugefügt werden; mögliche Werte sind  _poor_, _low_, _medium_, _high_, Standardwert ist _high_.
 
-Bei allen Aufrufen kann Option _result=url_ hinzugefügt werden; dann wird die reine URL, ansonsten ein einbettbarer HTML-Code geliefert.
+Bei allen Aufrufen kann Option _result_ angfügt werden
+
+| Option | Beschreibung |
+| :----- | :------------| 
+| html   | Standardwert, liefert einen kleine HMTL-Code, der per _iframe_ eigebunden werden kann |
+| url    | es wird die reine URL, ansonsten ein einbettbarer HTML-Code geliefert |
+| custon | es wird das in der Konfiguration angegebene Script aufgerufen.
+Dem Script wird die ermittelte _url_ übergeben sowie *_SERVER* und *_GET*. Das Ergebnis wird als Ergebnis des Webhook ausgegeben |
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
@@ -226,6 +233,7 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | letzte Benachrichtigung  | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
 |                          |                |              | |
 | Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
+|  ... Script              | integer        |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
 |                          |                |              | |
 | Ereignisse               |                |              | |
 |  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters |
@@ -238,6 +246,7 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... Verzeichnis         | path           |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
 |  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters |
 |                          |                |              | |
+| Benachrichtigungen       |                |              | |
 |  ... Script              | integer        |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
 |                          |                |              | |
 

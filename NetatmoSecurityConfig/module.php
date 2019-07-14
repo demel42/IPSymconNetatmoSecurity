@@ -10,6 +10,8 @@ class NetatmoSecurityConfig extends IPSModule
     {
         parent::Create();
 
+		$this->RegisterPropertyInteger('ImportCategoryID', 0);
+
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
     }
 
@@ -18,6 +20,22 @@ class NetatmoSecurityConfig extends IPSModule
         parent::ApplyChanges();
 
         $this->SetStatus(IS_ACTIVE);
+    }
+
+    private function SetLocation()
+    {
+        $category = $this->ReadPropertyInteger('ImportCategoryID');
+        $tree_position = [];
+        $tree_position[] = IPS_GetName($category);
+        $parent = IPS_GetObject($category)['ParentID'];
+        while ($parent > 0) {
+            if ($parent > 0) {
+                $tree_position[] = IPS_GetName($parent);
+            }
+            $parent = IPS_GetObject($parent)['ParentID'];
+        }
+        $tree_position = array_reverse($tree_position);
+        return $tree_position;
     }
 
     private function buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category)
@@ -34,6 +52,7 @@ class NetatmoSecurityConfig extends IPSModule
 
         $create = [
                     'moduleID'       => $guid,
+					'location'      => $this->SetLocation(),
                     'configuration'  => [
                             'product_type' => $product_type,
                             'product_id'   => $product_id,
@@ -167,8 +186,12 @@ class NetatmoSecurityConfig extends IPSModule
             'values' => $entries,
         ];
 
+        $formElements = [];
+		$formElements[] = ['type' => 'Label', 'label' => 'category for products to be created:'];
+		$formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
+        $formElements[] = $configurator;
+
         $formActions = [];
-        $formActions[] = $configurator;
         $formActions[] = ['type' => 'Label', 'label' => '____________________________________________________________________________________________________'];
         $formActions[] = [
                             'type'    => 'Button',
@@ -178,6 +201,6 @@ class NetatmoSecurityConfig extends IPSModule
 
         $formStatus = $this->GetFormStatus();
 
-        return json_encode(['actions' => $formActions, 'status' => $formStatus]);
+        return json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
     }
 }

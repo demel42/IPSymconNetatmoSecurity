@@ -40,7 +40,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyInteger('webhook_script', 0);
 
-        $this->RegisterPropertyBoolean('create_persons', false);
+		$this->RegisterPropertyInteger('ImportCategoryID', 0);
 
         $associations = [];
         $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
@@ -177,6 +177,130 @@ class NetatmoSecurityCamera extends IPSModule
         }
     }
 
+    private function SetLocation()
+    {
+        $category = $this->ReadPropertyInteger('ImportCategoryID');
+        $tree_position = [];
+        $tree_position[] = IPS_GetName($category);
+        $parent = IPS_GetObject($category)['ParentID'];
+        while ($parent > 0) {
+            if ($parent > 0) {
+                $tree_position[] = IPS_GetName($parent);
+            }
+            $parent = IPS_GetObject($parent)['ParentID'];
+        }
+        $tree_position = array_reverse($tree_position);
+        return $tree_position;
+    }
+
+    private function GetConfigurator4Person()
+    {
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, "data=$data", 0);
+
+		$guid = '{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}';
+        $instIDs = IPS_GetInstanceListByModuleID($guid);
+
+        $entries = [];
+
+        if ($data != '') {
+
+        $home_id = $this->ReadPropertyString('home_id');
+        $product_id = $this->ReadPropertyString('product_id');
+            $jdata = json_decode($data, true);
+
+            $homes = $jdata['body']['homes'];
+            foreach ($homes as $home) {
+                $home_name = $home['name'];
+                $home_id = $home['id'];
+                if (isset($home['persons'])) {
+                    $persons = $home['persons'];
+                    if ($persons != '') {
+                        foreach ($persons as $person) {
+
+							$this->SendDebug(__FUNCTION__, 'person=' . print_r($person, true), 0);
+
+                            $person_id = $person['id'];
+							$pseudo = $this->GetArrayElem($person, 'pseudo', '');
+
+							$instID = 0;
+							foreach ($instIDs as $id) {
+								$persID = IPS_GetProperty($id, 'person_id');
+								if ($persID == $person_id) {
+									$instID = $id;
+									break;
+								}
+							}
+
+							$create = [
+										'moduleID'       => $guid,
+										'location'      => $this->SetLocation(),
+										'configuration'  => [
+												'pseudo'     => $pseudo,
+												'person_id' => $person_id,
+												'home_id'    => $home_id,
+											]
+										];
+							if (IPS_GetKernelVersion() >= 5.1) {
+								$create['info'] = $home_name . '\\' . $pseudo;
+							}
+
+							$entry = [
+									'home'       => $home_name,
+									'name'       => $pseudo,
+									'person_id' => $person_id,
+									'instanceID' => $instID,
+									'create'     => $create,
+								];
+                            $entries[] = $entry;
+                        }
+                    }
+                }
+            }
+        }
+
+		if (count($entries) > 0) {
+			$configurator = [
+				'type'    => 'Configurator',
+				'name'    => 'persons',
+				'caption' => 'Persons',
+
+				'rowCount' => count($entries),
+
+				'add'    => false,
+				'delete' => false,
+				'sort'   => [
+					'column'    => 'name',
+					'direction' => 'ascending'
+				],
+				'columns' => [
+					[
+						'caption' => 'Home',
+						'name'    => 'home',
+						'width'   => '200px'
+					],
+					[
+						'caption' => 'Pseudonym',
+						'name'    => 'name',
+						'width'   => 'auto'
+					],
+					[
+						'caption' => 'Id',
+						'name'    => 'person_id',
+						'width'   => '200px'
+					]
+				],
+				'values' => $entries,
+			];
+		} else {
+			$configurator = false;
+		}
+
+		return $configurator;
+    }
+
     public function GetConfigurationForm()
     {
         $formElements = [];
@@ -221,7 +345,13 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
         $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
         if ($product_type == 'NACamera') {
-            $formElements[] = ['type' => 'CheckBox', 'name' => 'create_persons', 'caption' => 'create Persons'];
+			$configurator = $this->GetConfigurator4Person();
+			if ($configurator != false) {
+				$formElements[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
+				$formElements[] = ['type' => 'Label', 'label' => 'category for persons to be created:'];
+				$formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
+				$formElements[] = $configurator;
+			}
         }
 
         $formActions = [];
@@ -273,10 +403,6 @@ class NetatmoSecurityCamera extends IPSModule
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');
 
         $now = time();
-
-        $err = '';
-        $statuscode = 0;
-        $do_abort = false;
 
         $this->SendDebug(__FUNCTION__, 'source=' . $source, 0);
 
@@ -517,31 +643,6 @@ class NetatmoSecurityCamera extends IPSModule
                     $with_last_event = $this->ReadPropertyBoolean('with_last_event');
                     if ($with_last_event && $n_new_events > 0) {
                         $this->SetValue('LastEvent', $now);
-                    }
-
-                    $create_persons = $this->ReadPropertyBoolean('create_persons');
-                    if ($create_persons) {
-                        $persons = $this->GetArrayElem($home, 'persons', '');
-                        if ($persons != '') {
-                            foreach ($persons as $person) {
-                                $this->SendDebug(__FUNCTION__, 'decode person=' . print_r($person, true), 0);
-
-                                $id = $person['id'];
-                                $pseudo = $person['pseudo'];
-
-                                /*
-                                $last_seen = $this->GetArrayElem($person, 'last_seen', 0);
-                                $var = 'PersonLastSeen_' . $id;
-                                $this->MaintainVariable($var, $pseudo . ' ' . $this->Translate('last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', 0, true);
-                                $this->SetValue($var, $last_seen);
-
-                                $out_of_sight = $this->GetArrayElem($person, 'out_of_sight', false);
-                                $var = 'PersonPresence_' . $id;
-                                $this->MaintainVariable($var, $pseudo . ' ' . $this->Translate('presence'), VARIABLETYPE_BOOLEAN, '', 0, true);
-                                $this->SetValue($var, ! $out_of_sight);
-                                */
-                            }
-                        }
                     }
 
                     $status = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;

@@ -86,7 +86,7 @@ Hinweis:
 
 Der Aufruf des Konfigurators kann jederzeit wiederholt werden.
 
-Die Produkte werden aufgrund der _Produkt-ID_ sowie der _Haus-ID_ identifiziert.
+Die Produkte werden aufgrund der _Produkt-ID_ sowie der _Heim-ID_ identifiziert.
 
 Zu den Geräte-Instanzen werden im Rahmen der Konfiguration Produkttyp-abhängig Variablen angelegt. Zusätzlich kann man in dem Modultyp-spezifischen Konfigurationsdialog weitere Variablen aktivieren.
 
@@ -233,7 +233,7 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | :----------------------- | :------------- | :----------- | :----------- |
 | Produkt-Typ              | string         |              | Identifikation, z.Zt _NACamera_, _NOC_ |
 | Produkt-ID               | string         |              | ID des Produktes |
-| Haus-ID                  | string         |              | ID des "Hauses" |
+| Heim-ID                  | string         |              | ID des "Heims" |
 |                          |                |              | |
 | letzte Kommunikation     | UNIX-Timestamp | Nein         | letzte Kommunikation mit dem Netatmo-Server |
 | letztes Ereignis         | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
@@ -338,9 +338,10 @@ GUIDs
   - NetatmoSecurityIO: `{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}`
   - NetatmoSecurityConfig: `{C4834515-843B-4B91-A998-6EA29FD9E7A8}`
   - NetatmoSecurityCamera: `{06D589CF-7789-44B1-A0EC-6F51428352E6}`
+  - NetatmoSecurityPerson: `{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}`
 - Nachrichten:
   - `{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}`: an NetatmoSecurityIO
-  - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera
+  - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
 

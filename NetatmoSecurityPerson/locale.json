@@ -1,26 +1,18 @@
 {
 	"translations": {
 		"de": {
-			"Product": "Produkt",
-			"Products": "Produkte",
+			"Instance is disabled": "Instanz ist deaktiviert",
 
-			"Camera": "Kamera",
-			"Outdoor camera": "Aussenkamera",
-			"Indoor camera": "Innenkamera",
-			"Smoke detector": "Rauchmelder",
+			"Netatmo Persons": "Netatmo Personen",
 
-			"Category": "Kategorie",
-			"Home": "Heim",
-			"Name": "Name",
-			"Id": "Id",
-
-			"category for products to be created:": "Kategorie für anzulegende Produkte:",
-            "category": "Kategorie",
+			"Person-ID": "Personen-ID",
+			"Home-ID": "Heim-ID",
+			"Pseudonym": "Pseudonym",
 
 			"Module description": "Modulbeschreibung",
 
-			"selected product missing": "Ausgewähltes Produkt nicht gefunden",
-			"no product selected": "Kein Produkt ausgewählt",
+			"Last seen": "zuletzt gesehen",
+			"Presence": "Anwesenheit",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

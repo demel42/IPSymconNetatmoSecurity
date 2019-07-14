@@ -1,13 +1,23 @@
 {
 	"translations": {
 		"de": {
+			"Instance is disabled": "Instanz ist deaktiviert",
+
 			"Netatmo camera": "Netatmo Kamera",
 			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",
 			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
 
 			"Product-Type": "Produkt-Typ",
 			"Product-ID": "Produkt-ID",
-			"Home-ID": "Haus-ID",
+			"Home-ID": "Heim-ID",
+
+			"Persons": "Personen",
+			"Home": "Heim",
+			"Pseudonym": "Pseudonym",
+			"Id": "Id",
+
+			"category for persons to be created:": "Kategorie für anzulegende Personen:",
+            "category": "Kategorie",
 
 			"Module description": "Modulbeschreibung",
 
@@ -25,13 +35,10 @@
 
 			" ... Custom script": " ... Benutzerdefiniertes Script",
 
-			"create Persons": "Personen anlegen",
-
 			"Power state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",
 			"Camera state": "Kamera",
 			"Events": "Ereignisse",
-			"Instance is disabled": "Instanz ist deaktiviert",
 			" ... last communication with Netatmo": " ... letzte Kommunikation mit Netatmo",
 			" ... last event from Netatmo": " ... letztes Ereignis von Netatmo",
 			" ... last notification from Netatmo": " ... letzte Benachrichtigung von Netatmo",

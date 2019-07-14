@@ -115,7 +115,7 @@ class NetatmoSecurityPerson extends IPSModule
                             if ($home_id != $home['id']) {
                                 continue;
                             }
-							$persons = $this->GetArrayElem($home, 'persons', '');
+                            $persons = $this->GetArrayElem($home, 'persons', '');
                             if ($persons != '') {
                                 foreach ($persons as $person) {
                                     if ($person_id != $person['id']) {

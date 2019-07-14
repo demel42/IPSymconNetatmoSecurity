@@ -107,16 +107,19 @@ liefert die externe URL der Kamera zurück
 `NetatmoSecurityCamera_GetLocalUrl(int $InstanzID)`<br>
 liefert die interne URL der Kamera zurück oder _false_, wenn nicht vorhanden
 
-`NetatmoSecurityCamera_GetLiveVideoUrl(int $InstanzID, string $resolution)`
+`NetatmoSecurityCamera_GetLiveVideoUrl(int $InstanzID, string $resolution, bool $preferLocal)`
 liefert die (interne oder externe) URL des Live-Videos der Kamera zurück oder _false_, wenn nicht vorhanden.
-_resolution_ ist _poor_, _low_, _medium_, _high_.
+_resolution_ hat die Ausprägungen: _poor_, _low_, _medium_, _high_.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
-`NetatmoSecurityCamera_GetLiveSnapshotUrl(int $InstanzID)`<br>
+`NetatmoSecurityCamera_GetLiveSnapshotUrl(int $InstanzID, bool $preferLocal)`<br>
 liefert die (interne oder externe) URL des Live-Snapshots der Kamera zurück oder _false_, wenn nicht vorhanden
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
-`NetatmoSecurityCamera_GetVideoUrl(int $InstanzID, string $video_id, string $resolution)`<br>
+`NetatmoSecurityCamera_GetVideoUrl(int $InstanzID, string $video_id, string $resolution, bool $preferLocal)`<br>
 liefert die (interne oder externe) URL eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden.
-_resolution_ ist _poor_, _low_, _medium_, _high_.
+_resolution_ hat die Ausprägungen: _poor_, _low_, _medium_, _high_.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
 `NetatmoSecurityCamera_GetPictureUrl(int $InstanzID, string $id, string $key)`<br>
 liefert die URL eines gespeicherten Bildes (_Snapshot_ oder _Vignette_) zurück oder _false_, wenn nicht vorhanden
@@ -151,15 +154,19 @@ Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
 `NetatmoSecurityCamera_SwitchCamera(int $InstanzID, int $mode)`<br>
 schaltet die Kamera (0=aus, 1=ein)
 
-`NetatmoSecurityCamera_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution)`<br>
+`NetatmoSecurityCamera_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution, bool $preferLocal)`<br>
 Liefert die URL des Videos zu einem bestimmten Event
+_resolution_ hat die Ausprägungen: _poor_, _low_, _medium_, _high_.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
-`NetatmoSecurityCamera_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id)`<br>
+`NetatmoSecurityCamera_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id, bool $preferLocal)`<br>
 Liefert die URL des Snapshot zu einem bestimmten Sub-Event.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 Anmerkung: als Snapshot bezeichnet Netatmo in diesem Zusammenhang das Bild, das zum Erzeugen eines Ereingnisses geführt hat
 
-`NetatmoSecurityCamera_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id)`<br>
+`NetatmoSecurityCamera_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id, bool $preferLocal)`<br>
 Liefert die URL der Vignette zu einem bestimmten Sub-Event.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildausschnitt, das zum Erzeugen eines Ereingnisses geführt hat
 
 #### WebHook
@@ -168,10 +175,10 @@ Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder z
 
 | Kommando                           | Bedeutung |
 | :--------------------------------- | :-------- |
-| video?life                         | liefert die (interne oder externe) URL zu dem Life-Video |
+| video?live                         | liefert die (interne oder externe) URL zu dem Life-Video |
 | video?event_id=\<event-id\>          | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
 |                                    | |
-| snapshot?life                      | liefert die (interne oder externe) URL zu dem Life-Snapshot |
+| snapshot?live                      | liefert die (interne oder externe) URL zu dem Life-Snapshot |
 | snapshot?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu dem Snapshot |
 |                                    | |
 | vignette?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu der Vignette |

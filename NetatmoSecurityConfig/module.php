@@ -192,7 +192,6 @@ class NetatmoSecurityConfig extends IPSModule
         $formElements[] = $configurator;
 
         $formActions = [];
-        $formActions[] = ['type' => 'Label', 'label' => '____________________________________________________________________________________________________'];
         $formActions[] = [
                             'type'    => 'Button',
                             'caption' => 'Module description',

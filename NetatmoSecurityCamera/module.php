@@ -353,7 +353,6 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $formActions = [];
-        $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
         $formActions[] = [
                             'type'    => 'Button',
                             'caption' => 'Module description',

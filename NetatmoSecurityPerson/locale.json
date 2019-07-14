@@ -14,6 +14,9 @@
 			"Last seen": "zuletzt gesehen",
 			"Presence": "Anwesenheit",
 
+			"present": "anwesend",
+			"absent": "abwesend",
+
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
 			"Instance is deleted": "Instanz wird gelöscht",

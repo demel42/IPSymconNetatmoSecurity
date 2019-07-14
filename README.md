@@ -270,6 +270,9 @@ Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit de
 ### Variablenprofile
 
 Es werden folgende Variablenprofile angelegt:
+* Boolean<br>
+NetatmoSecurity.Presence
+
 * Integer<br>
 NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, <br>
 NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.LightIntensity, <br>

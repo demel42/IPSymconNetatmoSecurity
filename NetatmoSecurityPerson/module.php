@@ -18,6 +18,11 @@ class NetatmoSecurityPerson extends IPSModule
         $this->RegisterPropertyString('home_id', '');
         $this->RegisterPropertyString('pseudo', '');
 
+        $associations = [];
+        $associations[] = ['Wert' => false, 'Name' => $this->Translate('absent'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => true, 'Name' => $this->Translate('present'), 'Farbe' => -1];
+        $this->CreateVarProfile('NetatmoSecurity.Presence', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 1, '', $associations);
+
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
@@ -36,7 +41,7 @@ class NetatmoSecurityPerson extends IPSModule
         $vpos = 0;
 
         $this->MaintainVariable('LastSeen', $this->Translate('Last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
-        $this->MaintainVariable('Presence', $this->Translate('Presence'), VARIABLETYPE_BOOLEAN, '', $vpos++, true);
+        $this->MaintainVariable('Presence', $this->Translate('Presence'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.Presence', $vpos++, true);
 
         $person_id = $this->ReadPropertyString('person_id');
         $pseudo = $this->ReadPropertyString('pseudo');

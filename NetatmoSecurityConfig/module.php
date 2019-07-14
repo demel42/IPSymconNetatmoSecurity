@@ -10,7 +10,7 @@ class NetatmoSecurityConfig extends IPSModule
     {
         parent::Create();
 
-		$this->RegisterPropertyInteger('ImportCategoryID', 0);
+        $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
     }
@@ -52,7 +52,7 @@ class NetatmoSecurityConfig extends IPSModule
 
         $create = [
                     'moduleID'       => $guid,
-					'location'      => $this->SetLocation(),
+                    'location'       => $this->SetLocation(),
                     'configuration'  => [
                             'product_type' => $product_type,
                             'product_id'   => $product_id,
@@ -187,8 +187,8 @@ class NetatmoSecurityConfig extends IPSModule
         ];
 
         $formElements = [];
-		$formElements[] = ['type' => 'Label', 'label' => 'category for products to be created:'];
-		$formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
+        $formElements[] = ['type' => 'Label', 'label' => 'category for products to be created:'];
+        $formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
         $formElements[] = $configurator;
 
         $formActions = [];

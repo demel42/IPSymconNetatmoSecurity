@@ -33,7 +33,7 @@ class NetatmoSecurityPerson extends IPSModule
             return;
         }
 
-		$vpos = 0;
+        $vpos = 0;
 
         $this->MaintainVariable('LastSeen', $this->Translate('Last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('Presence', $this->Translate('Presence'), VARIABLETYPE_BOOLEAN, '', $vpos++, true);
@@ -60,10 +60,10 @@ class NetatmoSecurityPerson extends IPSModule
 
         $formElements[] = ['type' => 'CheckBox', 'name' => 'module_disable', 'caption' => 'Instance is disabled'];
 
-		$formElements[] = ['type' => 'Label', 'caption' => 'Netatmo Persons'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Netatmo Persons'];
 
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'person_id', 'caption' => 'Person-ID'];
-		$formElements[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
+        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
 
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'pseudo', 'caption' => 'Pseudonym'];
 
@@ -110,22 +110,22 @@ class NetatmoSecurityPerson extends IPSModule
                             if ($home_id != $home['id']) {
                                 continue;
                             }
-							if ($persons != '') {
-								foreach ($persons as $person) {
-									if ($person_id != $person['id']) {
-										continue;
-									}
-									$this->SendDebug(__FUNCTION__, 'decode person=' . print_r($person, true), 0);
+                            if ($persons != '') {
+                                foreach ($persons as $person) {
+                                    if ($person_id != $person['id']) {
+                                        continue;
+                                    }
+                                    $this->SendDebug(__FUNCTION__, 'decode person=' . print_r($person, true), 0);
 
-									$last_seen = $this->GetArrayElem($person, 'last_seen', 0);
-									$this->SetValue('LastSeen', $last_seen);
+                                    $last_seen = $this->GetArrayElem($person, 'last_seen', 0);
+                                    $this->SetValue('LastSeen', $last_seen);
 
-									$out_of_sight = $this->GetArrayElem($person, 'out_of_sight', false);
-									$this->SetValue('Presence', ! $out_of_sight);
-								}
-							}
-						}
-					}
+                                    $out_of_sight = $this->GetArrayElem($person, 'out_of_sight', false);
+                                    $this->SetValue('Presence', !$out_of_sight);
+                                }
+                            }
+                        }
+                    }
                     break;
                 case 'EVENT':
                     break;
@@ -139,5 +139,4 @@ class NetatmoSecurityPerson extends IPSModule
 
         $this->SetStatus(IS_ACTIVE);
     }
-
 }

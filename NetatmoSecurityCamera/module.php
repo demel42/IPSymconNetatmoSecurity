@@ -998,7 +998,7 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-		$url = $preferLocal ? $this->determineLocalUrl() : false;
+        $url = $preferLocal ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -1016,7 +1016,7 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetLiveSnapshotUrl(bool $preferLocal)
     {
-		$url = $preferLocal ? $this->determineLocalUrl() : false;
+        $url = $preferLocal ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -1041,7 +1041,7 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-		$url = $preferLocal ? $this->determineLocalUrl() : false;
+        $url = $preferLocal ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -1066,7 +1066,7 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetPictureUrl4Filename(string $filename, bool $preferLocal)
     {
-		$url = $preferLocal ? $this->determineLocalUrl() : false;
+        $url = $preferLocal ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -1354,29 +1354,29 @@ class NetatmoSecurityCamera extends IPSModule
 
     protected function buildHtml($url)
     {
-		$html = '<html>';
-		if (preg_match('/\.mp4$/', $url)) {
-			$html .= '<body>';
-			$html .= '<video>';
-			$html .= '  <source src="' . $url . '" type="video/mp4" />';
-			$html .= '</video>';
-			$html .= '</body>';
-		} else if (preg_match('/\.m3u8$/', $url)) {
-			$html .= '<head>';
-			$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-			$html .= '</head>';
-			$html .= '<body>';
-			$html .= '</body>';
-		} else if (preg_match('/\.jpg$/', $url)) {
-			$html .= '<head>';
-			$html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
-			$html .= '</head>';
-			$html .= '<body>';
-			$html .= '</body>';
-		}
-		$html .= '</html>';
+        $html = '<html>';
+        if (preg_match('/\.mp4$/', $url)) {
+            $html .= '<body>';
+            $html .= '<video>';
+            $html .= '  <source src="' . $url . '" type="video/mp4" />';
+            $html .= '</video>';
+            $html .= '</body>';
+        } elseif (preg_match('/\.m3u8$/', $url)) {
+            $html .= '<head>';
+            $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+            $html .= '</head>';
+            $html .= '<body>';
+            $html .= '</body>';
+        } elseif (preg_match('/\.jpg$/', $url)) {
+            $html .= '<head>';
+            $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+            $html .= '</head>';
+            $html .= '<body>';
+            $html .= '</body>';
+        }
+        $html .= '</html>';
 
-		return $html;
+        return $html;
     }
 
     protected function ProcessHookData()
@@ -1402,7 +1402,7 @@ class NetatmoSecurityCamera extends IPSModule
         }
         $this->SendDebug(__FUNCTION__, 'command=' . $command, 0);
 
-		$preferLocal = !preg_match('/\.ipmagic.de$/', $_SERVER['HTTP_HOST']);
+        $preferLocal = !preg_match('/\.ipmagic.de$/', $_SERVER['HTTP_HOST']);
 
         $webhook_script = $this->ReadPropertyInteger('webhook_script');
 
@@ -1414,7 +1414,7 @@ class NetatmoSecurityCamera extends IPSModule
                 '_GET'       => json_encode($_GET),
             ];
 
-		$url = false;
+        $url = false;
 
         switch ($command) {
             case 'video':
@@ -1423,73 +1423,73 @@ class NetatmoSecurityCamera extends IPSModule
                     $this->SendDebug(__FUNCTION__, 'live, resolution=' . $resolution, 0);
                     $url = $this->GetLiveVideoUrl($resolution, $preferLocal);
                 }
-				if (isset($_GET['event_id'])) {
-					$event_id = $_GET['event_id'];
-					$resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
-					$this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', resolution=' . $resolution, 0);
-					if ($event_id == '') {
-						http_response_code(404);
-						die('event_id missing');
-					}
-					$url = $this->GetVideoUrl4Event($event_id, $resolution, $preferLocal);
-				}
+                if (isset($_GET['event_id'])) {
+                    $event_id = $_GET['event_id'];
+                    $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
+                    $this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', resolution=' . $resolution, 0);
+                    if ($event_id == '') {
+                        http_response_code(404);
+                        die('event_id missing');
+                    }
+                    $url = $this->GetVideoUrl4Event($event_id, $resolution, $preferLocal);
+                }
                 break;
             case 'snapshot':
                 if (isset($_GET['live'])) {
                     $this->SendDebug(__FUNCTION__, 'live', 0);
                     $url = $this->GetLiveSnapshotUrl($preferLocal);
                 }
-				if (isset($_GET['subevent_id'])) {
-					$subevent_id = $_GET['subevent_id'];
-					$this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
-					if ($subevent_id == '') {
-						http_response_code(404);
-						die('subevent_id missing');
-					}
-					$url = $this->GetSnapshotUrl4Subevent($subevent_id, $preferLocal);
-				}
+                if (isset($_GET['subevent_id'])) {
+                    $subevent_id = $_GET['subevent_id'];
+                    $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
+                    if ($subevent_id == '') {
+                        http_response_code(404);
+                        die('subevent_id missing');
+                    }
+                    $url = $this->GetSnapshotUrl4Subevent($subevent_id, $preferLocal);
+                }
                 break;
             case 'vignette':
-				if (isset($_GET['subevent_id'])) {
-					$subevent_id = $_GET['subevent_id'];
-					$this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
-					if ($subevent_id == '') {
-						http_response_code(404);
-						die('subevent_id missing');
-					}
-					$url = $this->GetVignetteUrl4Subevent($subevent_id, $preferLocal);
+                if (isset($_GET['subevent_id'])) {
+                    $subevent_id = $_GET['subevent_id'];
+                    $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
+                    if ($subevent_id == '') {
+                        http_response_code(404);
+                        die('subevent_id missing');
+                    }
+                    $url = $this->GetVignetteUrl4Subevent($subevent_id, $preferLocal);
                 }
                 break;
             default:
-				break;
+                break;
         }
-		if ($url == false) {
-			http_response_code(404);
-			die('File not found!');
-		}
-		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
-		switch ($mode) {
-			case 'url':
-				$html = $url;
-				break;
-			case 'custom':
-				if ($webhook_script == 0) {
-					http_response_code(404);
-					die('no custom-script not found!');
-				}
-				$opts['url'] = $url;
-				$this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
-				$html = IPS_RunScriptWaitEx($webhook_script, $opts);
-				$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
-				break;
-			case 'html':
-				$html = $this->buildHtml($url);
-				break;
-			default:
-				http_response_code(404);
-				die('unknown result-mode!');
-		}
-		$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
-		echo $html;
+        if ($url == false) {
+            http_response_code(404);
+            die('File not found!');
+        }
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        switch ($mode) {
+            case 'url':
+                $html = $url;
+                break;
+            case 'custom':
+                if ($webhook_script == 0) {
+                    http_response_code(404);
+                    die('no custom-script not found!');
+                }
+                $opts['url'] = $url;
+                $this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
+                $html = IPS_RunScriptWaitEx($webhook_script, $opts);
+                $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+                break;
+            case 'html':
+                $html = $this->buildHtml($url);
+                break;
+            default:
+                http_response_code(404);
+                die('unknown result-mode!');
+        }
+        $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+        echo $html;
     }
 }

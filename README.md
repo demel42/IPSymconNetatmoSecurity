@@ -80,8 +80,7 @@ Zur Zeit werden die folgende Produkttypen unterstützt:
 | NACamera    | Indoor Camera (Welcome)   | NetatmoSecurityCamera |
 
 Hinweis:
-- _Presence_ konnte ich selbst testen
-- _Welcome_ ist, soweit es die Kamera betrifft, implementiert, da fehlt aber sicherlich noch das ein oder andere. Wenn jemand testet, würde ich das gerne ergänzen
+- _Presence_ und _Welcome_ sind soweit implementiert.
 - _Rauchmelder_ würde ich ergänzen, wenn jemand teste.
 
 Der Aufruf des Konfigurators kann jederzeit wiederholt werden.
@@ -169,6 +168,8 @@ Liefert die URL der Vignette zu einem bestimmten Sub-Event.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildausschnitt, das zum Erzeugen eines Ereingnisses geführt hat
 
+### NetatmoSecurityPerson
+
 `NetatmoSecurity_SetPersonHome(int $InstanzID)`<br>
 markiert die Person dieser Instanz als _anwesend_
 
@@ -208,9 +209,18 @@ Hinweis zu dem _custom_-Script:
 Dem Script wird übergeben:
 - die _InstanceID_
 - die ermittelte _url_ sowie bei dem Aruf des Live-Videos die URL des Live-Snapshots als _alternate_url_1
-- *_SERVER*, somit kann z.B.anhand von _HTTP_USER_AGENT_ Browserspezifische Einstellungen vorgenommen werden
-- *_GET*, so können diesem Script beliebige Zusatzinformationen übergeben werden
-Das Ergebnis wird als Ergebnis des Webhook ausgegeben
+- *_SERVER* als json-kodierter String, benutzen mit
+```
+$SERVER = json_decode($_IPS['_SERVER'], true);
+```
+Somit kann z.B.anhand von _$SERVER['HTTP_USER_AGENT']_ Browserspezifische Einstellungen vorgenommen werden
+- *_GET* als json-kodierter String, benutzen mit
+```
+$GET = json_decode($_IPS['_GET'], true);
+```
+so können diesem Script beliebige Zusatzinformationen übergeben werden.
+
+Das Ergebnis des Scriptes muss mit _echo_ ausgegeben werden und wird als Ergebnis des Webhook ausgegeben.
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 

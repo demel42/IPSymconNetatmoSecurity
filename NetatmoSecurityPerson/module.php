@@ -187,7 +187,7 @@ class NetatmoSecurityPerson extends IPSModule
                 $url .= 'setpersonsaway?home_id=' . rawurlencode($home_id) . '&person_id=' . rawurlencode($person_id);
                 break;
             case PRESENCE_ACTION_HOME:
-                $url .= 'setpersonshome?home_id=' . rawurlencode($home_id) . '&person_ids=' . rawurlencode(json_encode([ $person_id ]));
+                $url .= 'setpersonshome?home_id=' . rawurlencode($home_id) . '&person_ids=' . rawurlencode(json_encode([$person_id]));
                 break;
             case PRESENCE_ACTION_ALLAWAY:
                 $url .= 'setpersonsaway?home_id=' . rawurlencode($home_id);

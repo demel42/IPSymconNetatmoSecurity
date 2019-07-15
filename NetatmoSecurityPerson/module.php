@@ -54,9 +54,9 @@ class NetatmoSecurityPerson extends IPSModule
 
         $this->MaintainVariable('LastSeen', $this->Translate('Last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('Presence', $this->Translate('Presence'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.Presence', $vpos++, true);
-		$this->MaintainVariable('PresenceAction', $this->Translate('Change presence'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.PresenceAction', $vpos++, true);
+        $this->MaintainVariable('PresenceAction', $this->Translate('Change presence'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.PresenceAction', $vpos++, true);
 
-		$this->MaintainAction('PresenceAction', true);
+        $this->MaintainAction('PresenceAction', true);
 
         $person_id = $this->ReadPropertyString('person_id');
         $pseudo = $this->ReadPropertyString('pseudo');
@@ -143,7 +143,7 @@ class NetatmoSecurityPerson extends IPSModule
 
                                     $out_of_sight = $this->GetArrayElem($person, 'out_of_sight', false);
                                     $this->SetValue('Presence', !$out_of_sight);
-									$this->SetValue('PresenceAction', $out_of_sight ? PRESENCE_ACTION_HOME : PRESENCE_ACTION_AWAY);
+                                    $this->SetValue('PresenceAction', $out_of_sight ? PRESENCE_ACTION_HOME : PRESENCE_ACTION_AWAY);
                                 }
                             }
                         }
@@ -166,8 +166,8 @@ class NetatmoSecurityPerson extends IPSModule
     {
         switch ($Ident) {
             case 'PresenceAction':
-				$this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
-				$this->SwitchPresence($Value);
+                $this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
+                $this->SwitchPresence($Value);
                 break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident, 0);
@@ -180,19 +180,19 @@ class NetatmoSecurityPerson extends IPSModule
         $home_id = $this->ReadPropertyString('home_id');
         $person_id = $this->ReadPropertyString('person_id');
 
-		$url = 'https://api.netatmo.com/api/';
+        $url = 'https://api.netatmo.com/api/';
 
-		switch ($mode) {
-			case PRESENCE_ACTION_AWAY:
-				$url .= 'setpersonsaway?home_id=' . rawurlencode($home_id) . '&person_ids=' . '{' . rawurlencode($person_id) . '}' . '&size=1';
-				break;
-			case PRESENCE_ACTION_HOME:
-				$url .= 'setpersonshome?home_id=' . rawurlencode($home_id) . '&person_ids=' . '{' . rawurlencode($person_id) . '}' . '&size=1';
-				break;
-			case PRESENCE_ACTION_ALLAWAY:
-				$url .= 'setpersonsaway?home_id=' . rawurlencode($home_id);
-				break;
-			default:
+        switch ($mode) {
+            case PRESENCE_ACTION_AWAY:
+                $url .= 'setpersonsaway?home_id=' . rawurlencode($home_id) . '&person_ids=' . '{' . rawurlencode($person_id) . '}' . '&size=1';
+                break;
+            case PRESENCE_ACTION_HOME:
+                $url .= 'setpersonshome?home_id=' . rawurlencode($home_id) . '&person_ids=' . '{' . rawurlencode($person_id) . '}' . '&size=1';
+                break;
+            case PRESENCE_ACTION_ALLAWAY:
+                $url .= 'setpersonsaway?home_id=' . rawurlencode($home_id);
+                break;
+            default:
                 $err = 'unknown mode "' . $mode . '"';
                 $this->SendDebug(__FUNCTION__, $err, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
@@ -222,5 +222,4 @@ class NetatmoSecurityPerson extends IPSModule
     {
         return $this->SwitchPresence(PRESENCE_ACTION_ALLAWAY);
     }
-
 }

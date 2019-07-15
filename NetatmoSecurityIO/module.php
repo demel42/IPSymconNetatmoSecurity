@@ -172,9 +172,10 @@ class NetatmoSecurityIO extends IPSModule
                     $ret = $this->GetMultiBuffer('LastData');
                     break;
                 case 'CmdUrl':
-					$url = $jdata['Url'];
-					if (isset($jdata['NeedToken']) && $jdata['NeedToken'])
-						$url .= '&access_token=' . $this->GetToken();
+                    $url = $jdata['Url'];
+                    if (isset($jdata['NeedToken']) && $jdata['NeedToken']) {
+                        $url .= '&access_token=' . $this->GetToken();
+                    }
                     $ret = $this->SendCommand($url);
                     $this->SetTimerInterval('UpdateData', 1000);
                     break;

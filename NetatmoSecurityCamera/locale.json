@@ -35,6 +35,9 @@
 
 			" ... Custom script": " ... Benutzerdefiniertes Script",
 
+			" ... external IP": " ... externe IP",
+			" ... local CIDR's": " ... lokale CIDR's",
+
 			"Power state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",
 			"Camera state": "Kamera",

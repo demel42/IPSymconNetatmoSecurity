@@ -26,6 +26,9 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyString('hook', '');
 
+        $this->RegisterPropertyString('externalIP', '');
+        $this->RegisterPropertyString('localCIDRs', '');
+
         $this->RegisterPropertyInteger('event_max_age', '14');
         $this->RegisterPropertyInteger('notification_max_age', '2');
         if (EVENTS_AS_MEDIA) {
@@ -327,6 +330,8 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_notification', 'caption' => ' ... last notification from Netatmo'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'hook', 'caption' => 'WebHook'];
         $formElements[] = ['type' => 'SelectScript', 'name' => 'webhook_script', 'caption' => ' ... Custom script'];
+        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'externalIP', 'caption' => ' ... external IP'];
+        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'localCIDRs', 'caption' => ' ... local CIDR\'s'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Events'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'event_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
         if (EVENTS_AS_MEDIA) {
@@ -1349,7 +1354,33 @@ class NetatmoSecurityCamera extends IPSModule
         return $url;
     }
 
-    protected function buildHtml($url)
+	private function ipInCIDR ($ip, $cidr)
+	{
+		list ($net, $mask) = explode ('/', $cidr);
+		$ip_net = ip2long ($net);
+		if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $mask)) {
+			$ip_mask = ip2long ($mask);
+		} else {
+			$ip_mask = ~((1 << (32 - $mask)) - 1);
+		}
+		$ip_ip = ip2long ($ip);
+		return (($ip_ip & $ip_mask) == ($ip_net & $ip_mask));
+	}
+
+	private function deternmineIp($host)
+	{
+		if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $host)) {
+			$ip = $host;
+		} else {
+			$ip = gethostbyname($host);
+			if ($host == $ip) {
+				$ip = false;
+			}
+		}
+		return $ip;
+	}
+
+    private function buildHtml($url)
     {
         $html = '<html>';
         if (preg_match('/\.mp4$/', $url)) {
@@ -1399,7 +1430,45 @@ class NetatmoSecurityCamera extends IPSModule
         }
         $this->SendDebug(__FUNCTION__, 'command=' . $command, 0);
 
-        $preferLocal = !preg_match('/\.ipmagic.de$/', $_SERVER['HTTP_HOST']);
+		$externalIP = $this->ReadPropertyString('externalIP');
+		$localCIDRs = $this->ReadPropertyString('localCIDRs');
+
+		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
+			$ip = $this->deternmineIp($_SERVER['HTTP_X_FORWARDED_FOR']);
+			$s = 'HTTP_X_FORWARDED_FOR=' . $_SERVER['HTTP_X_FORWARDED_FOR'];
+		}
+		else if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != '') {
+			$ip = $this->deternmineIp($_SERVER['REMOTE_ADDR']);
+			$s = 'REMOTE_ADDR=' . $_SERVER['REMOTE_ADDR'];
+		}
+		else {
+			$ip = false;
+			$s = 'HTTP_HOST=' . $_SERVER['HTTP_HOST'];
+		}
+
+		$this->SendDebug(__FUNCTION__, 'externalIP=' . $externalIP . ', localCIDRs=' . $localCIDRs . ', ' . $s, 0);
+
+		if ($ip != false) {
+			$preferLocal = false;
+			if ($localCIDRs != '') {
+				$netmasks = explode (';', $localCIDRs);
+				foreach ($netmasks as $netmask) {
+					$preferLocal = $this->ipInCIDR($ip, $netmask);
+					if ($preferLocal)
+						break;
+				}
+			}
+			if (!$preferLocal && $externalIP != '') {
+				$external_ip = $this->deternmineIp($externalIP);
+				if ($external_ip != false)
+					$preferLocal = $ip == $external_ip;
+			}
+			$this->SendDebug(__FUNCTION__, 'ip=' . $ip . ', preferLocal=' . $this->bool2str($preferLocal), 0);
+		} else {
+			$this->SendDebug(__FUNCTION__, 'HTTP_HOST=' . $_SERVER['HTTP_HOST'], 0);
+			$preferLocal = !preg_match('/\.ipmagic.de$/', $_SERVER['HTTP_HOST']);
+			$this->SendDebug(__FUNCTION__, 'preferLocal=' . $this->bool2str($preferLocal), 0);
+		}
 
         $webhook_script = $this->ReadPropertyInteger('webhook_script');
 
@@ -1412,18 +1481,20 @@ class NetatmoSecurityCamera extends IPSModule
             ];
 
         $url = false;
+        $alternate_url = false;
 
         switch ($command) {
             case 'video':
                 if (isset($_GET['live'])) {
                     $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
-                    $this->SendDebug(__FUNCTION__, 'live, resolution=' . $resolution, 0);
+                    $this->SendDebug(__FUNCTION__, 'option=live, resolution=' . $resolution, 0);
                     $url = $this->GetLiveVideoUrl($resolution, $preferLocal);
+                    $alternate_url = $this->GetLiveSnapshotUrl($preferLocal);
                 }
                 if (isset($_GET['event_id'])) {
                     $event_id = $_GET['event_id'];
                     $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
-                    $this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', resolution=' . $resolution, 0);
+                    $this->SendDebug(__FUNCTION__, 'option=event_id=' . $event_id . ', resolution=' . $resolution, 0);
                     if ($event_id == '') {
                         http_response_code(404);
                         die('event_id missing');
@@ -1433,12 +1504,12 @@ class NetatmoSecurityCamera extends IPSModule
                 break;
             case 'snapshot':
                 if (isset($_GET['live'])) {
-                    $this->SendDebug(__FUNCTION__, 'live', 0);
+                    $this->SendDebug(__FUNCTION__, 'option=live', 0);
                     $url = $this->GetLiveSnapshotUrl($preferLocal);
                 }
                 if (isset($_GET['subevent_id'])) {
                     $subevent_id = $_GET['subevent_id'];
-                    $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
+                    $this->SendDebug(__FUNCTION__, 'option=subevent_id=' . $subevent_id, 0);
                     if ($subevent_id == '') {
                         http_response_code(404);
                         die('subevent_id missing');
@@ -1449,7 +1520,7 @@ class NetatmoSecurityCamera extends IPSModule
             case 'vignette':
                 if (isset($_GET['subevent_id'])) {
                     $subevent_id = $_GET['subevent_id'];
-                    $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id, 0);
+                    $this->SendDebug(__FUNCTION__, 'option=subevent_id=' . $subevent_id, 0);
                     if ($subevent_id == '') {
                         http_response_code(404);
                         die('subevent_id missing');
@@ -1464,7 +1535,7 @@ class NetatmoSecurityCamera extends IPSModule
             http_response_code(404);
             die('File not found!');
         }
-        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', alternate_url=' . $alternate_url, 0);
         switch ($mode) {
             case 'url':
                 $html = $url;
@@ -1475,6 +1546,8 @@ class NetatmoSecurityCamera extends IPSModule
                     die('no custom-script not found!');
                 }
                 $opts['url'] = $url;
+				if ($alternate_url != false)
+					$opts['alternate_url'] = $alternate_url;
                 $this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
                 $html = IPS_RunScriptWaitEx($webhook_script, $opts);
                 $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);

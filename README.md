@@ -173,14 +173,14 @@ Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildaussch
 
 Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder zurückgegriffen werden kann (siehe Konfigurationsdialog).
 
-| Kommando                           | Bedeutung |
-| :--------------------------------- | :-------- |
-| video?live                         | liefert die (interne oder externe) URL zu dem Life-Video |
+| Kommando                             | Bedeutung |
+| :----------------------------------- | :-------- |
+| video?live                           | liefert die (interne oder externe) URL zu dem Life-Video |
 | video?event_id=\<event-id\>          | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
-|                                    | |
-| snapshot?live                      | liefert die (interne oder externe) URL zu dem Life-Snapshot |
+|                                      | |
+| snapshot?live                        | liefert die (interne oder externe) URL zu dem Life-Snapshot |
 | snapshot?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu dem Snapshot |
-|                                    | |
+|                                      | |
 | vignette?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu der Vignette |
 
 Das _Kommando_ wird an den angegenegen WebHook angehängt.
@@ -193,8 +193,15 @@ Bei allen Aufrufen kann Option _result_ angfügt werden
 | :----- | :------------| 
 | html   | Standardwert, liefert einen kleine HMTL-Code, der per _iframe_ eigebunden werden kann |
 | url    | es wird die reine URL, ansonsten ein einbettbarer HTML-Code geliefert |
-| custon | es wird das in der Konfiguration angegebene Script aufgerufen.
-Dem Script wird die ermittelte _url_ übergeben sowie *_SERVER* und *_GET*. Das Ergebnis wird als Ergebnis des Webhook ausgegeben |
+| custon | es wird das in der Konfiguration angegebene Script aufgerufen. |
+
+Hinweis zu dem _custom_-Script:
+Dem Script wird übergeben:
+- die _InstanceID_
+- die ermittelte _url_ sowie bei dem Aruf des Live-Videos die URL des Live-Snapshots als _alternate_url_1
+- *_SERVER*, somit kann z.B.anhand von _HTTP_USER_AGENT_ Browserspezifische Einstellungen vorgenommen werden
+- *_GET*, so können diesem Script beliebige Zusatzinformationen übergeben werden
+Das Ergebnis wird als Ergebnis des Webhook ausgegeben
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
@@ -241,6 +248,8 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |                          |                |              | |
 | Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
 |  ... Script              | integer        |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
+|  ... externe IP          | string         |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
+|  ... local CIDR's        | string         |              | durch Semikolog getrennte Liste der lokalen CIDR's |
 |                          |                |              | |
 | Ereignisse               |                |              | |
 |  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters |
@@ -261,6 +270,9 @@ Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
 
 Warum gibt es die Möglichkeit die per FTP übertragenen Videos einzubinden? Der Zugriff ist schneller und die Darstellung besser, da die Daten nicht von der SD-Karte der Kamera geholt werden müssen.
+
+Erklärung zu _CIDR_: das ist die Angabe der Adresse und der Maske eines Netzwerks. EIne typische lokalen Netwerk wäre _192.168.178.0/24_ oder _192.168.178.0/255.255.255.0_. Siehe auch https://de.m.wikipedia.org/wiki/Classless_Inter-Domain_Routing.<br>
+Die Angabe der externen IP und der lokalen CIDR's dienen zur Ermittlung, ob sich der Client im lokalen Netzwerk befindet und daher auf die lokalen Adresse der Kamera zugreifen kann oder über die VPN-URL's von Netatmo gehen muss. Ist nichts angegeben, wird angenommen, das der Aufruf über die _http.://xxx.ipmagic.de_ immer von extern kommt.
 
 ##### Script
 Das Script wird bei Empfang der Nachrіchten ganz am Schluss aufgerufen; ihm wird die _InstanceID_ übergeben.

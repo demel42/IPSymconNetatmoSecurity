@@ -13,9 +13,14 @@
 
 			"Last seen": "zuletzt gesehen",
 			"Presence": "Anwesenheit",
+			"Change presence": "Anwesenheit ändern",
 
 			"present": "anwesend",
 			"absent": "abwesend",
+
+			"home": "kommt",
+			"away": "geht",
+			"all away": "alle gehen",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

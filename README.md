@@ -101,73 +101,82 @@ ruft die Daten der Netatmo-Security-Produkte ab. Wird automatisch zyklisch durch
 
 ### NetatmoSecurityCamera
 
-`NetatmoSecurityCamera_GetVpnUrl(int $InstanzID)`<br>
+`NetatmoSecurity_GetVpnUrl(int $InstanzID)`<br>
 liefert die externe URL der Kamera zurück
 
-`NetatmoSecurityCamera_GetLocalUrl(int $InstanzID)`<br>
+`NetatmoSecurity_GetLocalUrl(int $InstanzID)`<br>
 liefert die interne URL der Kamera zurück oder _false_, wenn nicht vorhanden
 
-`NetatmoSecurityCamera_GetLiveVideoUrl(int $InstanzID, string $resolution, bool $preferLocal)`
+`NetatmoSecurity_GetLiveVideoUrl(int $InstanzID, string $resolution, bool $preferLocal)`
 liefert die (interne oder externe) URL des Live-Videos der Kamera zurück oder _false_, wenn nicht vorhanden.
 _resolution_ hat die Ausprägungen: _poor_, _low_, _medium_, _high_.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
-`NetatmoSecurityCamera_GetLiveSnapshotUrl(int $InstanzID, bool $preferLocal)`<br>
+`NetatmoSecurity_GetLiveSnapshotUrl(int $InstanzID, bool $preferLocal)`<br>
 liefert die (interne oder externe) URL des Live-Snapshots der Kamera zurück oder _false_, wenn nicht vorhanden
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
-`NetatmoSecurityCamera_GetVideoUrl(int $InstanzID, string $video_id, string $resolution, bool $preferLocal)`<br>
+`NetatmoSecurity_GetVideoUrl(int $InstanzID, string $video_id, string $resolution, bool $preferLocal)`<br>
 liefert die (interne oder externe) URL eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden.
 _resolution_ hat die Ausprägungen: _poor_, _low_, _medium_, _high_.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
-`NetatmoSecurityCamera_GetPictureUrl(int $InstanzID, string $id, string $key)`<br>
+`NetatmoSecurity_GetPictureUrl(int $InstanzID, string $id, string $key)`<br>
 liefert die URL eines gespeicherten Bildes (_Snapshot_ oder _Vignette_) zurück oder _false_, wenn nicht vorhanden
 
-`NetatmoSecurityCamera_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`<br>
+`NetatmoSecurity_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`<br>
 liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden (setzt die Übertragung der Videos per FTP voraus)
 
-`NetatmoSecurityCamera_GetEvents(int $InstanzID)`<br>
+`NetatmoSecurity_GetEvents(int $InstanzID)`<br>
 liefert alle gespeicherten Ereignisse der Kamera; Datentyp siehe _Events_.
 Die Liste ist zeitlich aufsteigend sortiert.
 
-`NetatmoSecurityCamera_SearchEvent(int $InstanzID, string $event_id)`<br>
+`NetatmoSecurity_SearchEvent(int $InstanzID, string $event_id)`<br>
 Sucht einen Event in den gespeicherten Events
 
-`NetatmoSecurityCamera_SearchSubEvent(int $InstanzID, string $subevent_id)`<br>
+`NetatmoSecurity_SearchSubEvent(int $InstanzID, string $subevent_id)`<br>
 Sucht einen Sub-Event in den gespeicherten Events
 
-`NetatmoSecurityCamera_GetNotifications(int $InstanzID)`<br>
+`NetatmoSecurity_GetNotifications(int $InstanzID)`<br>
 liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_.
 Die Liste ist zeitlich aufsteigend sortiert.
 
-`NetatmoSecurityCamera_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
+`NetatmoSecurity_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
 bereinigt das Verzeichnis der (per FTP übertragenen) Videos
 
-`NetatmoSecurityCamera_SwitchLight(int $InstanzID, int $mode)`<br>
+`NetatmoSecurity_SwitchLight(int $InstanzID, int $mode)`<br>
 schaltet das Licht (0=aus, 1=ein, 2=auto)
 
-`NetatmoSecurityCamera_DimLight(int $InstanzID, int $intensity)`<br>
+`NetatmoSecurity_DimLight(int $InstanzID, int $intensity)`<br>
 dimmt das Licht (0..100%). <br>
 Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
 
-`NetatmoSecurityCamera_SwitchCamera(int $InstanzID, int $mode)`<br>
+`NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
 schaltet die Kamera (0=aus, 1=ein)
 
-`NetatmoSecurityCamera_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution, bool $preferLocal)`<br>
+`NetatmoSecurity_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution, bool $preferLocal)`<br>
 Liefert die URL des Videos zu einem bestimmten Event
 _resolution_ hat die Ausprägungen: _poor_, _low_, _medium_, _high_.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
-`NetatmoSecurityCamera_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id, bool $preferLocal)`<br>
+`NetatmoSecurity_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id, bool $preferLocal)`<br>
 Liefert die URL des Snapshot zu einem bestimmten Sub-Event.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 Anmerkung: als Snapshot bezeichnet Netatmo in diesem Zusammenhang das Bild, das zum Erzeugen eines Ereingnisses geführt hat
 
-`NetatmoSecurityCamera_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id, bool $preferLocal)`<br>
+`NetatmoSecurity_GetVignetteUrl4Subevent(int $InstanzID, string $subevent_id, bool $preferLocal)`<br>
 Liefert die URL der Vignette zu einem bestimmten Sub-Event.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildausschnitt, das zum Erzeugen eines Ereingnisses geführt hat
+
+`NetatmoSecurity_SetPersonHome(int $InstanzID)`<br>
+markiert die Person dieser Instanz als _anwesend_
+
+`NetatmoSecurity_SetPersonAway(int $InstanzID)`<br>
+markiert die Person dieser Instanz als _abwesend_
+
+`NetatmoSecurity_SetPersonAllAway(int $InstanzID)`<br>
+markiert die Personen der _Heim-ID_ dieser Instalz als _abwesend_
 
 #### WebHook
 
@@ -229,6 +238,7 @@ Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo g
 | Bezeichnung                  | Beschreibung |
 | :--------------------------- | :----------- |
 | Aktualisiere Daten           | führt eine sofortige Aktualisierung durch |
+| Webhook registrieren         | registriert den WebHook erneut bei Netatmo |
 
 ### NetatmoSecurityCamera
 

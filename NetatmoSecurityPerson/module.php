@@ -3,6 +3,12 @@
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
+if (!defined('PRESENCE_ACTION_AWAY')) {
+    define('PRESENCE_ACTION_AWAY', 0);
+    define('PRESENCE_ACTION_HOME', 1);
+    define('PRESENCE_ACTION_ALLAWAY', 2);
+}
+
 class NetatmoSecurityPerson extends IPSModule
 {
     use NetatmoSecurityCommon;
@@ -23,6 +29,12 @@ class NetatmoSecurityPerson extends IPSModule
         $associations[] = ['Wert' => true, 'Name' => $this->Translate('present'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.Presence', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 1, '', $associations);
 
+        $associations = [];
+        $associations[] = ['Wert' => PRESENCE_ACTION_AWAY, 'Name' => $this->Translate('away'), 'Farbe' => -1];
+        $associations[] = ['Wert' => PRESENCE_ACTION_HOME, 'Name' => $this->Translate('home'), 'Farbe' => -1];
+        $associations[] = ['Wert' => PRESENCE_ACTION_ALLAWAY, 'Name' => $this->Translate('all away'), 'Farbe' => -1];
+        $this->CreateVarProfile('NetatmoSecurity.PresenceAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
+
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
@@ -42,6 +54,9 @@ class NetatmoSecurityPerson extends IPSModule
 
         $this->MaintainVariable('LastSeen', $this->Translate('Last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('Presence', $this->Translate('Presence'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.Presence', $vpos++, true);
+		$this->MaintainVariable('PresenceAction', $this->Translate('Change presence'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.PresenceAction', $vpos++, true);
+
+		$this->MaintainAction('PresenceAction', true);
 
         $person_id = $this->ReadPropertyString('person_id');
         $pseudo = $this->ReadPropertyString('pseudo');
@@ -128,6 +143,7 @@ class NetatmoSecurityPerson extends IPSModule
 
                                     $out_of_sight = $this->GetArrayElem($person, 'out_of_sight', false);
                                     $this->SetValue('Presence', !$out_of_sight);
+									$this->SetValue('PresenceAction', $out_of_sight ? PRESENCE_ACTION_HOME : PRESENCE_ACTION_AWAY);
                                 }
                             }
                         }
@@ -145,4 +161,66 @@ class NetatmoSecurityPerson extends IPSModule
 
         $this->SetStatus(IS_ACTIVE);
     }
+
+    public function RequestAction($Ident, $Value)
+    {
+        switch ($Ident) {
+            case 'PresenceAction':
+				$this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
+				$this->SwitchPresence($Value);
+                break;
+            default:
+                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident, 0);
+                break;
+        }
+    }
+
+    public function SwitchPresence(int $mode)
+    {
+        $home_id = $this->ReadPropertyString('home_id');
+        $person_id = $this->ReadPropertyString('person_id');
+
+		$url = 'https://api.netatmo.com/api/';
+
+		switch ($mode) {
+			case PRESENCE_ACTION_AWAY:
+				$url .= 'setpersonsaway?home_id=' . rawurlencode($home_id) . '&person_ids=' . '{' . rawurlencode($person_id) . '}' . '&size=1';
+				break;
+			case PRESENCE_ACTION_HOME:
+				$url .= 'setpersonshome?home_id=' . rawurlencode($home_id) . '&person_ids=' . '{' . rawurlencode($person_id) . '}' . '&size=1';
+				break;
+			case PRESENCE_ACTION_ALLAWAY:
+				$url .= 'setpersonsaway?home_id=' . rawurlencode($home_id);
+				break;
+			default:
+                $err = 'unknown mode "' . $mode . '"';
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+                return false;
+        }
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url, 'NeedToken' => true];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        return $jdata['status'];
+    }
+
+    public function SetPersonHome()
+    {
+        return $this->SwitchPresence(PRESENCE_ACTION_HOME);
+    }
+
+    public function SetPersonAway()
+    {
+        return $this->SwitchPresence(PRESENCE_ACTION_AWAY);
+    }
+
+    public function SetPersonAllAway()
+    {
+        return $this->SwitchPresence(PRESENCE_ACTION_ALLAWAY);
+    }
+
 }

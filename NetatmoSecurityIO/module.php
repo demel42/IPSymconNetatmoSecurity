@@ -133,6 +133,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $formActions = [];
         $formActions[] = ['type' => 'Button', 'label' => 'Update data', 'onClick' => 'NetatmoSecurity_UpdateData($id);'];
+        $formActions[] = ['type' => 'Button', 'label' => 'Register Webhook', 'onClick' => 'NetatmoSecurity_AddWebhook($id);'];
         $formActions[] = ['type' => 'Label', 'label' => '____________________________________________________________________________________________________'];
         $formActions[] = ['type' => 'Button', 'label' => 'Module description', 'onClick' => 'echo \'https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md\';'];
 
@@ -171,7 +172,10 @@ class NetatmoSecurityIO extends IPSModule
                     $ret = $this->GetMultiBuffer('LastData');
                     break;
                 case 'CmdUrl':
-                    $ret = $this->SendCommand($jdata['Url']);
+					$url = $jdata['Url'];
+					if (isset($jdata['NeedToken']) && $jdata['NeedToken'])
+						$url .= '&access_token=' . $this->GetToken();
+                    $ret = $this->SendCommand($url);
                     $this->SetTimerInterval('UpdateData', 1000);
                     break;
                 default:

@@ -30,9 +30,10 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
 - Abruf des Status
 - Speicherung der Ereignisse für eine definierbaren Zeitraum
 - Empfang von Mitteilungen vua WebHook
-- Ermittlung der URL's zu Abruf von Videos und Snapshots (Life und historisch)
+- Ermittlung der URL's zu Abruf von Videos und Snapshots (Live und historisch)
 - Einbindung der optional von Netatmo per _ftp_ übertragenen Videos
 - Steuerung (Kamera aus/ein, Licht)
+- Verwaltung der identifizierten Personen sowie Steuerung (_kommt_, _geht_)
 
 ## 2. Voraussetzungen
 
@@ -78,10 +79,6 @@ Zur Zeit werden die folgende Produkttypen unterstützt:
 | :---------- | :------------------------ | :---- | 
 | NOC         | Outdoor Camera (Presence) | NetatmoSecurityCamera |
 | NACamera    | Indoor Camera (Welcome)   | NetatmoSecurityCamera |
-
-Hinweis:
-- _Presence_ und _Welcome_ sind soweit implementiert.
-- _Rauchmelder_ würde ich ergänzen, wenn jemand teste.
 
 Der Aufruf des Konfigurators kann jederzeit wiederholt werden.
 
@@ -185,10 +182,10 @@ Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder z
 
 | Kommando                             | Bedeutung |
 | :----------------------------------- | :-------- |
-| video?live                           | liefert die (interne oder externe) URL zu dem Life-Video |
+| video?live                           | liefert die (interne oder externe) URL zu dem Live-Video |
 | video?event_id=\<event-id\>          | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
 |                                      | |
-| snapshot?live                        | liefert die (interne oder externe) URL zu dem Life-Snapshot |
+| snapshot?live                        | liefert die (interne oder externe) URL zu dem Live-Snapshot |
 | snapshot?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu dem Snapshot |
 |                                      | |
 | vignette?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu der Vignette |

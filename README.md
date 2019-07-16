@@ -226,7 +226,7 @@ so können diesem Script beliebige Zusatzinformationen übergeben werden.
 
 Das Ergebnis des Scriptes muss mit _echo_ ausgegeben werden und wird als Ergebnis des Webhook ausgegeben.
 
-Ein Muster eines solchen Scriptes finden sich in ![hier](docs/processStreamURL.php); das wurde von ![Coding Lizard](https://www.symcon.de/forum/members/11676-Coding-Lizard) entwickelt und zur Verfügung gestellt
+Ein Muster eines solchen Scriptes finden sich in [hier](docs/processStreamURL.php); das wurde von [Coding Lizard](https://www.symcon.de/forum/members/11676-Coding-Lizard) entwickelt und zur Verfügung gestellt
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 

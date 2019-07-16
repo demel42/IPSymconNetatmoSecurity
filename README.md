@@ -376,9 +376,11 @@ NetatmoSecurity.PowerStatus
 
 - _push_type_:
   - Benachrichtigung mit _Sub-Event_<br>
-    _NOC-human_, _NOC-animal_, _NOC-vehicle_
+    _NOC-human_, _NOC-animal_, _NOC-vehicle_<br>
+	_NACamera-movement_, _NACamera-person_
   - sonstige Benachrichtigung:<br>
-    _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-movement_, _NOC-off_, _NOC-on_
+    _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-movement_, _NOC-off_, _NOC-on_<br>
+	_NACamera-alarm_started_, _NACamera-off_, _NACamera-on_
 
 ## 6. Anhang
 

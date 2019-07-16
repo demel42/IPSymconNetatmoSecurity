@@ -430,7 +430,6 @@ class NetatmoSecurityCamera extends IPSModule
                                     if ($product_id != $camera['id']) {
                                         continue;
                                     }
-
                                     $this->SendDebug(__FUNCTION__, 'decode camera=' . print_r($camera, true), 0);
 
                                     $camera_status = $this->map_camera_status($this->GetArrayElem($camera, 'status', ''));
@@ -636,7 +635,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 foreach ($cur_events as $new_event) {
                                     if ($new_event['id'] == $prev_event['id']) {
                                         $fnd = true;
-                                        if (array_diff($new_event, $prev_event) != []) {
+                                        if (json_encode($new_event) != json_encode($prev_event)) {
                                             $n_chg_events++;
                                         }
                                         break;
@@ -684,7 +683,7 @@ class NetatmoSecurityCamera extends IPSModule
                         $this->SetValue('LastContact', $tstamp);
                     }
 
-                    if ($n_new_events > 0 || $n_chg_events > 0 || $$n_del_events > 0) {
+                    if ($n_new_events > 0 || $n_chg_events > 0 || $n_del_events > 0) {
                         $new_event_script = $this->ReadPropertyInteger('new_event_script');
                         if ($new_event_script > 0) {
                             $r = IPS_RunScriptWaitEx($new_event_script, ['InstanceID' => $this->InstanceID]);

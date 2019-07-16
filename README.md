@@ -285,20 +285,25 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |                          |                |              | |
 | Benachrichtigungen       |                |              | |
 |  ... Script              | integer        |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
+| neue Ereignisse          |                |              | |
+|  ... Script              | integer        |              | Script, das beim Emfang neuer Ereignisse aufgerufen wird |
 |                          |                |              | |
 
-Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
+- Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
 
-Warum gibt es die Möglichkeit die per FTP übertragenen Videos einzubinden? Der Zugriff ist schneller und die Darstellung besser, da die Daten nicht von der SD-Karte der Kamera geholt werden müssen.
+- Warum gibt es die Möglichkeit die per FTP übertragenen Videos einzubinden? Der Zugriff ist schneller und die Darstellung besser, da die Daten nicht von der SD-Karte der Kamera geholt werden müssen.
 
-Erklärung zu _CIDR_: das ist die Angabe der Adresse und der Maske eines Netzwerks. EIne typische lokalen Netwerk wäre _192.168.178.0/24_ oder _192.168.178.0/255.255.255.0_. Siehe auch https://de.m.wikipedia.org/wiki/Classless_Inter-Domain_Routing.<br>
+- Erklärung zu _CIDR_: das ist die Angabe der Adresse und der Maske eines Netzwerks. EIne typische lokalen Netwerk wäre _192.168.178.0/24_ oder _192.168.178.0/255.255.255.0_. Siehe auch https://de.m.wikipedia.org/wiki/Classless_Inter-Domain_Routing.<br>
 Die Angabe der externen IP und der lokalen CIDR's dienen zur Ermittlung, ob sich der Client im lokalen Netzwerk befindet und daher auf die lokalen Adresse der Kamera zugreifen kann oder über die VPN-URL's von Netatmo gehen muss. Ist nichts angegeben, wird angenommen, das der Aufruf über die _http.://xxx.ipmagic.de_ immer von extern kommt.
 
-##### Script
-Das Script wird bei Empfang der Nachrіchten ganz am Schluss aufgerufen; ihm wird die _InstanceID_ übergeben.
-
+- Script bei Benachrichtigungen: das Script wird aufgerufen, wenn eine Benachrichtigung eingetroffen ist und verarbeitet wurde.<br>
+Es dient dazu, bei einer Benachrichtigung direkt eine Meldung, z.B. ein _WFC_SendNotification()_ aufzurufen. Dem Script wird neben der _InstanceID_ auch die neuen Benachrichtigungen als json-kodierte String in _new_notifications_ übergeben.<br>
 Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit den Benachrichtigungen siehe _docs/process_notification.php_
+Wichtig: die Laufzeit dieses Scriptes sollte so kurz wiel möglich sein.
+
+- Script bei neuen Ereignissen: das Script wird aufgerufen, wenn bei dem zyklischen Abruf von Daten festgestellt wurde, das entweder neue Ereignisse eingetroffen sind oder ein vorhandenes Ereignis verändert oder gelöscht wurde.<br>
+Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelken und in einer HTML-Box abzulegen.
 
 ### Variablenprofile
 
@@ -321,6 +326,7 @@ NetatmoSecurity.PowerStatus
 | id                | string         | nein     | ID de Ereignisses |
 | tstamp            | UNIX-Timestamp | nein     | Zeitpunkt des Ereignisses |
 | message           | string         | nein     | Nachrichtentext |
+| deleted           | boolean        | ja       | das Ereignis wurde nachträglich (durch den Benutzer) gelöscht |
 | video_id          | string         | ja       | |
 | video_status      | string         | ja       | Ausprägungen: recording, available, deleted |
 | person_id         | string         | ja       | |

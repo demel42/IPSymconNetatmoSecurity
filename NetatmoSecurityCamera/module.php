@@ -39,6 +39,8 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyString('ftp_path', '');
         $this->RegisterPropertyInteger('ftp_max_age', '14');
 
+        $this->RegisterPropertyInteger('new_event_script', 0);
+
         $this->RegisterPropertyInteger('notify_script', 0);
 
         $this->RegisterPropertyInteger('webhook_script', 0);
@@ -347,6 +349,8 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
         $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of new events'];
+        $formElements[] = ['type' => 'SelectScript', 'name' => 'new_event_script', 'caption' => ' ... Script'];
         if ($product_type == 'NACamera') {
             $configurator = $this->GetConfigurator4Person();
             if ($configurator != false) {
@@ -484,17 +488,17 @@ class NetatmoSecurityCamera extends IPSModule
                     $n_new_events = 0;
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
-                    $new_events = [];
+                    $cur_events = [];
                     if (EVENTS_AS_MEDIA) {
                         $s = $this->GetMediaData('Events');
                     } else {
                         $s = $this->GetValue('Events');
                     }
-                    $old_events = json_decode($s, true);
-                    $this->SendDebug(__FUNCTION__, 'old_events=' . print_r($old_events, true), 0);
+                    $prev_events = json_decode($s, true);
+                    $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
-                        $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
+                        $this->SendDebug(__FUNCTION__, 'n_prev_events=' . count($events), 0);
                         foreach ($events as $event) {
                             if ($product_id != $event['camera_id']) {
                                 continue;
@@ -595,12 +599,12 @@ class NetatmoSecurityCamera extends IPSModule
                             }
 
                             // $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
-                            $new_events[] = $new_event;
+                            $cur_events[] = $new_event;
 
                             $fnd = false;
-                            if ($old_events != '') {
-                                foreach ($old_events as $old_event) {
-                                    if ($old_event['id'] == $new_event['id']) {
+                            if ($prev_events != '') {
+                                foreach ($prev_events as $prev_event) {
+                                    if ($prev_event['id'] == $new_event['id']) {
                                         $fnd = true;
                                         break;
                                     }
@@ -613,22 +617,27 @@ class NetatmoSecurityCamera extends IPSModule
                     }
 
                     $first_new_ts = false;
-                    if ($new_events != []) {
-                        usort($new_events, ['NetatmoSecurityCamera', 'cmp_events']);
-                        $first_new_ts = $new_events[0]['tstamp'];
-                        $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($new_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
+                    if ($cur_events != []) {
+                        usort($cur_events, ['NetatmoSecurityCamera', 'cmp_events']);
+                        $first_new_ts = $cur_events[0]['tstamp'];
+                        $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($cur_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
                     }
-                    if ($old_events != '') {
-                        foreach ($old_events as $old_event) {
-                            if ($old_event['tstamp'] < $ref_ts) {
-                                $this->SendDebug(__FUNCTION__, 'delete id=' . $old_event['id'] . ', ts=' . date('d.m.Y H:i:s', $old_event['tstamp']), 0);
+					$n_chg_events = 0;
+					$n_del_events = 0;
+                    if ($prev_events != '') {
+                        foreach ($prev_events as $prev_event) {
+                            if ($prev_event['tstamp'] < $ref_ts) {
+								$n_del_events++;
+                                $this->SendDebug(__FUNCTION__, 'delete id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
                                 continue;
                             }
                             $fnd = false;
-                            if ($new_events != []) {
-                                foreach ($new_events as $new_event) {
-                                    if ($new_event['id'] == $old_event['id']) {
+                            if ($cur_events != []) {
+                                foreach ($cur_events as $new_event) {
+                                    if ($new_event['id'] == $prev_event['id']) {
                                         $fnd = true;
+										if (array_diff($new_event, $prev_event) != [])
+											$n_chg_events++;
                                         break;
                                     }
                                 }
@@ -636,17 +645,19 @@ class NetatmoSecurityCamera extends IPSModule
                             if ($fnd) {
                                 continue;
                             }
-                            if ($first_new_ts && $old_event['tstamp'] > $first_new_ts) {
-                                $this->SendDebug(__FUNCTION__, 'mark id=' . $old_event['id'] . ', ts=' . date('d.m.Y H:i:s', $old_event['tstamp']), 0);
-                                $old_event['deleted'] = true;
+                            if ($first_new_ts && $prev_event['tstamp'] > $first_new_ts && !isset($prev_event['deleted'])) {
+                                $this->SendDebug(__FUNCTION__, 'mark as deleted: id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
+                                $prev_event['deleted'] = true;
+								$n_chg_events++;
                             }
-                            $new_events[] = $old_event;
+                            $cur_events[] = $prev_event;
                         }
+                        $this->SendDebug(__FUNCTION__, 'cleanup events: changed=' . $n_chg_events . ', deleted=' . $n_del_events, 0);
                     }
 
-                    if ($new_events != []) {
-                        usort($new_events, ['NetatmoSecurityCamera', 'cmp_events']);
-                        $s = json_encode($new_events);
+                    if ($cur_events != []) {
+                        usort($cur_events, ['NetatmoSecurityCamera', 'cmp_events']);
+                        $s = json_encode($cur_events);
                     } else {
                         $s = '';
                     }
@@ -671,25 +682,33 @@ class NetatmoSecurityCamera extends IPSModule
                         $tstamp = $this->GetArrayElem($jdata, 'time_server', 0);
                         $this->SetValue('LastContact', $tstamp);
                     }
+
+					if ($n_new_events > 0 || $n_chg_events > 0 || $$n_del_events > 0) {
+						$new_event_script = $this->ReadPropertyInteger('new_event_script');
+						if ($new_event_script > 0) {
+							$r = IPS_RunScriptWaitEx($new_event_script, ['InstanceID' => $this->InstanceID]);
+							$this->SendDebug(__FUNCTION__, 'new_event_script=' . IPS_GetName($new_event_script) . ', ret=' . $r, 0);
+						}
+					}
                     break;
                 case 'EVENT':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
                     $notification = $jdata;
-                    $got_new_notification = false;
 
-                    $new_notifications = [];
+					$new_notifications = [];
+                    $cur_notifications = [];
                     if (EVENTS_AS_MEDIA) {
                         $s = $this->GetMediaData('Notifications');
                     } else {
                         $s = $this->GetValue('Notifications');
                     }
-                    $old_notifications = json_decode($s, true);
-                    if ($old_notifications != '') {
-                        foreach ($old_notifications as $old_notification) {
-                            if ($old_notification['tstamp'] < $ref_ts) {
+                    $prev_notifications = json_decode($s, true);
+                    if ($prev_notifications != '') {
+                        foreach ($prev_notifications as $prev_notification) {
+                            if ($prev_notification['tstamp'] < $ref_ts) {
                                 continue;
                             }
-                            $new_notifications[] = $old_notification;
+                            $cur_notifications[] = $prev_notification;
                         }
                     }
 
@@ -710,7 +729,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
                                 $vignette_id = $this->GetArrayElem($notification, 'vignette.id', '');
                                 $vignette_key = $this->GetArrayElem($notification, 'vignette.key', '');
-                                $new_notification = [
+                                $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $event_id,
                                         'push_type'    => $push_type,
@@ -722,8 +741,8 @@ class NetatmoSecurityCamera extends IPSModule
                                         'vignette_id'  => $vignette_id,
                                         'vignette_key' => $vignette_key,
                                     ];
-                                $new_notifications[] = $new_notification;
-                                $got_new_notification = true;
+                                $cur_notifications[] = $cur_notification;
+                                $new_notifications[] = $cur_notification;
                                 break;
                             case 'NACamera-movement':
                             case 'NACamera-person':
@@ -732,7 +751,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 $message = $this->GetArrayElem($notification, 'message', '');
                                 $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
-                                $new_notification = [
+                                $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $event_id,
                                         'push_type'    => $push_type,
@@ -741,8 +760,8 @@ class NetatmoSecurityCamera extends IPSModule
                                         'snapshot_id'  => $snapshot_id,
                                         'snapshot_key' => $snapshot_key,
                                     ];
-                                $new_notifications[] = $new_notification;
-                                $got_new_notification = true;
+                                $cur_notifications[] = $cur_notification;
+                                $new_notifications[] = $cur_notification;
                                 break;
                             case 'NACamera-alarm_started':
                             case 'NACamera-off':
@@ -787,15 +806,15 @@ class NetatmoSecurityCamera extends IPSModule
                                             break;
                                     }
                                 }
-                                $new_notification = [
+                                $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $id,
                                         'push_type'    => $push_type,
                                         'event_type'   => $event_type,
                                         'message'      => $message,
                                     ];
-                                $new_notifications[] = $new_notification;
-                                $got_new_notification = true;
+                                $cur_notifications[] = $cur_notification;
+                                $new_notifications[] = $cur_notification;
                                 break;
                             case 'daily_summary':
                             case 'topology_changed':
@@ -812,12 +831,14 @@ class NetatmoSecurityCamera extends IPSModule
                         }
                     }
 
-                    if ($new_notifications != []) {
-                        usort($new_notifications, ['NetatmoSecurityCamera', 'cmp_events']);
-                        $s = json_encode($new_notifications);
+                    if ($cur_notifications != []) {
+                        usort($cur_notifications, ['NetatmoSecurityCamera', 'cmp_events']);
+                        $s = json_encode($cur_notifications);
                     } else {
                         $s = '';
                     }
+
+                    $n_new_notifications = count($new_notifications);
 
                     if (EVENTS_AS_MEDIA) {
                         $notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
@@ -826,14 +847,20 @@ class NetatmoSecurityCamera extends IPSModule
                         $this->SetValue('Notifications', $s);
                     }
 
-                    $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
-                    if ($with_last_notification && $got_new_notification) {
-                        $this->SetValue('LastNotification', $now);
-                    }
-                    $notify_script = $this->ReadPropertyInteger('notify_script');
-                    if ($got_new_notification && $notify_script > 0) {
-                        $r = IPS_RunScriptWaitEx($notify_script, ['InstanceID' => $this->InstanceID]);
-                        $this->SendDebug(__FUNCTION__, 'notify_script=' . IPS_GetName($notify_script) . ', ret=' . $r, 0);
+					if ($n_new_notifications > 0) {
+						$with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
+						if ($with_last_notification) {
+							$this->SetValue('LastNotification', $now);
+						}
+						$notify_script = $this->ReadPropertyInteger('notify_script');
+						if ($notify_script > 0) {
+							$opts = [
+									'InstanceID' => $this->InstanceID,
+									'new_notifications' => json_encode($new_notifications)
+								];
+							$r = IPS_RunScriptWaitEx($notify_script, $opts);
+							$this->SendDebug(__FUNCTION__, 'notify_script=' . IPS_GetName($notify_script) . ', ret=' . $r, 0);
+						}
                     }
                     break;
                 default:

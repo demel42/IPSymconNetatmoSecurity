@@ -226,7 +226,7 @@ so können diesem Script beliebige Zusatzinformationen übergeben werden.
 
 Das Ergebnis des Scriptes muss mit _echo_ ausgegeben werden und wird als Ergebnis des Webhook ausgegeben.
 
-Ein Muster eines solchen Scriptes finden sich in [hier](docs/processStreamURL.php); das wurde von [Coding Lizard](https://www.symcon.de/forum/members/11676-Coding-Lizard) entwickelt und zur Verfügung gestellt
+Ein Muster eines solchen Scriptes finden sich in [docs/processStreamURL.php](docs/processStreamURL.php); das wurde von [Coding Lizard](https://www.symcon.de/forum/members/11676-Coding-Lizard) entwickelt und zur Verfügung gestellt
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
@@ -249,7 +249,7 @@ Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo g
 |                           |          |              | |
 | Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
 
-Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in der Netatmo-App gelöscht werden, werden in IPS als gelöscht markiert. Um gelöschte Ereignisse erkennen zu können, muss eine ausreichende Menge an Ereignisse abgerufen werden. Wie viele, hängt davon ab, wieviele Ereignisse stattfinden. Die Standardanzhal vom *30* reiㄔht im Regelfall aus und sollte nur vorsichtig erhöht werden.
+Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in der Netatmo-App gelöscht werden, werden in IPS als gelöscht markiert. Um gelöschte Ereignisse erkennen zu können, muss eine ausreichende Menge an Ereignisse abgerufen werden; wie viele, hängt davon ab, wieviele Ereignisse stattfinden. Die Standardanzahl vom *30* reicht im Regelfall aus und sollte nur vorsichtig erhöht werden.
 
 #### Schaltflächen
 

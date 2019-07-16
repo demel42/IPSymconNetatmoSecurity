@@ -351,7 +351,7 @@ class NetatmoSecurityCamera extends IPSModule
             $configurator = $this->GetConfigurator4Person();
             if ($configurator != false) {
                 $formElements[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
-                $formElements[] = ['type' => 'Label', 'label' => 'category for persons to be created:'];
+                $formElements[] = ['type' => 'Label', 'caption' => 'category for persons to be created:'];
                 $formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
                 $formElements[] = $configurator;
             }
@@ -492,9 +492,9 @@ class NetatmoSecurityCamera extends IPSModule
                     }
                     $old_events = json_decode($s, true);
                     $this->SendDebug(__FUNCTION__, 'old_events=' . print_r($old_events, true), 0);
-
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
+                        $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
                         foreach ($events as $event) {
                             if ($product_id != $event['camera_id']) {
                                 continue;
@@ -502,7 +502,11 @@ class NetatmoSecurityCamera extends IPSModule
                             $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
 
                             $id = $this->GetArrayElem($event, 'id', '');
-                            $tstamp = $this->GetArrayElem($event, 'event_list.0.time', 0);
+
+							if (isset($event['time']))
+								$tstamp = $event['time'];
+							else
+								$tstamp = $this->GetArrayElem($event, 'event_list.0.time', 0);
 
                             $new_event = [
                                     'tstamp'      => $tstamp,
@@ -589,7 +593,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 $new_event['subevents'] = $new_subevents;
                             }
 
-                            $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
+                            // $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
                             $new_events[] = $new_event;
 
                             $fnd = false;
@@ -607,23 +611,34 @@ class NetatmoSecurityCamera extends IPSModule
                         }
                     }
 
-                    $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($new_events), 0);
-
+					$first_new_ts = false;
+					if ($new_events != []) {
+						usort($new_events, ['NetatmoSecurityCamera', 'cmp_events']);
+						$first_new_ts = $new_events[0]['tstamp'];
+						$this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($new_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
+					}
                     if ($old_events != '') {
                         foreach ($old_events as $old_event) {
+                            if ($old_event['tstamp'] < $ref_ts) {
+								$this->SendDebug(__FUNCTION__, 'delete id=' . $old_event['id'] . ', ts=' . date('d.m.Y H:i:s', $old_event['tstamp']), 0);
+                                continue;
+                            }
                             $fnd = false;
-                            foreach ($new_events as $new_event) {
-                                if ($new_event['id'] == $old_event['id']) {
-                                    $fnd = true;
-                                    break;
-                                }
+							if ($new_events != []) {
+								foreach ($new_events as $new_event) {
+									if ($new_event['id'] == $old_event['id']) {
+										$fnd = true;
+										break;
+									}
+								}
                             }
                             if ($fnd) {
                                 continue;
                             }
-                            if ($old_event['tstamp'] < $ref_ts) {
-                                continue;
-                            }
+							if ($first_new_ts && $old_event['tstamp'] > $first_new_ts) {
+								$this->SendDebug(__FUNCTION__, 'mark id=' . $old_event['id'] . ', ts=' . date('d.m.Y H:i:s', $old_event['tstamp']), 0);
+								$old_event['deleted'] = true;
+							}
                             $new_events[] = $old_event;
                         }
                     }

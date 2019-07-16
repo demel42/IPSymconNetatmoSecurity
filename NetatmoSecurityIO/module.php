@@ -25,6 +25,8 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterPropertyBoolean('register_webhook', false);
         $this->RegisterPropertyString('webhook_baseurl', '');
 
+        $this->RegisterPropertyInteger('sync_event_count', '30');
+
         $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurity_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
 
@@ -107,34 +109,39 @@ class NetatmoSecurityIO extends IPSModule
     {
         $formElements = [];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'module_disable', 'caption' => 'Instance is disabled'];
-        $formElements[] = ['type' => 'Label', 'label' => 'Netatmo Access-Details'];
-        $formElements[] = ['type' => 'Label', 'label' => 'Netatmo-Account from https://my.netatmo.com'];
+
+        $formElements[] = ['type' => 'Label', 'caption' => 'Netatmo Access-Details'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Netatmo-Account from https://my.netatmo.com'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_User', 'caption' => 'Username'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Password', 'caption' => 'Password'];
-        $formElements[] = ['type' => 'Label', 'label' => 'Netatmo-Connect from https://dev.netatmo.com'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Netatmo-Connect from https://dev.netatmo.com'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Client', 'caption' => 'Client ID'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Secret', 'caption' => 'Client Secret'];
-        $formElements[] = ['type' => 'Label', 'label' => 'Ignore HTTP-Error X times'];
+
+        $formElements[] = ['type' => 'Label', 'caption' => 'Ignore HTTP-Error X times'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ignore_http_error', 'caption' => 'Count'];
 
-        $formElements[] = ['type' => 'Label', 'label' => 'Webhook for receive events from Netatmo (must be reachable from internet)'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Number of events retrieved during an update'];
+        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'sync_event_count', 'caption' => 'Count'];
+
+        $formElements[] = ['type' => 'Label', 'caption' => 'Webhook for receive events from Netatmo (must be reachable from internet)'];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'register_webhook', 'caption' => 'Register Webhook'];
 
-        $formElements[] = ['type' => 'Label', 'label' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'webhook_baseurl', 'caption' => 'Base-URL'];
         $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
         $url = CC_GetUrl($instID);
         if ($url != '') {
-            $formElements[] = ['type' => 'Label', 'label' => ' ... if not given, the Connect-URL is used'];
+            $formElements[] = ['type' => 'Label', 'caption' => ' ... if not given, the Connect-URL is used'];
         }
 
-        $formElements[] = ['type' => 'Label', 'label' => 'Update data every X minutes'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Update data every X minutes'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'UpdateDataInterval', 'caption' => 'Minutes'];
 
         $formActions = [];
         $formActions[] = ['type' => 'Button', 'label' => 'Update data', 'onClick' => 'NetatmoSecurity_UpdateData($id);'];
         $formActions[] = ['type' => 'Button', 'label' => 'Register Webhook', 'onClick' => 'NetatmoSecurity_AddWebhook($id);'];
-        $formActions[] = ['type' => 'Label', 'label' => '____________________________________________________________________________________________________'];
+        $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
         $formActions[] = ['type' => 'Button', 'label' => 'Module description', 'onClick' => 'echo \'https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md\';'];
 
         $formStatus = $this->GetFormStatus();
@@ -254,6 +261,94 @@ class NetatmoSecurityIO extends IPSModule
         return $token;
     }
 
+    private function do_HttpRequest($url, $header, $postdata, $mode, &$data, &$err)
+    {
+        $this->SendDebug(__FUNCTION__, 'http-' . $mode . ': url=' . $url, 0);
+        $time_start = microtime(true);
+
+        if ($header != '') {
+            $this->SendDebug(__FUNCTION__, '    header=' . print_r($header, true), 0);
+        }
+        if ($postdata != '') {
+            $this->SendDebug(__FUNCTION__, '    postdata=' . print_r($postdata, true), 0);
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        if ($header) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        }
+        switch ($mode) {
+            case 'GET':
+                break;
+            case 'POST':
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+                break;
+            case 'PUT':
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
+                break;
+            case 'DELETE':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
+                break;
+        }
+
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $cdata = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+        $this->SendDebug(__FUNCTION__, '    cdata=' . $cdata, 0);
+
+        $statuscode = 0;
+        $err = '';
+        $data = '';
+
+        if ($cerrno) {
+            $statuscode = IS_SERVERERROR;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        } elseif ($httpcode != 200) {
+            if ($httpcode == 401) {
+                $statuscode = IS_UNAUTHORIZED;
+                $err = 'got http-code ' . $httpcode . ' (unauthorized)';
+            } elseif ($httpcode == 403) {
+                $statuscode = IS_FORBIDDEN;
+                $err = 'got http-code ' . $httpcode . ' (forbidden)';
+            } elseif ($httpcode == 409) {
+                $data = $cdata;
+            } elseif ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } else {
+                $statuscode = IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode;
+            }
+        } elseif ($cdata == '') {
+            $statuscode = IS_NODATA;
+            $err = 'no data';
+        } else {
+            $jdata = json_decode($cdata, true);
+            if ($jdata == '') {
+                $statuscode = IS_INVALIDDATA;
+                $err = 'malformed response';
+            } else {
+                $data = $cdata;
+            }
+        }
+
+        $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+        $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
+        return $statuscode;
+    }
+
     public function UpdateData()
     {
         if ($this->GetStatus() == IS_INACTIVE) {
@@ -266,9 +361,12 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
+        $sync_event_count = $this->ReadPropertyInteger('sync_event_count');
+
         // Anfrage mit Token
         $url = 'https://api.netatmo.net/api/gethomedata';
         $url .= '?access_token=' . $token;
+        $url .= '&size=' . $sync_event_count;
 
         $data = '';
         $err = '';
@@ -305,7 +403,7 @@ class NetatmoSecurityIO extends IPSModule
                     $statuscode = IS_NOPRODUCT;
                 }
             }
-        } elseif (statuscode == IS_FORBIDDEN) {
+        } elseif ($statuscode == IS_FORBIDDEN) {
             $this->SetBuffer('Token', '');
         }
 

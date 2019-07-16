@@ -18,6 +18,8 @@
 			"Ignore HTTP-Error X times": "HTTP-Fehler X-fach ignorieren",
 			"Count": "Anzahl",
 
+			"Number of events retrieved during an update": "Anzahl der Ereignisse die bei einem Update abgerufen werden",
+
 			"Webhook for receive events from Netatmo (must be reachable from internet)":
 				"Webhook zum Empfang von Netatmo-Events (muss aus dem Internet erreichbar sein)",
 			"Register Webhook": "Webhook registrieren",

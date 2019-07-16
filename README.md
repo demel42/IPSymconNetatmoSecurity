@@ -235,10 +235,14 @@ Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo g
 |                           |          |              | |
 | Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
 |                           |          |              | |
+| Anzahl Ereignisse ...     | integer  | 30           | Anzahl der Ereignisse die bei einem Update abgerufen werden |
+|                           |          |              | |
 | Webbook registrieren      | boolean  | Nein         | Webhook zur Übernahme der Benachrichtigungen von Netatmo |
 | Basis-URL                 | string   |              | URL, unter der IPS erreichbar ist; wird nichts angegeben, wird die IPS-Connect-URL verwendet|
 |                           |          |              | |
 | Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
+
+Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in der Netatmo-App gelöscht werden, werden in IPS als gelöscht markiert. Um gelöschte Ereignisse erkennen zu können, muss eine ausreichende Menge an Ereignisse abgerufen werden. Wie viele, hängt davon ab, wieviele Ereignisse stattfinden. Die Standardanzhal vom *30* reiㄔht im Regelfall aus und sollte nur vorsichtig erhöht werden.
 
 #### Schaltflächen
 

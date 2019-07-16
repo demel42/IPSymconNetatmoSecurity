@@ -187,7 +187,7 @@ class NetatmoSecurityConfig extends IPSModule
         ];
 
         $formElements = [];
-        $formElements[] = ['type' => 'Label', 'label' => 'category for products to be created:'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'category for products to be created:'];
         $formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
         $formElements[] = $configurator;
 

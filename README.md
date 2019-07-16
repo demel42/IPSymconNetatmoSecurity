@@ -176,6 +176,13 @@ markiert die Person dieser Instanz als _abwesend_
 `NetatmoSecurity_SetPersonAllAway(int $InstanzID)`<br>
 markiert die Personen der _Heim-ID_ dieser Instalz als _abwesend_
 
+`NetatmoSecurity_GetPersonFaceData(int $InstanzID)`<br>
+gibt die _Face_-Daten zurück (Elemente _id_, _key_, _url_).
+Hinweis: die Daten stehen erst nach dem ersten Datenabruf zur Verfügung, im Fehlerfall wird _false_ geliefert.
+
+`NetatmoSecurity_GetPersonFaceUrl(int $InstanzID)`<br>
+gibt die Url zu dem Bild der Person zurück.
+
 #### WebHook
 
 Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder zurückgegriffen werden kann (siehe Konfigurationsdialog).
@@ -301,6 +308,7 @@ Die Angabe der externen IP und der lokalen CIDR's dienen zur Ermittlung, ob sich
 Es dient dazu, bei einer Benachrichtigung direkt eine Meldung, z.B. ein _WFC_SendNotification()_ aufzurufen. Dem Script wird neben der _InstanceID_ auch die neuen Benachrichtigungen als json-kodierte String in _new_notifications_ übergeben.<br>
 Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit den Benachrichtigungen siehe _docs/process_notification.php_
 Wichtig: die Laufzeit dieses Scriptes sollte so kurz wiel möglich sein.
+Nachdem eine Benachrichtigung empfangen wurde, wird automatisch nach 5 Sekunden ein Datenabgleich angefordert und damit die Ereignisliste zeitnah vervollständigt.
 
 - Script bei neuen Ereignissen: das Script wird aufgerufen, wenn bei dem zyklischen Abruf von Daten festgestellt wurde, das entweder neue Ereignisse eingetroffen sind oder ein vorhandenes Ereignis verändert oder gelöscht wurde.<br>
 Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelken und in einer HTML-Box abzulegen.

@@ -146,7 +146,7 @@ class NetatmoSecurityPerson extends IPSModule
                                     $this->SetValue('PresenceAction', $out_of_sight ? PRESENCE_ACTION_HOME : PRESENCE_ACTION_AWAY);
 
                                     $face = $this->GetArrayElem($person, 'face', '');
-									$this->SetBuffer('face', json_encode($face));
+                                    $this->SetBuffer('face', json_encode($face));
                                 }
                             }
                         }
@@ -228,13 +228,13 @@ class NetatmoSecurityPerson extends IPSModule
 
     public function GetPersonFaceData()
     {
-		$face = $this->GetBuffer('face');
-		return $face != '' ? json_decode($face, true) : false;
-	}
+        $face = $this->GetBuffer('face');
+        return $face != '' ? json_decode($face, true) : false;
+    }
 
     public function GetPersonFaceUrl()
     {
-		$face = $this->GetPersonFaceData();
-		return isset($face['url']) ? $face['url'] : false;
-	}
+        $face = $this->GetPersonFaceData();
+        return isset($face['url']) ? $face['url'] : false;
+    }
 }

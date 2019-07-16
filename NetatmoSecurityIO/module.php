@@ -2,11 +2,15 @@
 
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
+require_once __DIR__ . '/../libs/test.php';    // Testdaten
+
+define('WELCOME_TEST', false);
 
 class NetatmoSecurityIO extends IPSModule
 {
     use NetatmoSecurityCommon;
     use NetatmoSecurityLibrary;
+    use NetatmoSecurityTest;
 
     public function Create()
     {
@@ -417,6 +421,11 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->SendData($data, 'QUERY');
         $this->SetMultiBuffer('LastData', $data);
+
+		if (WELCOME_TEST) {
+			$xtra_data = $this->testData_Welcome_Query();
+			$this->SendData($xtra_data, 'QUERY');
+		}
 
         $this->SetStatus(IS_ACTIVE);
 

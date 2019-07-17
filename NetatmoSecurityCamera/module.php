@@ -751,6 +751,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 $message = $this->GetArrayElem($notification, 'message', '');
                                 $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
+
                                 $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $event_id,
@@ -760,8 +761,38 @@ class NetatmoSecurityCamera extends IPSModule
                                         'snapshot_id'  => $snapshot_id,
                                         'snapshot_key' => $snapshot_key,
                                     ];
+
+								if (isset($notification['persons'])) {
+									$cur_persons = [];
+									$persons = $notification['persons'];
+									foreach ($persons as $person) {
+										$person_id = $this->GetArrayElem($person, 'id', '');
+										$cur_person = [
+												'person_id' => $person_id,
+											];
+
+										$is_known = $this->GetArrayElem($person, 'is_known', '');
+										if ($is_known != '') {
+											$cur_person['is_known'] = $is_known;
+										}
+
+										$face_url = $this->GetArrayElem($person, 'face_url', '');
+										if ($face_url != '') {
+											$cur_person['face_url'] = $face_url;
+										}
+
+										$cur_persons[] = $cur_person;
+									}
+									if ($cur_persons != []) {
+										$cur_notification['persons'] = $cur_persons;
+									}
+								}
+
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
+
+								$this->SendDebug(__FUNCTION__, 'notification=' . print_r($notification, true), 0);
+								$this->SendDebug(__FUNCTION__, 'cur_notification=' . print_r($cur_notification, true), 0);
                                 break;
                             case 'NACamera-alarm_started':
                             case 'NACamera-off':
@@ -815,8 +846,12 @@ class NetatmoSecurityCamera extends IPSModule
                                     ];
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
+
+								$this->SendDebug(__FUNCTION__, 'notification=' . print_r($notification, true), 0);
+								$this->SendDebug(__FUNCTION__, 'cur_notification=' . print_r($cur_notification, true), 0);
                                 break;
                             case 'daily_summary':
+							case 'NOC-ftp':
                             case 'topology_changed':
                             case 'webhook_activation':
                                 $err = 'ignore push_type "' . $push_type . '"';
@@ -1147,6 +1182,68 @@ class NetatmoSecurityCamera extends IPSModule
         return $data;
     }
 
+    public function GetTimeline()
+    {
+		$data = $this->GetEvents();
+		$events = json_decode($data, true);
+		if ($events == false)
+			$events = [];
+
+		$data = $this->GetNotifications();
+		$notifications = json_decode($data, true);
+		if ($notifications == false)
+			$notifications = [];
+			
+		$n_events = count($events);
+		$last_new_ts = $n_events > 0 ? $events[$n_events - 1]['tstamp'] : 0;
+
+		$timeline = $events;
+		$n_add_notifications = 0;
+		foreach ($notifications as $notification) {
+			$id = $notification['id'];
+			$subevent_id = isset($notification['subevent_id']) ? $notification['subevent_id'] : '';
+
+
+			if ($id != '') {
+				$tstamp = $notification['tstamp'];
+				if ($tstamp < $last_new_ts)
+					continue;
+			}
+			
+			$fnd = false;
+			foreach ($events as $event) {
+				if ($event['id'] == $id) {
+					$fnd = true;
+					break;
+				}
+				if (isset($event['subevents'])) {
+					foreach ($event['subevents'] as $subevent) {
+						if ($subevent['id'] == $subevent_id) {
+							$fnd = true;
+							break;
+						}
+					}
+				}
+				if ($fnd)
+					break;
+			}
+			if (!$fnd) {
+				$timeline[] = $notification;
+				$n_add_notifications++;
+			}
+		}
+
+		if ($timeline != []) {
+			usort($timeline, ['NetatmoSecurityCamera', 'cmp_events']);
+		}
+
+		$n_events = count($events);
+		$n_timeline = count($timeline);
+
+		$this->SendDebug(__FUNCTION__, 'n_timeline=' . $n_timeline . ' (events=' . $n_events . ', add notifications=' . $n_add_notifications . ')', 0);
+		return json_encode($timeline);
+    }
+
     public function CleanupVideoPath(bool $verboѕe = false)
     {
         $dt = new DateTime(date('d.m.Y 00:00:00', time()));
@@ -1467,7 +1564,8 @@ class NetatmoSecurityCamera extends IPSModule
             die('File not found!');
         }
         $path = parse_url($uri, PHP_URL_PATH);
-        $command = substr($path, strlen($hook));
+        $basename = substr($path, strlen($hook));
+		$command = $basename;
         if (substr($command, 0, 1) == '/') {
             $command = substr($command, 1);
         }
@@ -1574,36 +1672,55 @@ class NetatmoSecurityCamera extends IPSModule
             default:
                 break;
         }
-        if ($url == false) {
-            http_response_code(404);
-            die('File not found!');
-        }
-        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', alternate_url=' . $alternate_url, 0);
-        switch ($mode) {
-            case 'url':
-                $html = $url;
-                break;
-            case 'custom':
-                if ($webhook_script == 0) {
-                    http_response_code(404);
-                    die('no custom-script not found!');
-                }
-                $opts['url'] = $url;
-                if ($alternate_url != false) {
-                    $opts['alternate_url'] = $alternate_url;
-                }
-                $this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
-                $html = IPS_RunScriptWaitEx($webhook_script, $opts);
-                $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
-                break;
-            case 'html':
-                $html = $this->buildHtml($url);
+        switch ($command) {
+            case 'video':
+            case 'snapshot':
+            case 'vignette':
+				if ($url == false) {
+					http_response_code(404);
+					die('File not found!');
+				}
+				$this->SendDebug(__FUNCTION__, 'url=' . $url . ', alternate_url=' . $alternate_url, 0);
+				switch ($mode) {
+					case 'url':
+						$html = $url;
+						break;
+					case 'custom':
+						if ($webhook_script == 0) {
+							http_response_code(404);
+							die('no custom-script not found!');
+						}
+						$opts['url'] = $url;
+						if ($alternate_url != false) {
+							$opts['alternate_url'] = $alternate_url;
+						}
+						$this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
+						$html = IPS_RunScriptWaitEx($webhook_script, $opts);
+						$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+						break;
+					case 'html':
+						$html = $this->buildHtml($url);
+						break;
+					default:
+						http_response_code(404);
+						die('unknown result-mode!');
+				}
+				$this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
+				echo $html;
                 break;
             default:
-                http_response_code(404);
-                die('unknown result-mode!');
+				$path = realpath($root . '/' . $basename);
+				if ($path === false) {
+					http_response_code(404);
+					die('File not found!');
+				}
+				if (substr($path, 0, strlen($root)) != $root) {
+					http_response_code(403);
+					die('Security issue. Cannot leave root folder!');
+				}
+				header('Content-Type: ' . $this->GetMimeType(pathinfo($path, PATHINFO_EXTENSION)));
+				readfile($path);
+                break;
         }
-        $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
-        echo $html;
     }
 }

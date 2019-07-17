@@ -125,7 +125,7 @@ liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nich
 
 `NetatmoSecurity_GetEvents(int $InstanzID)`<br>
 liefert alle gespeicherten Ereignisse der Kamera; Datentyp siehe _Events_.
-Die Liste ist zeitlich aufsteigend sortiert.
+Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
 
 `NetatmoSecurity_SearchEvent(int $InstanzID, string $event_id)`<br>
 Sucht einen Event in den gespeicherten Events
@@ -135,7 +135,13 @@ Sucht einen Sub-Event in den gespeicherten Events
 
 `NetatmoSecurity_GetNotifications(int $InstanzID)`<br>
 liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_.
-Die Liste ist zeitlich aufsteigend sortiert.
+Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
+
+`NetatmoSecurity_GetTimeline(int $InstanzID)`<br>
+Zusammenfassung aus den Ereignissen und Benachrichtigungen. Es umfasst alle Ereignisse, von den Benachrichtigungen aber nur die, die
+a) bіsher noch nicht zu einem Ereignis wurden
+b) die Benachrichtigungen, die nie zu einem Ereignis werden (z.N. Kameraüberwachung ein/aus).
+Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
 
 `NetatmoSecurity_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
 bereinigt das Verzeichnis der (per FTP übertragenen) Videos
@@ -373,9 +379,17 @@ NetatmoSecurity.PowerStatus
 | snapshot_key | string         | ja       | siehe _Sub-Events_ |
 | vignette_id  | string         | ja       | siehe _Sub-Events_ |
 | vignette_key | string         | ja       | siehe _Sub-Events_ |
+| persons      | Objekt-Liste   | ja       | Liste der Personen |
+
+#### Person
+| Variable     | Datenty        | optional | Bedeutung |
+| :----------- | :------------- | :------- | :-------- |
+| person_id    | string         | nein     | ID der Person |
+| is_known     | boolen         | ja       | Person ist bekannt |
+| face_url     | string         | ja       | URL zu dem Abbild der Person |
 
 - _push_type_:
-  - Benachrichtigung mit _Sub-Event_<br>
+  - Benachrichtigung mit _Event_ oder _Sub-Event_<br>
     _NOC-human_, _NOC-animal_, _NOC-vehicle_<br>
 	_NACamera-movement_, _NACamera-person_
   - sonstige Benachrichtigung:<br>

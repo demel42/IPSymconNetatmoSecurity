@@ -21,11 +21,11 @@ $autoplay = isset($GET['autoplay']) ? 'autoplay' : '';
 
 $video_id = 'NetatmoStream_' . substr(uniqid(), -4);
 $url = $_IPS['url'];
-$posterURL  = isset($_IPS['alternate_url']) ? 'poster="'.$_IPS['alternate_url'].'" ' : '';
+$posterURL = isset($_IPS['alternate_url']) ? 'poster="' . $_IPS['alternate_url'] . '" ' : '';
 
 if (preg_match('/\.m3u8$/', $url)) {
     $html = '<link href="https://vjs.zencdn.net/7.6.0/video-js.css" rel="stylesheet">  ';
-	$html .= '<video id="'.$video_id.'" class="video-js vjs-default-skin vjs-big-play-centered" height="'.$height.'" controls '.$posterURL.$autoplay.'>  ';
+    $html .= '<video id="' . $video_id . '" class="video-js vjs-default-skin vjs-big-play-centered" height="' . $height . '" controls ' . $posterURL . $autoplay . '>  ';
     $html .= '<source type="application/x-mpegURL" src="' . $url . '">  ';
     $html .= '</video>    ';
 

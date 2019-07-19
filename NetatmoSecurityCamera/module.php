@@ -1127,10 +1127,10 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
 
-		/*
-		 * komplettes Ergebnis:
-		 *   {"intensity":100,"mode":"off","night":{"always":false,"person":false,"vehicle":false,"animal":false,"movement":false} }
-		 */
+        /*
+         * komplettes Ergebnis:
+         *   {"intensity":100,"mode":"off","night":{"always":false,"person":false,"vehicle":false,"animal":false,"movement":false} }
+         */
 
         $jdata = json_decode($data, true);
         if ($jdata['status'] == 'ok') {
@@ -1143,16 +1143,16 @@ class NetatmoSecurityCamera extends IPSModule
             if ($intensity != '') {
                 $this->SetValue('LightIntensity', $intensity);
             }
-			$light_mode_status = $this->map_lightmode_status($this->GetArrayElem($jdata, 'mode', ''));
-			if (is_int($light_mode_status)) {
-				$this->SetValue('LightmodeStatus', $light_mode_status);
-				if ($light_mode_status == LIGHT_STATUS_ON) {
-					$v = LIGHT_STATUS_OFF;
-				} else {
-					$v = LIGHT_STATUS_ON;
-				}
-				$this->SetValue('LightAction', $v);
-			}
+            $light_mode_status = $this->map_lightmode_status($this->GetArrayElem($jdata, 'mode', ''));
+            if (is_int($light_mode_status)) {
+                $this->SetValue('LightmodeStatus', $light_mode_status);
+                if ($light_mode_status == LIGHT_STATUS_ON) {
+                    $v = LIGHT_STATUS_OFF;
+                } else {
+                    $v = LIGHT_STATUS_ON;
+                }
+                $this->SetValue('LightAction', $v);
+            }
         }
 
         return true;

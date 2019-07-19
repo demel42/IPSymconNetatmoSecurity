@@ -22,6 +22,7 @@ if (!defined('IS_NODATA')) {
     define('IS_PRODUCTMISSІNG', IS_EBASE + 8);
     define('IS_NOWEBHOOK', IS_EBASE + 9);
     define('IS_USEDWEBHOOK', IS_EBASE + 10);
+    define('IS_INVALIDCONFIG', IS_EBASE + 11);
 }
 
 trait NetatmoSecurityCommon
@@ -266,6 +267,7 @@ trait NetatmoSecurityCommon
         $formStatus[] = ['code' => IS_PRODUCTMISSІNG, 'icon' => 'error', 'caption' => 'Instance is inactive (product missing)'];
         $formStatus[] = ['code' => IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
         $formStatus[] = ['code' => IS_USEDWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook already in use)'];
+        $formStatus[] = ['code' => IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid config)'];
 
         return $formStatus;
     }

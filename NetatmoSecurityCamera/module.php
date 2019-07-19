@@ -555,6 +555,7 @@ class NetatmoSecurityCamera extends IPSModule
                                             }
                                             $this->SetValue('LightAction', $v);
                                         }
+										$this->GetLightConfig();
                                     }
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
@@ -1065,11 +1066,17 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
 
         $jdata = json_decode($data, true);
-        return $jdata['status'];
+        return true;
     }
 
     public function DimLight(int $intensity)
     {
+		$product_type = $this->ReadPropertyString('product_type');
+		if ($product_type != 'NOC') {
+			$this->SendDebug(__FUNCTION__, 'not aviable for product ' . $product_type, 0);
+			return false;
+		}
+
         $url = $this->determineUrl();
         if ($url == false) {
             $err = 'no url available';
@@ -1094,8 +1101,46 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
 
         $jdata = json_decode($data, true);
-        return $jdata['status'];
+        return true;
     }
+
+    public function GetLightConfig()
+    {
+		$product_type = $this->ReadPropertyString('product_type');
+		if ($product_type != 'NOC') {
+			$this->SendDebug(__FUNCTION__, 'not aviable for product ' . $product_type, 0);
+			return false;
+		}
+
+        $url = $this->determineUrl();
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
+
+        $url .= '/command/floodlight_get_config';
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+		if ($jdata['status'] == 'ok') {
+			$data = $jdata['data'];
+
+			$jdata = json_decode($data, true);
+			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+
+			$intensity = $this->GetArrayElem($jdata, 'intensity', '');
+			if ($intensity != '')
+				$this->SetValue('LightIntensity', $intensity);
+		}
+
+		return true;
+	}
 
     public function SwitchCamera(int $mode)
     {
@@ -1129,7 +1174,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
 
         $jdata = json_decode($data, true);
-        return $jdata['status'];
+        return true;
     }
 
     private function cmp_events($a, $b)

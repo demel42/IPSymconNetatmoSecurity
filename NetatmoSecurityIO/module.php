@@ -501,7 +501,7 @@ class NetatmoSecurityIO extends IPSModule
             $msg = 'no data';
         }
 
-        $ret = json_encode(['status' => $status, 'msg' => $msg]);
+        $ret = json_encode(['status' => $status, 'msg' => $msg, 'data' => $data]);
         $this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
         return $ret;
     }

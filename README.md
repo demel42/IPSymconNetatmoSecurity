@@ -191,8 +191,7 @@ schaltet die Kamera (0=aus, 1=ein)
 schaltet das Licht (0=aus, 1=ein, 2=auto)
 
 `NetatmoSecurity_DimLight(int $InstanzID, int $intensity)`<br>
-dimmt das Licht (0..100%). <br>
-Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
+stellt die Intensität das Lichtes ein (0..100%). <br>
 
 
 ### NetatmoSecurityPerson

@@ -50,7 +50,8 @@
 			"Instance is inactive (no module)": "Instanz ist inaktiv (kein Modul)",
 			"Instance is inactive (module missing)": "Instanz ist inaktiv (Modul ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
-			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)"
+			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)",
+			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)"
 		}
 	}
 }

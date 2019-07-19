@@ -555,7 +555,7 @@ class NetatmoSecurityCamera extends IPSModule
                                             }
                                             $this->SetValue('LightAction', $v);
                                         }
-										$this->GetLightConfig();
+                                        $this->GetLightConfig();
                                     }
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
@@ -1071,11 +1071,11 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function DimLight(int $intensity)
     {
-		$product_type = $this->ReadPropertyString('product_type');
-		if ($product_type != 'NOC') {
-			$this->SendDebug(__FUNCTION__, 'not aviable for product ' . $product_type, 0);
-			return false;
-		}
+        $product_type = $this->ReadPropertyString('product_type');
+        if ($product_type != 'NOC') {
+            $this->SendDebug(__FUNCTION__, 'not aviable for product ' . $product_type, 0);
+            return false;
+        }
 
         $url = $this->determineUrl();
         if ($url == false) {
@@ -1106,11 +1106,11 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetLightConfig()
     {
-		$product_type = $this->ReadPropertyString('product_type');
-		if ($product_type != 'NOC') {
-			$this->SendDebug(__FUNCTION__, 'not aviable for product ' . $product_type, 0);
-			return false;
-		}
+        $product_type = $this->ReadPropertyString('product_type');
+        if ($product_type != 'NOC') {
+            $this->SendDebug(__FUNCTION__, 'not aviable for product ' . $product_type, 0);
+            return false;
+        }
 
         $url = $this->determineUrl();
         if ($url == false) {
@@ -1128,19 +1128,20 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
 
         $jdata = json_decode($data, true);
-		if ($jdata['status'] == 'ok') {
-			$data = $jdata['data'];
+        if ($jdata['status'] == 'ok') {
+            $data = $jdata['data'];
 
-			$jdata = json_decode($data, true);
-			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            $jdata = json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
-			$intensity = $this->GetArrayElem($jdata, 'intensity', '');
-			if ($intensity != '')
-				$this->SetValue('LightIntensity', $intensity);
-		}
+            $intensity = $this->GetArrayElem($jdata, 'intensity', '');
+            if ($intensity != '') {
+                $this->SetValue('LightIntensity', $intensity);
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
     public function SwitchCamera(int $mode)
     {

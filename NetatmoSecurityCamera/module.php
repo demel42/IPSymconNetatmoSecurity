@@ -412,11 +412,11 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'ftp_path', 'caption' => ' ... path'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
         if ($product_type == 'NOC') {
-			$formElements[] = ['type' => 'Label', 'caption' => 'Local copy of Netatmo-Timelapse'];
-			$formElements[] = ['type' => 'ValidationTextBox', 'name' => 'timelapse_path', 'caption' => ' ... path'];
-			$formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_hour', 'caption' => ' ... starttime', 'suffix' => 'hour of day'];
-			$formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
-		}
+            $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of Netatmo-Timelapse'];
+            $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'timelapse_path', 'caption' => ' ... path'];
+            $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_hour', 'caption' => ' ... starttime', 'suffix' => 'hour of day'];
+            $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
+        }
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
         $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of new events'];

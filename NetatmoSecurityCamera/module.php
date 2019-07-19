@@ -1946,7 +1946,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function doLoadTimelapse()
     {
         $semaphoreID = __CLASS__ . __FUNCTION__;
-        $semaphoreTM = 300 * 1000;
+        $semaphoreTM = 5 * 60 * 1000; // der Abruf des 'Timelapse' dauert 1-2 min
 
         if (IPS_SemaphoreEnter($semaphoreID, $semaphoreTM)) {
             $this->LoadTimelapse();

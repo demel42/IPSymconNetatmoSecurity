@@ -561,7 +561,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
                     $cur_events = [];
-					$s = $this->GetMediaData('Events');
+                    $s = $this->GetMediaData('Events');
                     $prev_events = json_decode($s, true);
                     $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
                     $events = $this->GetArrayElem($home, 'events', '');
@@ -730,7 +730,7 @@ class NetatmoSecurityCamera extends IPSModule
                     } else {
                         $s = '';
                     }
-					$this->SetMediaData('Events', $s, false);
+                    $this->SetMediaData('Events', $s, false);
 
                     $with_last_event = $this->ReadPropertyBoolean('with_last_event');
                     if ($with_last_event && $n_new_events > 0) {
@@ -760,7 +760,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                     $new_notifications = [];
                     $cur_notifications = [];
-					$s = $this->GetMediaData('Notifications');
+                    $s = $this->GetMediaData('Notifications');
                     $prev_notifications = json_decode($s, true);
                     if ($prev_notifications != '') {
                         foreach ($prev_notifications as $prev_notification) {
@@ -931,7 +931,7 @@ class NetatmoSecurityCamera extends IPSModule
                     } else {
                         $s = '';
                     }
-					$this->SetMediaData('Notifications', $s, false);
+                    $this->SetMediaData('Notifications', $s, false);
 
                     $n_new_notifications = count($new_notifications);
 
@@ -1277,13 +1277,13 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetEvents()
     {
-		$data = $this->GetMediaData('Events');
+        $data = $this->GetMediaData('Events');
         return $data;
     }
 
     public function GetNotifications()
     {
-		$data = $this->GetMediaData('Notifications');
+        $data = $this->GetMediaData('Notifications');
         return $data;
     }
 
@@ -1402,7 +1402,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function SearchEvent(string $event_id)
     {
         $event = false;
-		$data = $this->GetMediaData('Events');
+        $data = $this->GetMediaData('Events');
         $events = json_decode($data, true);
         foreach ($events as $e) {
             if ($e['id'] == $event_id) {
@@ -1417,7 +1417,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function SearchSubEvent(string $subevent_id)
     {
         $subevent = false;
-		$data = $this->GetMediaData('Events');
+        $data = $this->GetMediaData('Events');
         $events = json_decode($data, true);
         foreach ($events as $event) {
             if (!isset($event['subevents'])) {

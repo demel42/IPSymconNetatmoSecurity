@@ -3,8 +3,6 @@
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
-define('EVENTS_AS_MEDIA', true);
-
 class NetatmoSecurityCamera extends IPSModule
 {
     use NetatmoSecurityCommon;
@@ -31,10 +29,6 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyInteger('event_max_age', '14');
         $this->RegisterPropertyInteger('notification_max_age', '2');
-        if (EVENTS_AS_MEDIA) {
-            $this->RegisterPropertyBoolean('events_cached', false);
-            $this->RegisterPropertyBoolean('notifications_cached', false);
-        }
 
         $this->RegisterPropertyString('ftp_path', '');
         $this->RegisterPropertyInteger('ftp_max_age', '14');
@@ -148,11 +142,6 @@ class NetatmoSecurityCamera extends IPSModule
         if ($with_light) {
             $this->MaintainAction('LightAction', true);
             $this->MaintainAction('LightIntensity', true);
-        }
-
-        if (!EVENTS_AS_MEDIA) {
-            $this->MaintainVariable('Events', $this->Translate('Events'), VARIABLETYPE_STRING, '', $vpos++, true);
-            $this->MaintainVariable('Notifications', $this->Translate('Notifications'), VARIABLETYPE_STRING, '', $vpos++, true);
         }
 
         $product_id = $this->ReadPropertyString('product_id');
@@ -417,14 +406,8 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'localCIDRs', 'caption' => ' ... local CIDR\'s'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Events'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'event_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
-        if (EVENTS_AS_MEDIA) {
-            $formElements[] = ['type' => 'CheckBox', 'name' => 'events_cached', 'caption' => ' ... Cache media-object'];
-        }
         $formElements[] = ['type' => 'Label', 'caption' => 'Notifications'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'notification_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
-        if (EVENTS_AS_MEDIA) {
-            $formElements[] = ['type' => 'CheckBox', 'name' => 'notifications_cached', 'caption' => ' ... Cache media-object'];
-        }
         $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of videos from Netatmo via FTP'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'ftp_path', 'caption' => ' ... path'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
@@ -578,11 +561,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
                     $cur_events = [];
-                    if (EVENTS_AS_MEDIA) {
-                        $s = $this->GetMediaData('Events');
-                    } else {
-                        $s = $this->GetValue('Events');
-                    }
+					$s = $this->GetMediaData('Events');
                     $prev_events = json_decode($s, true);
                     $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
                     $events = $this->GetArrayElem($home, 'events', '');
@@ -751,13 +730,7 @@ class NetatmoSecurityCamera extends IPSModule
                     } else {
                         $s = '';
                     }
-
-                    if (EVENTS_AS_MEDIA) {
-                        $events_cached = $this->ReadPropertyBoolean('events_cached');
-                        $this->SetMediaData('Events', $s, $events_cached);
-                    } else {
-                        $this->SetValue('Events', $s);
-                    }
+					$this->SetMediaData('Events', $s, false);
 
                     $with_last_event = $this->ReadPropertyBoolean('with_last_event');
                     if ($with_last_event && $n_new_events > 0) {
@@ -787,11 +760,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                     $new_notifications = [];
                     $cur_notifications = [];
-                    if (EVENTS_AS_MEDIA) {
-                        $s = $this->GetMediaData('Notifications');
-                    } else {
-                        $s = $this->GetValue('Notifications');
-                    }
+					$s = $this->GetMediaData('Notifications');
                     $prev_notifications = json_decode($s, true);
                     if ($prev_notifications != '') {
                         foreach ($prev_notifications as $prev_notification) {
@@ -962,15 +931,9 @@ class NetatmoSecurityCamera extends IPSModule
                     } else {
                         $s = '';
                     }
+					$this->SetMediaData('Notifications', $s, false);
 
                     $n_new_notifications = count($new_notifications);
-
-                    if (EVENTS_AS_MEDIA) {
-                        $notifications_cached = $this->ReadPropertyBoolean('notifications_cached');
-                        $this->SetMediaData('Notifications', $s, $notifications_cached);
-                    } else {
-                        $this->SetValue('Notifications', $s);
-                    }
 
                     if ($n_new_notifications > 0) {
                         $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
@@ -1314,21 +1277,13 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetEvents()
     {
-        if (EVENTS_AS_MEDIA) {
-            $data = $this->GetMediaData('Events');
-        } else {
-            $data = $this->GetValue('Events');
-        }
+		$data = $this->GetMediaData('Events');
         return $data;
     }
 
     public function GetNotifications()
     {
-        if (EVENTS_AS_MEDIA) {
-            $data = $this->GetMediaData('Notifications');
-        } else {
-            $data = $this->GetValue('Notifications');
-        }
+		$data = $this->GetMediaData('Notifications');
         return $data;
     }
 
@@ -1447,11 +1402,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function SearchEvent(string $event_id)
     {
         $event = false;
-        if (EVENTS_AS_MEDIA) {
-            $data = $this->GetMediaData('Events');
-        } else {
-            $data = $this->GetValue('Events');
-        }
+		$data = $this->GetMediaData('Events');
         $events = json_decode($data, true);
         foreach ($events as $e) {
             if ($e['id'] == $event_id) {
@@ -1466,11 +1417,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function SearchSubEvent(string $subevent_id)
     {
         $subevent = false;
-        if (EVENTS_AS_MEDIA) {
-            $data = $this->GetMediaData('Events');
-        } else {
-            $data = $this->GetValue('Events');
-        }
+		$data = $this->GetMediaData('Events');
         $events = json_decode($data, true);
         foreach ($events as $event) {
             if (!isset($event['subevents'])) {

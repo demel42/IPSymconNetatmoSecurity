@@ -29,6 +29,9 @@
 			" ... Cache media-object": " ... Medien-Object cachen",
 			"Local copy of videos from Netatmo via FTP": "lokale Kopien der Videos von Netatmo per FTP",
 			" ... path": " ... Verzeichnis",
+			"Local copy of Netatmo-Timelapse": "lokale Kopie der Netatmo-Zeitraffer-Darstellung",
+			" ... startime": " ... Startzeitpunkt",
+			"hour of day": "Stunde des Tages",
 
 			"Call upon receipt of a notification": "Aufruf bei Empfang einer Benachrichtigung",
 			" ... Script": " ... Script",
@@ -96,7 +99,8 @@
 			"Instance is inactive (no product)": "Instanz ist inaktiv (kein Produkt)",
 			"Instance is inactive (product missing)": "Instanz ist inaktiv (Produkt ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
-			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)"
+			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)",
+			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)"
 		}
 	}
 }

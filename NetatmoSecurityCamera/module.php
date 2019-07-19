@@ -7,7 +7,7 @@ define('EVENTS_AS_MEDIA', true);
 
 class NetatmoSecurityCamera extends IPSModule
 {
-    use NetatmoSecurityCommon;
+	use NetatmoSecurityCommon;
     use NetatmoSecurityLibrary;
 
     public function Create()
@@ -38,6 +38,10 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyString('ftp_path', '');
         $this->RegisterPropertyInteger('ftp_max_age', '14');
+
+        $this->RegisterPropertyString('timelapse_path', '');
+        $this->RegisterPropertyInteger('timelapse_hour', '0');
+        $this->RegisterPropertyInteger('timelapse_max_age', '7');
 
         $this->RegisterPropertyInteger('new_event_script', 0);
 
@@ -87,6 +91,9 @@ class NetatmoSecurityCamera extends IPSModule
         $this->CreateVarProfile('NetatmoSecurity.PowerStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
+
+		$this->RegisterTimer('CleanupPath', 0, 'NetatmoSecurity_doCleanupPath(' . $this->InstanceID . ');');
+		$this->RegisterTimer('LoadTimelapse', 0, 'NetatmoSecurity_doLoadTimelapse(' . $this->InstanceID . ');');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
@@ -152,6 +159,50 @@ class NetatmoSecurityCamera extends IPSModule
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 
+        $timelapse_path = $this->ReadPropertyString('timelapse_path');
+		if ($timelapse_path != '') {
+			$timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
+			if ($timelapse_hour < -1 || $timelapse_hour > 23) {
+				$this->SendDebug(__FUNCTION__, 'invalid \'timelapse_hour\' "' . $timelapse_hour . '"', 0);
+				$this->SetStatus(IS_INVALIDCONFIG);
+				return;
+			}
+		}
+
+        $externalIP = $this->ReadPropertyString('externalIP');
+		if ($externalIP != '') {
+			if ($this->deternmineIp($externalIP) == false) {
+				$this->SendDebug(__FUNCTION__, 'invalid \'externalIPˇ\' "' . $externalIP . '"', 0);
+				$this->SetStatus(IS_INVALIDCONFIG);
+				return;
+			}
+		}
+
+        $localCIDRs = $this->ReadPropertyString('localCIDRs');
+		if ($localCIDRs != '') {
+			$ok = true;
+			$cidrs = explode(';', $localCIDRs);
+			foreach ($cidrs as $cidr) {
+				list($net, $mask) = explode('/', $cidr);
+				if (ip2long($net) == false)
+					$ok = false;
+				if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $mask)) {
+					if (ip2long($mask) == false)
+						$ok = false;
+				} else {
+					if (!is_numeric($mask) || $mask < 1 || $mask > 31)
+						$ok = false;
+				}
+				if (!$ok)
+					break;
+			}
+			if (!$ok) {
+				$this->SendDebug(__FUNCTION__, 'invalid \'localCIDRs\' "' . $localCIDRs . '"', 0);
+				$this->SetStatus(IS_INVALIDCONFIG);
+				return;
+			}
+		}
+
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
@@ -164,6 +215,8 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $this->SetStatus(IS_ACTIVE);
+
+		$this->SetTimer();
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -181,6 +234,30 @@ class NetatmoSecurityCamera extends IPSModule
             }
         }
     }
+
+	public function SetTimer()
+    {
+        $timelapse_path = $this->ReadPropertyString('timelapse_path');
+		$timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
+		if ($timelapse_path != '' && $timelapse_hour >= 0 && $timelapse_hour < 24) {
+			$fmt = sprintf('d.m.Y 00:%02d:01', $timelapse_hour);
+			$dt = new DateTime(date($fmt, time() + (24 * 60 * 60)));
+			$ts = $dt->format('U');
+			$msec = ($ts - time()) * 1000;
+			$this->SetTimerInterval('LoadTimelapse', $msec);
+			$this->SendDebug(__FUNCTION__, 'LoadTimelapse=' . date('d.m.Y H:i:s', $ts) . ', msec=' . $msec, 0);
+		}
+
+        $video_max_age = $this->ReadPropertyInteger('timelapse_max_age');
+        $timelapse_max_age = $this->ReadPropertyInteger('timelapse_max_age');
+		if ($video_max_age > 0 || $timelapse_max_age > 0) {
+			$dt = new DateTime(date('d.m.Y 00:30:00', time() + (24 * 60 * 60)));
+			$ts = $dt->format('U');
+			$msec = ($ts - time()) * 1000;
+			$this->SetTimerInterval('CleanupPath', $msec);
+			$this->SendDebug(__FUNCTION__, 'CleanupPath=' . date('d.m.Y H:i:s', $ts) . ', msec=' . $msec, 0);
+		}
+	}
 
     private function SetLocation()
     {
@@ -347,6 +424,10 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of videos from Netatmo via FTP'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'ftp_path', 'caption' => ' ... path'];
         $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
+        $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of Netatmo-Timelapse'];
+        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'timelapse_path', 'caption' => ' ... path'];
+        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_hour', 'caption' => ' ... starttime', 'suffix' => 'hour of day'];
+        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
         $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of new events'];
@@ -377,6 +458,10 @@ class NetatmoSecurityCamera extends IPSModule
     {
         if ($this->GetStatus() == IS_INACTIVE) {
             $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            return;
+        }
+        if ($this->GetStatus() == IS_INVALIDCONFIG) {
+            $this->SendDebug(__FUNCTION__, 'instance has invalid config, skip', 0);
             return;
         }
 
@@ -1247,92 +1332,6 @@ class NetatmoSecurityCamera extends IPSModule
         return json_encode($timeline);
     }
 
-    public function CleanupVideoPath(bool $verboѕe = false)
-    {
-        $dt = new DateTime(date('d.m.Y 00:00:00', time()));
-        $now = $dt->format('U');
-
-        $path = $this->ReadPropertyString('ftp_path');
-        $max_age = $this->ReadPropertyInteger('ftp_max_age');
-
-        if ($path == '' || $max_age < 1) {
-            $this->SendDebug(__FUNCTION__, 'no path or no max_age', 0);
-            return false;
-        }
-
-        if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
-            $path = IPS_GetKernelDir() . $path;
-        }
-        $this->SendDebug(__FUNCTION__, 'cleanup viedeo_path ' . $path, 0);
-        $age = $max_age * 24 * 60 * 60;
-        $this->SendDebug(__FUNCTION__, '* cleanup files', 0);
-
-        $n_files_total = 0;
-        $n_files_deleted = 0;
-        $n_dirs_total = 0;
-        $n_dirs_deleted = 0;
-        $directory = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
-        $objects = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
-        foreach ($objects as $object) {
-            $isFile = $object->isFile();
-            if (!$isFile) {
-                continue;
-            }
-            $pathname = $object->getPathname();
-            $a = $now - filemtime($pathname);
-            $too_young = ($a < $age);
-            $n_files_total++;
-            if (!$verboѕe && $too_young) {
-                continue;
-            }
-            $this->SendDebug(__FUNCTION__, '  name=' . $object->getPathname() . ', age=' . floor(($a / 86400)) . ' => ' . ($too_young ? 'skip' : 'delete'), 0);
-            if ($too_young) {
-                continue;
-            }
-            $n_files_deleted++;
-            if (!unlink($pathname)) {
-                $err = 'unable to delete file ' . $pathname;
-                $this->SendDebug(__FUNCTION__, $err, 0);
-                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-            }
-        }
-        $this->SendDebug(__FUNCTION__, '* cleanup dirs', 0);
-        $directory = new RecursiveDirectoryIterator($path);
-        $objects = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
-        foreach ($objects as $object) {
-            $pathname = $object->getPathname();
-            $basename = basename($pathname);
-            if ($basename == '.' || $basename == '..') {
-                continue;
-            }
-            $isDir = $object->isDir();
-            if (!$isDir) {
-                continue;
-            }
-            $n_dirs_total++;
-
-            $filenames = scandir($pathname);
-            $n_child = count($filenames) - 2; // not only '.' and '..'
-
-            if (!$verboѕe && $n_child > 0) {
-                continue;
-            }
-            $this->SendDebug(__FUNCTION__, '  name=' . $pathname . ', childs=' . $n_child . ' => ' . ($n_child > 0 ? 'skip' : 'delete'), 0);
-            if ($n_child > 0) {
-                continue;
-            }
-            $n_dirs_deleted++;
-            if (!rmdir($pathname)) {
-                $err = 'unable to delete directory ' . $pathname;
-                $this->SendDebug(__FUNCTION__, $err, 0);
-                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
-            }
-        }
-        $msg = 'files deleted=' . $n_files_deleted . '/' . $n_files_total . ', dirs deleted=' . $n_dirs_deleted . '/' . $n_dirs_total;
-        $this->SendDebug(__FUNCTION__, $msg, 0);
-        $this->LogMessage(__FUNCTION__ . ': path=' . $path . ', ' . $msg, KL_MESSAGE);
-    }
-
     public function GetVideoFilename(string $video_id, int $tstamp)
     {
         $ftp_path = $this->ReadPropertyString('ftp_path');
@@ -1447,9 +1446,12 @@ class NetatmoSecurityCamera extends IPSModule
                     if ($filename != '') {
                         $path = IPS_GetKernelDir() . 'webfront';
                         $path = substr($filename, strlen($path));
-
-                        $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
-                        $url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+						if ($preferLocal) {
+							$url = 'http://' . gethostbyname(gethostname()) . ':3777' . $path;
+						} else {
+							$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+							$url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+						}
                     }
                 }
                 if ($url == false) {
@@ -1593,9 +1595,9 @@ class NetatmoSecurityCamera extends IPSModule
         if ($ip != false) {
             $preferLocal = false;
             if ($localCIDRs != '') {
-                $netmasks = explode(';', $localCIDRs);
-                foreach ($netmasks as $netmask) {
-                    $preferLocal = $this->ipInCIDR($ip, $netmask);
+                $cidrs = explode(';', $localCIDRs);
+                foreach ($cidrs as $cidr) {
+                    $preferLocal = $this->ipInCIDR($ip, $cidr);
                     if ($preferLocal) {
                         break;
                     }
@@ -1618,10 +1620,11 @@ class NetatmoSecurityCamera extends IPSModule
 
         $mode = isset($_GET['result']) ? $_GET['result'] : 'html';
         $opts = [
-                'InstanceID' => $this->InstanceID,
-                'command'    => $command,
-                '_SERVER'    => json_encode($_SERVER),
-                '_GET'       => json_encode($_GET),
+                'InstanceID'  => $this->InstanceID,
+                'command'     => $command,
+                'preferLocal' => $preferLocal,
+                '_SERVER'     => json_encode($_SERVER),
+                '_GET'        => json_encode($_GET),
             ];
 
         $url = false;
@@ -1631,14 +1634,14 @@ class NetatmoSecurityCamera extends IPSModule
             case 'video':
                 if (isset($_GET['live'])) {
                     $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
-                    $this->SendDebug(__FUNCTION__, 'option=live, resolution=' . $resolution, 0);
+                    $this->SendDebug(__FUNCTION__, 'option: live, resolution=' . $resolution, 0);
                     $url = $this->GetLiveVideoUrl($resolution, $preferLocal);
                     $alternate_url = $this->GetLiveSnapshotUrl($preferLocal);
                 }
                 if (isset($_GET['event_id'])) {
                     $event_id = $_GET['event_id'];
                     $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
-                    $this->SendDebug(__FUNCTION__, 'option=event_id=' . $event_id . ', resolution=' . $resolution, 0);
+                    $this->SendDebug(__FUNCTION__, 'option: event_id=' . $event_id . ', resolution=' . $resolution, 0);
                     if ($event_id == '') {
                         http_response_code(404);
                         die('event_id missing');
@@ -1648,12 +1651,12 @@ class NetatmoSecurityCamera extends IPSModule
                 break;
             case 'snapshot':
                 if (isset($_GET['live'])) {
-                    $this->SendDebug(__FUNCTION__, 'option=live', 0);
+                    $this->SendDebug(__FUNCTION__, 'option: live', 0);
                     $url = $this->GetLiveSnapshotUrl($preferLocal);
                 }
                 if (isset($_GET['subevent_id'])) {
                     $subevent_id = $_GET['subevent_id'];
-                    $this->SendDebug(__FUNCTION__, 'option=subevent_id=' . $subevent_id, 0);
+                    $this->SendDebug(__FUNCTION__, 'option: subevent_id=' . $subevent_id, 0);
                     if ($subevent_id == '') {
                         http_response_code(404);
                         die('subevent_id missing');
@@ -1664,7 +1667,7 @@ class NetatmoSecurityCamera extends IPSModule
             case 'vignette':
                 if (isset($_GET['subevent_id'])) {
                     $subevent_id = $_GET['subevent_id'];
-                    $this->SendDebug(__FUNCTION__, 'option=subevent_id=' . $subevent_id, 0);
+                    $this->SendDebug(__FUNCTION__, 'option: subevent_id=' . $subevent_id, 0);
                     if ($subevent_id == '') {
                         http_response_code(404);
                         die('subevent_id missing');
@@ -1672,6 +1675,18 @@ class NetatmoSecurityCamera extends IPSModule
                     $url = $this->GetVignetteUrl4Subevent($subevent_id, $preferLocal);
                 }
                 break;
+            case 'timelaps':
+                if (isset($_GET['date'])) {
+					$date = strtotime($$_GET['date']);;
+                    if ($date == 0) {
+                        http_response_code(404);
+                        die('malformed date');
+                    }
+				} else {
+					$date = time() - (24 * 60 * 60);
+				}
+				$this->SendDebug(__FUNCTION__, 'option: date=' . date('d.m.Y', $date), 0);
+				$url = $this->GetTimelapseUrl($date, $preferLocal);
             default:
                 break;
         }
@@ -1679,10 +1694,7 @@ class NetatmoSecurityCamera extends IPSModule
             case 'video':
             case 'snapshot':
             case 'vignette':
-                if ($url == false) {
-                    http_response_code(404);
-                    die('File not found!');
-                }
+            case 'timelaps':
                 $this->SendDebug(__FUNCTION__, 'url=' . $url . ', alternate_url=' . $alternate_url, 0);
                 switch ($mode) {
                     case 'url':
@@ -1702,7 +1714,11 @@ class NetatmoSecurityCamera extends IPSModule
                         $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
                         break;
                     case 'html':
-                        $html = $this->buildHtml($url);
+						if ($url == false) {
+							http_response_code(404);
+							die('File not found!');
+						}
+						$html = $this->buildHtml($url);
                         break;
                     default:
                         http_response_code(404);
@@ -1725,5 +1741,318 @@ class NetatmoSecurityCamera extends IPSModule
                 readfile($path);
                 break;
         }
+    }
+
+    public function LoadTimelapse()
+    {
+        $module_disable = $this->ReadPropertyBoolean('module_disable');
+        if ($module_disable) {
+            $this->SetStatus(IS_INACTIVE);
+            return false;
+        }
+
+		$path = $this->ReadPropertyString('timelapse_path');
+		if ($path == '') {
+            $this->SendDebug(__FUNCTION__, 'no path', 0);
+            return false;
+		}
+
+        $url = $this->determineUrl();
+        if ($url == false) {
+            $err = 'no url available';
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            return false;
+        }
+
+		$url .= '/command/dl/timelapse';
+		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+
+        if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
+            $path = IPS_GetKernelDir() . $path;
+        }
+        if (substr($path, -1) != DIRECTORY_SEPARATOR) {
+            $path .= DIRECTORY_SEPARATOR;
+        }
+
+		if (!file_exists($path)) {
+			if (!mkdir($path, 0777, true)) {
+				$this->SendDebug(__FUNCTION__, 'unable to create directory ' . $path, 0);
+				return false;
+			}
+		}
+
+		$refdate = time() - (24 * 60 * 60);
+		$y = date('Y', $refdate);
+		$m = date('m', $refdate);
+		$d = date('d', $refdate);
+
+        $product_id = $this->ReadPropertyString('product_id');
+		$id = str_replace(':', '', $product_id);
+
+		$basename = $path . $y . '-' . $m . '-' . $d . '_timelapse_' . $id;
+		$tmpfile = $basename . '.tmp';
+
+		$fp = fopen($tmpfile, 'w');
+		if ($fp == false) {
+			$this->SendDebug(__FUNCTION__, 'unabloe to open file "' . $tmpfile . '"', 0);
+			return false;
+		}
+
+		$time_start = microtime(true);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 120);
+		curl_setopt($ch, CURLOPT_FILE, $fp);
+		$cdata = curl_exec($ch);
+		$cerrno = curl_errno($ch);
+		$cerror = $cerrno ? curl_error($ch) : '';
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
+		$duration = round(microtime(true) - $time_start, 2);
+		$this->SendDebug(__FUNCTION__,  ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+		$this->SendDebug(__FUNCTION__,  '    cdata=' . $cdata, 0);
+
+		$ok = true;
+		if (fclose($fp) == false) {
+			$this->SendDebug(__FUNCTION__, 'unable to close file', 0);
+			return false;
+		}
+
+		if ($cerrno || $httpcode != 200) {
+			if (unlink($tmpfile) == false) {
+				$this->SendDebug(__FUNCTION__, 'unable to delete file "' . $tmpfile . '"', 0);
+			} 
+			return false;
+		}
+
+		$filename = $basename . '.mp4';
+		if (file_exists($filename) && unlink($filename) == false) {
+			$this->SendDebug(__FUNCTION__, 'unable to delete file "' . $filename . '"', 0);
+			return false;
+		}  
+		if (rename($tmpfile, $filename) == false) {
+			$this->SendDebug(__FUNCTION__, 'unable to rename file "' . $tmpfile . '" to "' . $filename . '"', 0);
+			return false;
+		}
+		$stat = stat($filename);
+		if ($stat == false) {
+			$this->SendDebug(__FUNCTION__, 'unable to stat file "' . $filename . '"', 0);
+			return false;
+		}
+
+		$size = floor($stat['size'] / (1024 * 1024) * 10) / 10;
+		$this->SendDebug(__FUNCTION__, 'filename=' . $filename . ', size=' . $size . 'MB', 0);
+
+		return true;
+	}
+
+    public function GetTimelapseFilename(int $refdate = 0)
+    {
+		$path = $this->ReadPropertyString('timelapse_path');
+		if ($path == '') {
+            $this->SendDebug(__FUNCTION__, 'no path', 0);
+            return false;
+		}
+
+        if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
+            $path = IPS_GetKernelDir() . $path;
+        }
+        if (substr($path, -1) != DIRECTORY_SEPARATOR) {
+            $path .= DIRECTORY_SEPARATOR;
+        }
+
+		if ($refdate == 0)
+			$refdate = time();
+
+		$y = date('Y', $refdate);
+		$m = date('m', $refdate);
+		$d = date('d', $refdate);
+
+        $product_id = $this->ReadPropertyString('product_id');
+		$id = str_replace(':', '', $product_id);
+
+		$filename = $path . $y . '-' . $m . '-' . $d . '_timelapse_' . $id . '.mp4';
+		$exists = file_exists($filename);
+
+		$this->SendDebug(__FUNCTION__, 'filename=' . $filename . ' => ' . $this->bool2str($exists), 0);
+		return $exists ? $filename : false;
+	}
+
+    public function GetTimelapseUrl(int $refdate = 0, bool $preferLocal)
+    {
+        global $_SERVER;
+
+		if (!isset($_SERVER['HTTP_USER_AGENT']) || !isset($_SERVER['HTTP_HOST'])) {
+			$this->SendDebug(__FUNCTION__, 'function can\'t be call without "_SERVER"-enviroment', 0);
+			return false;
+		}
+		if (IPS_GetKernelVersion() < 5.2 && !preg_match('/firefox/i', $_SERVER['HTTP_USER_AGENT'])) {
+			$this->SendDebug(__FUNCTION__, 'IPS < 5.2 and browser is not Firefox (' . $_SERVER['HTTP_USER_AGENT'] . ')', 0);
+			return false;
+		}
+
+		$url = false;
+        $filename = $this->GetTimelapseFilename($refdate);
+		if ($filename != false) {
+			$path = IPS_GetKernelDir() . 'webfront';
+			$path = substr($filename, strlen($path));
+			if ($preferLocal) {
+				$url = 'http://' . gethostbyname(gethostname()) . ':3777' . $path;
+			} else {
+				$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+				$url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+			}
+		}
+		$this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        return $url;
+    }
+
+    public function CleanupVideoPath()
+    {
+        $path = $this->ReadPropertyString('ftp_path');
+        $max_age = $this->ReadPropertyInteger('ftp_max_age');
+
+        if ($path == '' || $max_age < 1) {
+            $this->SendDebug(__FUNCTION__, 'no path or no max_age', 0);
+            return false;
+        }
+
+        $this->cleanupPath($path, $max_age, false);
+    }
+
+    public function CleanupTimelapsePath()
+    {
+		$path = $this->ReadPropertyString('timelapse_path');
+        $max_age = $this->ReadPropertyInteger('timelapse_max_age');
+
+        if ($path == '' || $max_age < 1) {
+            $this->SendDebug(__FUNCTION__, 'no path or no max_age', 0);
+            return false;
+        }
+
+        $this->cleanupPath($path, $max_age, false);
+    }
+
+	public function doLoadTimelapse()
+	{
+		$semaphoreID = __CLASS__ . __FUNCTION__;
+		$semaphoreTM = 300 * 1000;
+
+		if (IPS_SemaphoreEnter($semaphoreID, $semaphoreTM)) {
+			$this->LoadTimelapse();
+			IPS_SemaphoreLeave($semaphoreID);
+		} else {
+            $this->SendDebug(__FUNCTION__, 'sempahore ' . $semaphoreID . ' is not accessable', 0);
+        }
+		$this->SetTimer();
+	}
+
+	public function doCleanupPath()
+	{
+		$semaphoreID = __CLASS__ . __FUNCTION__;
+		$semaphoreTM = 500;
+
+		if (IPS_SemaphoreEnter($semaphoreID, $semaphoreTM)) {
+			$this->CleanupVideoPath();
+			IPS_SemaphoreLeave($semaphoreID);
+		} else {
+            $this->SendDebug(__FUNCTION__, 'sempahore ' . $semaphoreID . ' is not accessable', 0);
+        }
+
+		if (IPS_SemaphoreEnter($semaphoreID, $semaphoreTM)) {
+			$this->CleanupTimelapsePath();
+			IPS_SemaphoreLeave($semaphoreID);
+		} else {
+            $this->SendDebug(__FUNCTION__, 'sempahore ' . $semaphoreID . ' is not accessable', 0);
+        }
+		$this->SetTimer();
+	}
+
+    private function cleanupPath($path, $max_age, $verbose)
+    {
+        if ($path == '' || $max_age < 1) {
+            $this->SendDebug(__FUNCTION__, 'no path or no max_age', 0);
+            return false;
+        }
+
+        $dt = new DateTime(date('d.m.Y 00:00:00', time()));
+        $now = $dt->format('U');
+
+        if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
+            $path = IPS_GetKernelDir() . $path;
+        }
+        $this->SendDebug(__FUNCTION__, 'cleanup path ' . $path, 0);
+        $age = $max_age * 24 * 60 * 60;
+        $this->SendDebug(__FUNCTION__, '* cleanup files', 0);
+
+        $n_files_total = 0;
+        $n_files_deleted = 0;
+        $n_dirs_total = 0;
+        $n_dirs_deleted = 0;
+        $directory = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
+        $objects = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($objects as $object) {
+            $isFile = $object->isFile();
+            if (!$isFile) {
+                continue;
+            }
+            $pathname = $object->getPathname();
+            $a = $now - filemtime($pathname);
+            $too_young = ($a < $age);
+            $n_files_total++;
+			if (!$verbose && $too_young) {
+				continue;
+			}
+			$this->SendDebug(__FUNCTION__, '  name=' . $object->getPathname() . ', age=' . floor(($a / 86400)) . ' => ' . ($too_young ? 'skip' : 'delete'), 0);
+            if ($too_young) {
+                continue;
+            }
+            $n_files_deleted++;
+            if (!unlink($pathname)) {
+                $err = 'unable to delete file ' . $pathname;
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            }
+        }
+        $this->SendDebug(__FUNCTION__, '* cleanup dirs', 0);
+        $directory = new RecursiveDirectoryIterator($path);
+        $objects = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($objects as $object) {
+            $pathname = $object->getPathname();
+            $basename = basename($pathname);
+            if ($basename == '.' || $basename == '..') {
+                continue;
+            }
+            $isDir = $object->isDir();
+            if (!$isDir) {
+                continue;
+            }
+            $n_dirs_total++;
+
+            $filenames = scandir($pathname);
+            $n_child = count($filenames) - 2; // not only '.' and '..'
+
+            if (!$verbose && $n_child > 0) {
+                continue;
+            }
+            $this->SendDebug(__FUNCTION__, '  name=' . $pathname . ', childs=' . $n_child . ' => ' . ($n_child > 0 ? 'skip' : 'delete'), 0);
+            if ($n_child > 0) {
+                continue;
+            }
+            $n_dirs_deleted++;
+            if (!rmdir($pathname)) {
+                $err = 'unable to delete directory ' . $pathname;
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+            }
+        }
+        $msg = 'files deleted=' . $n_files_deleted . '/' . $n_files_total . ', dirs deleted=' . $n_dirs_deleted . '/' . $n_dirs_total;
+        $this->SendDebug(__FUNCTION__, $msg, 0);
+        $this->LogMessage(__FUNCTION__ . ': path=' . $path . ', ' . $msg, KL_MESSAGE);
     }
 }

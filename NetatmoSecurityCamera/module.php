@@ -504,6 +504,18 @@ class NetatmoSecurityCamera extends IPSModule
                                     }
                                     $this->SendDebug(__FUNCTION__, 'decode camera=' . print_r($camera, true), 0);
 
+                                    $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
+                                    if ($vpn_url != $this->GetBuffer('vpn_url')) {
+                                        $this->SetBuffer('vpn_url', $vpn_url);
+                                        $this->SetBuffer('local_url', '');
+                                    }
+
+                                    $is_local = $this->GetArrayElem($camera, 'is_local', false);
+                                    if ($is_local != $this->GetBuffer('is_local')) {
+                                        $this->SetBuffer('is_local', $is_local);
+                                        $this->SetBuffer('local_url', '');
+                                    }
+
                                     $camera_status = $this->map_camera_status($this->GetArrayElem($camera, 'status', ''));
                                     if (is_int($camera_status)) {
                                         $this->SetValue('CameraStatus', $camera_status);
@@ -539,18 +551,6 @@ class NetatmoSecurityCamera extends IPSModule
                                             $this->SetValue('LightAction', $v);
                                         }
                                         $this->GetLightConfig();
-                                    }
-
-                                    $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
-                                    if ($vpn_url != $this->GetBuffer('vpn_url')) {
-                                        $this->SetBuffer('vpn_url', $vpn_url);
-                                        $this->SetBuffer('local_url', '');
-                                    }
-
-                                    $is_local = $this->GetArrayElem($camera, 'is_local', false);
-                                    if ($is_local != $this->GetBuffer('is_local')) {
-                                        $this->SetBuffer('is_local', $is_local);
-                                        $this->SetBuffer('local_url', '');
                                     }
                                 }
                             }

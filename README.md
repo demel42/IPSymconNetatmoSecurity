@@ -169,6 +169,18 @@ b) die Benachrichtigungen, die nie zu einem Ereignis werden (z.N. Kameraüberwac
 Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
 
 
+`NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
+schaltet die Kamera (0=aus, 1=ein)
+
+#### _Outdoor_
+
+`NetatmoSecurity_SwitchLight(int $InstanzID, int $mode)`<br>
+schaltet das Licht (0=aus, 1=ein, 2=auto)
+
+`NetatmoSecurity_DimLight(int $InstanzID, int $intensity)`<br>
+stellt die Intensität das Lichtes ein (0..100%). <br>
+
+
 `NetatmoSecurity_LoadTimelapse(int $InstanzID)`<br>
 Herstellt und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h. Als Bezugszeitpunkt (für die Suche danach) gilt immer der Tag, ab dem die 24h beginnen. D.h. der AUfruf wird immer unter dem Datum des Vortags gespeichert.
 
@@ -180,18 +192,6 @@ Ermittlung der URL zu der Zeitrafferdarstellung des angegebenen Referenzdatums
 
 `NetatmoSecurity_CleanupTimelapsePath(int $InstanzID)`<br>
 bereinigt das Verzeichnis der Zeitraffer-Darstellungen
-
-
-`NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
-schaltet die Kamera (0=aus, 1=ein)
-
-#### _Outdoor_
-
-`NetatmoSecurity_SwitchLight(int $InstanzID, int $mode)`<br>
-schaltet das Licht (0=aus, 1=ein, 2=auto)
-
-`NetatmoSecurity_DimLight(int $InstanzID, int $intensity)`<br>
-stellt die Intensität das Lichtes ein (0..100%). <br>
 
 
 ### NetatmoSecurityPerson

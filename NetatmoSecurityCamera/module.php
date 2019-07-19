@@ -1450,10 +1450,10 @@ class NetatmoSecurityCamera extends IPSModule
                 $video_id = $event['video_id'];
                 $tstamp = $event['tstamp'];
 
-				$searchFile = $tstamp != '';
-				if (!isset($_SERVER['HTTP_USER_AGENT']) || !isset($_SERVER['HTTP_HOST'])) {
-					$searchFile = false;
-				}
+                $searchFile = $tstamp != '';
+                if (!isset($_SERVER['HTTP_USER_AGENT']) || !isset($_SERVER['HTTP_HOST'])) {
+                    $searchFile = false;
+                }
                 if ($searchFile && IPS_GetKernelVersion() < 5.2 && !preg_match('/firefox/i', $_SERVER['HTTP_USER_AGENT'])) {
                     $this->SendDebug(__FUNCTION__, 'IPS < 5.2 and browser is not Firefox (' . $_SERVER['HTTP_USER_AGENT'] . ')', 0);
                     $searchFile = false;

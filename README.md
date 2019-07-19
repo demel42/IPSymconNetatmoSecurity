@@ -24,7 +24,7 @@ Anschluss der Geräte, die von Netatmo unter dem Beriff _Security_ zusammengefas
 - Aussenkamera (_Outdoor_ bzw. _Presence_)
 - Innenkamera (_Indoor_ bzw. _Welcome_)
 - Rauchmelder
-Hinweis: für den Rauchmelder gibt es mangels Testmöglichkeit noch keine Implementierung.
+Hinweis: für den Rauchmelder gibt es mangels eigener Testmöglichkeit noch keine Implementierung.
 
 Je nach Produktyp umfasst das Modul folgende Funktionen:
 - Abruf des Status
@@ -97,6 +97,8 @@ ruft die Daten der Netatmo-Security-Produkte ab. Wird automatisch zyklisch durch
 
 ### NetatmoSecurityCamera
 
+#### _Outdoor_ und _Indoor_
+
 `NetatmoSecurity_GetVpnUrl(int $InstanzID)`<br>
 liefert die externe URL der Kamera zurück
 
@@ -120,8 +122,13 @@ _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt 
 `NetatmoSecurity_GetPictureUrl(int $InstanzID, string $id, string $key)`<br>
 liefert die URL eines gespeicherten Bildes (_Snapshot_ oder _Vignette_) zurück oder _false_, wenn nicht vorhanden
 
+
 `NetatmoSecurity_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`<br>
 liefert den Dateiname eines gespeicherten Videos zurück oder _false_, wenn nicht vorhanden (setzt die Übertragung der Videos per FTP voraus)
+
+`NetatmoSecurity_CleanupVideoPath(int $InstanzID)`<br>
+bereinigt das Verzeichnis der (per FTP übertragenen) Videos
+
 
 `NetatmoSecurity_GetEvents(int $InstanzID)`<br>
 liefert alle gespeicherten Ereignisse der Kamera; Datentyp siehe _Events_.
@@ -133,28 +140,6 @@ Sucht einen Event in den gespeicherten Events
 `NetatmoSecurity_SearchSubEvent(int $InstanzID, string $subevent_id)`<br>
 Sucht einen Sub-Event in den gespeicherten Events
 
-`NetatmoSecurity_GetNotifications(int $InstanzID)`<br>
-liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_.
-Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
-
-`NetatmoSecurity_GetTimeline(int $InstanzID)`<br>
-Zusammenfassung aus den Ereignissen und Benachrichtigungen. Es umfasst alle Ereignisse, von den Benachrichtigungen aber nur die, die
-a) bіsher noch nicht zu einem Ereignis wurden
-b) die Benachrichtigungen, die nie zu einem Ereignis werden (z.N. Kameraüberwachung ein/aus).
-Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
-
-`NetatmoSecurity_CleanupVideoPath(int $InstanzID, bool $verboѕe = false)`<br>
-bereinigt das Verzeichnis der (per FTP übertragenen) Videos
-
-`NetatmoSecurity_SwitchLight(int $InstanzID, int $mode)`<br>
-schaltet das Licht (0=aus, 1=ein, 2=auto)
-
-`NetatmoSecurity_DimLight(int $InstanzID, int $intensity)`<br>
-dimmt das Licht (0..100%). <br>
-Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
-
-`NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
-schaltet die Kamera (0=aus, 1=ein)
 
 `NetatmoSecurity_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution, bool $preferLocal)`<br>
 Liefert die URL des Videos zu einem bestimmten Event
@@ -170,6 +155,45 @@ Anmerkung: als Snapshot bezeichnet Netatmo in diesem Zusammenhang das Bild, das 
 Liefert die URL der Vignette zu einem bestimmten Sub-Event.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildausschnitt, das zum Erzeugen eines Ereingnisses geführt hat
+
+
+`NetatmoSecurity_GetNotifications(int $InstanzID)`<br>
+liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_.
+Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
+
+
+`NetatmoSecurity_GetTimeline(int $InstanzID)`<br>
+Zusammenfassung aus den Ereignissen und Benachrichtigungen. Es umfasst alle Ereignisse, von den Benachrichtigungen aber nur die, die
+a) bіsher noch nicht zu einem Ereignis wurden
+b) die Benachrichtigungen, die nie zu einem Ereignis werden (z.N. Kameraüberwachung ein/aus).
+Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
+
+
+`NetatmoSecurity_LoadTimelapse(int $InstanzID)`<br>
+Herstellt und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h. Als Bezugszeitpunkt (für die Suche danach) gilt immer der Tag, ab dem die 24h beginnen. D.h. der AUfruf wird immer unter dem Datum des Vortags gespeichert.
+
+`NetatmoSecurity_GetTimelapseFilenamel(int $InstanzID, int $refdate = 0)`<br>
+Ermittlung der Datei mit der Zeitrafferdarstellung des angegebenen Referenzdatums
+
+`NetatmoSecurity_GetTimelapseUrl(int $InstanzID, int $refdate = 0, bool $preferLocal)`<br>
+Ermittlung der URL zu der Zeitrafferdarstellung des angegebenen Referenzdatums
+
+`NetatmoSecurity_CleanupTimelapsePath(int $InstanzID)`<br>
+bereinigt das Verzeichnis der Zeitraffer-Darstellungen
+
+
+`NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
+schaltet die Kamera (0=aus, 1=ein)
+
+#### _Outdoor_
+
+`NetatmoSecurity_SwitchLight(int $InstanzID, int $mode)`<br>
+schaltet das Licht (0=aus, 1=ein, 2=auto)
+
+`NetatmoSecurity_DimLight(int $InstanzID, int $intensity)`<br>
+dimmt das Licht (0..100%). <br>
+Hinweis: es gibt keine Rückmeldung über die aktuelle Licht-Intensität
+
 
 ### NetatmoSecurityPerson
 
@@ -202,12 +226,14 @@ Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder z
 | snapshot?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu dem Snapshot |
 |                                      | |
 | vignette?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu der Vignette |
+|                                      | |
+| timelapse                            | liefert die (interne oder externe) URL zu der Zeitrafferdarstellung |
 
 Das _Kommando_ wird an den angegenegen WebHook angehängt.
 
-Bei allen Aufrufen zu Videos kann die Option _resolution=\<resolution\>_ hinzugefügt werden; mögliche Werte sind  _poor_, _low_, _medium_, _high_, Standardwert ist _high_.
+Bei allen Kommandos vom Typ _video_ kann die Option _resolution=\<resolution\>_ hinzugefügt werden; mögliche Werte sind  _poor_, _low_, _medium_, _high_, Standardwert ist _high_.
 
-Bei allen Aufrufen kann Option _result_ angfügt werden
+Bei allen Kommandos kann Option _result_ angfügt werden
 
 | Option | Beschreibung |
 | :----- | :------------| 
@@ -235,6 +261,9 @@ Das Ergebnis des Scriptes muss mit _echo_ ausgegeben werden und wird als Ergebni
 Ein Muster eines solchen Scriptes finden sich in [docs/processStreamURL.php](docs/processStreamURL.php); das wurde von [Coding Lizard](https://www.symcon.de/forum/members/11676-Coding-Lizard) entwickelt und zur Verfügung gestellt
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
+
+Zu dem Kommando vom Type _timelapse_ kann die Option _date=\<refdate\>_ angehängt werden; das Format ist gemäß (strtotime())[https://www.php.net/manual/de/function.strtotime.php]. Ohne diese Option wird gestrige Datum angenommen. Die Zeitrafferdarstellung wird als MP4 von Netatmo geliefert; die Einschränkungen gelten wie zuvor beschrieben.
+
 
 ## 5. Konfiguration
 
@@ -293,8 +322,13 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... Medienobjekt cachen | boolean        | Nein         | Medien-Objekt cachen, spart Resource, gehlt aber bei einem Absturz verloren |
 |                          |                |              | |
 | FTP-Verzeichnis          |                |              | |
-|  ... Verzeichnis         | path           |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
-|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters |
+|  ... Verzeichnis         | string         |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
+|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters, **0** deaktiviert das Löschen |
+|                          |                |              | |
+| Zeitraffer-Darstellung   |                |              | |
+|  ... Verzeichnis         | string         |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
+|  ... Startzeit           | integer        | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
+|  ... max. Alter          | integer        | 7            | automatisches Löschen nach Überschreitung des Alters, **0** deaktiviert das Löschen |
 |                          |                |              | |
 | Benachrichtigungen       |                |              | |
 |  ... Script              | integer        |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
@@ -382,6 +416,7 @@ NetatmoSecurity.PowerStatus
 | persons      | Objekt-Liste   | ja       | Liste der Personen |
 
 #### Person
+
 | Variable     | Datenty        | optional | Bedeutung |
 | :----------- | :------------- | :------- | :-------- |
 | person_id    | string         | nein     | ID der Person |
@@ -411,5 +446,5 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.0 @ 09.07.2019 15:40<br>
+- 1.0 @ 19.07.2019 12:34<br>
   Initiale Version

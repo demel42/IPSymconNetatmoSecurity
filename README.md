@@ -24,15 +24,16 @@ Anschluss der Geräte, die von Netatmo unter dem Beriff _Security_ zusammengefas
 - Aussenkamera (_Outdoor_ bzw. _Presence_)
 - Innenkamera (_Indoor_ bzw. _Welcome_)
 - Rauchmelder
-Hinweis: für den Rauchmelder gibt es mangels eigener Testmöglichkeit noch keine Implementierung.
+- Fenster- und Türsensoren (_Tags_)
+Hinweis: für den Rauchmelder sowiet die Sensoren gibt es mangels eigener Testmöglichkeit noch keine Implementierung.
 
 Je nach Produktyp umfasst das Modul folgende Funktionen:
 - Abruf des Status
 - Speicherung der Ereignisse für eine definierbaren Zeitraum
 - Empfang von Mitteilungen vua WebHook
 - Ermittlung der URL's zu Abruf von Videos und Snapshots (Live und historisch)
-- Einbindung der optional von Netatmo per _ftp_ übertragenen Videos
-- Steuerung (Kamera aus/ein, Licht)
+- Einbindung der optional von Netatmo per _FTP_ übertragenen Videos
+- Steuerung (Kamera aus/ein, Licht ...)
 - Verwaltung der identifizierten Personen sowie Steuerung (_kommt_, _geht_)
 
 ## 2. Voraussetzungen
@@ -168,6 +169,11 @@ a) bіsher noch nicht zu einem Ereignis wurden
 b) die Benachrichtigungen, die nie zu einem Ereignis werden (z.N. Kameraüberwachung ein/aus).
 Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
 
+`NetatmoSecurity_MergeTimeline(int $InstanzID, string $total_timeline, string $add_timeline, string $tag)`<br>
+Fügt _add_timeline_ der _total_timeline_ hinzu und versieht alle neuen Einträge mit dem Element _tag_.
+Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
+Beispiel siehe [docs/mergeTimelines.php](docs/mergeTimelines.php).
+
 
 `NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
 schaltet die Kamera (0=aus, 1=ein)
@@ -261,7 +267,7 @@ Ein Muster eines solchen Scriptes finden sich in [docs/processStreamURL.php](doc
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
-Zu dem Kommando vom Type _timelapse_ kann die Option _date=\<refdate\>_ angehängt werden; das Format ist gemäß (strtotime())[https://www.php.net/manual/de/function.strtotime.php]. Ohne diese Option wird gestrige Datum angenommen. Die Zeitrafferdarstellung wird als MP4 von Netatmo geliefert; die Einschränkungen gelten wie zuvor beschrieben.
+Dem Kommando vom Type _timelapse_ kann die Option _date=\<refdate\>_ angehängt werden; das Format ist gemäß (strtotime())[https://www.php.net/manual/de/function.strtotime.php]. Ohne diese Option wird gestrige Datum angenommen. Die Zeitrafferdarstellung wird als MP4 von Netatmo geliefert; die Einschränkungen der Darstellung gelten wie zuvor beschrieben.
 
 
 ## 5. Konfiguration

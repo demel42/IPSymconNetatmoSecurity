@@ -1354,6 +1354,26 @@ class NetatmoSecurityCamera extends IPSModule
         return json_encode($timeline);
     }
 
+    public function MergeTimeline(string $total_timeline, string $add_timeline, string $tag)
+    {
+        $jtotal_timeline = json_decode($total_timeline, true);
+		if ($jtotal_timeline == false)
+			$jtotal_timeline = [];
+
+        $jadd_timeline = json_decode($add_timeline, true);
+		if ($jadd_timeline != false) {
+			foreach ($jadd_timeline as $jt) {
+				if (!isset($jt['tag']))
+					$jt['tag'] = $tag;
+				$jtotal_timeline[] = $jt;
+			}
+		}
+
+		usort($jtotal_timeline, ['NetatmoSecurityCamera', 'cmp_events']);
+
+		return json_encode($jtotal_timeline);
+	}
+
     public function GetVideoFilename(string $video_id, int $tstamp)
     {
         $ftp_path = $this->ReadPropertyString('ftp_path');

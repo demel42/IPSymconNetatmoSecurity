@@ -178,12 +178,21 @@ class NetatmoSecurityIO extends IPSModule
                 case 'LastData':
                     $ret = $this->GetMultiBuffer('LastData');
                     break;
-                case 'CmdUrl':
+                case 'CmdUrlGet':
                     $url = $jdata['Url'];
-                    if (isset($jdata['NeedToken']) && $jdata['NeedToken']) {
-                        $url .= '&access_token=' . $this->GetToken();
-                    }
                     $ret = $this->SendCommand($url);
+                    $this->SetTimerInterval('UpdateData', 1000);
+                    break;
+                case 'CmdUrlGetWithAuth':
+                    $url = $jdata['Url'];
+					$url .= '&access_token=' . $this->GetToken();
+                    $ret = $this->SendCommand($url);
+                    $this->SetTimerInterval('UpdateData', 1000);
+                    break;
+                case 'CmdUrlPostWithAuth':
+                    $url = $jdata['Url'];
+					$postdata = $jdata['PostData'];
+                    $ret = $this->SendCommandWithAuth($url, $postdata);
                     $this->SetTimerInterval('UpdateData', 1000);
                     break;
                 default:
@@ -211,16 +220,26 @@ class NetatmoSecurityIO extends IPSModule
         $jtoken = json_decode($dtoken, true);
         $token = isset($jtoken['token']) ? $jtoken['token'] : '';
         $token_expiration = isset($jtoken['token_expiration']) ? $jtoken['token_expiration'] : 0;
+        $refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
 
         if ($token_expiration < time()) {
-            $postdata = [
-                'grant_type'    => 'password',
-                'client_id'     => $client,
-                'client_secret' => $secret,
-                'username'      => $user,
-                'password'      => $password,
-                'scope'         => 'read_presence write_presence access_presence read_camera write_camera access_camera read_smokedetector'
-            ];
+			if ($refresh_token == '') {
+				$postdata = [
+						'grant_type'    => 'password',
+						'client_id'     => $client,
+						'client_secret' => $secret,
+						'username'      => $user,
+						'password'      => $password,
+						'scope'         => 'read_presence write_presence access_presence read_camera write_camera access_camera read_smokedetector'
+					];
+			} else {
+				$postdata = [
+						'grant_type'    => 'refresh_token',
+						'client_id'     => $client,
+						'client_secret' => $secret,
+						'refresh_token' => $refresh_token
+					];
+			}
 
             $token = '';
             $token_expiration = 0;
@@ -230,12 +249,14 @@ class NetatmoSecurityIO extends IPSModule
             $statuscode = $this->do_HttpRequest($url, '', $postdata, 'POST', $data, $err);
             if ($statuscode == 0) {
                 $params = json_decode($data, true);
+				$this->SendDebug(__FUNCTION__, 'params=' . print_r($params, true), 0);
                 if ($params['access_token'] == '') {
                     $statuscode = IS_INVALIDDATA;
                     $err = "no 'access_token' in response";
                 } else {
                     $token = $params['access_token'];
                     $expires_in = $params['expires_in'];
+                    $refresh_token = $params['refresh_token'];
                     $token_expiration = time() + $expires_in - 60;
                 }
             }
@@ -248,13 +269,88 @@ class NetatmoSecurityIO extends IPSModule
                 return false;
             }
 
-            $this->SendDebug(__FUNCTION__, 'token=' . $token . ', expiration=' . $token_expiration, 0);
+            $jtoken = [
+                    'token'            => $token,
+                    'token_expiration' => $token_expiration,
+					'refresh_token'    => $refresh_token
+                ];
+            $this->SendDebug(__FUNCTION__, 'token=' . print_r($jtoken, true), 0);
+            $this->SetBuffer('Token', json_encode($jtoken));
+
+            $this->SetStatus(IS_ACTIVE);
+        }
+        return $token;
+    }
+
+    private function GetAppToken()
+    {
+        $url = 'https://api.netatmo.net/oauth2/token';
+
+        $user = $this->ReadPropertyString('Netatmo_User');
+        $password = $this->ReadPropertyString('Netatmo_Password');
+        $client = $this->ReadPropertyString('Netatmo_Client');
+        $secret = $this->ReadPropertyString('Netatmo_Secret');
+
+        $dtoken = $this->GetBuffer('AppToken');
+        $jtoken = json_decode($dtoken, true);
+        $token = isset($jtoken['token']) ? $jtoken['token'] : '';
+        $token_expiration = isset($jtoken['token_expiration']) ? $jtoken['token_expiration'] : 0;
+        $refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
+
+        if ($token_expiration < time()) {
+			$auth = 'QXV0aG9yaXphdGlvbjogQmFzaWMgYm1GZlkyeHBaVzUwWDJsdmN6bzFObU5qTmpSaU56azBOak5oT1RrMU9HSTNOREF4TkRjeVpEbGxNREUxT0E9PQ==';
+			$header = [
+					base64_decode($auth)
+				];
+			if ($refresh_token == '') {
+				$postdata = [
+						'grant_type'     => 'password',
+						'username'       => $user,
+						'password'       => $password,
+						'scope'          => 'write_camera read_camera access_camera read_presence write_presence access_presence read_station read_smokedetector',
+						'app_identifier' => 'com.netatmo.camera',
+					];
+			} else {
+				$postdata = [
+						'grant_type'    => 'refresh_token',
+						'refresh_token' => $refresh_token
+					];
+			}
+
+            $token = '';
+            $token_expiration = 0;
+
+            $data = '';
+            $err = '';
+            $statuscode = $this->do_HttpRequest($url, $header, $postdata, 'POST', $data, $err);
+            if ($statuscode == 0) {
+                $params = json_decode($data, true);
+                if ($params['access_token'] == '') {
+                    $statuscode = IS_INVALIDDATA;
+                    $err = "no 'access_token' in response";
+                } else {
+                    $token = $params['access_token'];
+                    $expires_in = $params['expires_in'];
+                    $token_expiration = time() + $expires_in - 60;
+                    $refresh_token = $params['refresh_token'];
+                }
+            }
+
+            if ($statuscode) {
+                $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->SetStatus($statuscode);
+                $this->SetMultiBuffer('LastData', '');
+                return false;
+            }
 
             $jtoken = [
                     'token'            => $token,
-                    'token_expiration' => $token_expiration
+                    'token_expiration' => $token_expiration,
+					'refresh_token'    => $refresh_token
                 ];
-            $this->SetBuffer('Token', json_encode($jtoken));
+            $this->SendDebug(__FUNCTION__, 'token=' . print_r($jtoken, true), 0);
+            $this->SetBuffer('AppToken', json_encode($jtoken));
 
             $this->SetStatus(IS_ACTIVE);
         }
@@ -475,7 +571,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
-    public function SendCommand(string $url)
+    private function SendCommand($url)
     {
         $inst = IPS_GetInstance($this->InstanceID);
         if ($inst['InstanceStatus'] == IS_INACTIVE) {
@@ -489,6 +585,50 @@ class NetatmoSecurityIO extends IPSModule
         $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
         if ($statuscode == 0) {
             $jdata = json_decode($data, true);
+            if (isset($jdata['error']['messages'])) {
+                $status = 'fail';
+                $msg = $jdata['error']['messages'];
+            } else {
+                $status = 'ok';
+                $msg = '';
+            }
+        } else {
+            $status = 'fail';
+            $msg = 'no data';
+        }
+
+        $ret = json_encode(['status' => $status, 'msg' => $msg, 'data' => $data]);
+        $this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
+        return $ret;
+    }
+
+    private function SendCommandWithAuth($url, $postdata)
+    {
+        $inst = IPS_GetInstance($this->InstanceID);
+        if ($inst['InstanceStatus'] == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            return false;
+        }
+
+        $token = $this->GetAppToken();
+        if ($token == false) {
+            return;
+        }
+
+		$header = [
+				'Accept: application/json; charset=utf-8',
+				'Authorization: Bearer ' . $token,
+				'Content-Type: application/json;charset=utf-8',
+				'Content-Length: ' . strlen($postdata),
+			];
+
+        $data = '';
+        $err = '';
+        $statuscode = $this->do_HttpRequest($url, $header, $postdata, 'POST', $data, $err);
+        $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
+        if ($statuscode == 0) {
+            $jdata = json_decode($data, true);
+			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             if (isset($jdata['error']['messages'])) {
                 $status = 'fail';
                 $msg = $jdata['error']['messages'];

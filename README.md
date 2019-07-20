@@ -141,6 +141,10 @@ Sucht einen Event in den gespeicherten Events
 `NetatmoSecurity_SearchSubEvent(int $InstanzID, string $subevent_id)`<br>
 Sucht einen Sub-Event in den gespeicherten Events
 
+`NetatmoSecurity_DeleteEvent(int $InstanzID, string $event_id)`<br>
+löscht den angegeben Event.
+Damit kann man z.B. unerwünscht Ereignisse automatisch löschen.
+Beispiel siehe [docs/processNotificationswithCleanup.php](docs/processNotificationswithCleanup.php).
 
 `NetatmoSecurity_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution, bool $preferLocal)`<br>
 Liefert die URL des Videos zu einem bestimmten Event
@@ -320,20 +324,20 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... local CIDR's        | string         |              | durch Semikolog getrennte Liste der lokalen CIDR's |
 |                          |                |              | |
 | Ereignisse               |                |              | |
-|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters |
+|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
 |  ... Medienobjekt cachen | boolean        | Nein         | Medien-Objekt cachen, spart Resource, gehlt aber bei einem Absturz verloren |
 | Benachrichtigung         |                |              | |
-|  ... max. Alter          | integer        | 2            | automatisches Löschen nach Überschreitung des Alters |
+|  ... max. Alter          | integer        | 2            | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
 |  ... Medienobjekt cachen | boolean        | Nein         | Medien-Objekt cachen, spart Resource, gehlt aber bei einem Absturz verloren |
 |                          |                |              | |
 | FTP-Verzeichnis          |                |              | |
 |  ... Verzeichnis         | string         |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
-|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters, **0** deaktiviert das Löschen |
+|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
 |                          |                |              | |
 | Zeitraffer-Darstellung   |                |              | |
 |  ... Verzeichnis         | string         |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
 |  ... Startzeit           | integer        | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
-|  ... max. Alter          | integer        | 7            | automatisches Löschen nach Überschreitung des Alters, **0** deaktiviert das Löschen |
+|  ... max. Alter          | integer        | 7            | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
 |                          |                |              | |
 | Benachrichtigungen       |                |              | |
 |  ... Script              | integer        |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |

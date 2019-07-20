@@ -202,7 +202,7 @@ class NetatmoSecurityPerson extends IPSModule
                 return false;
         }
 
-        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrl', 'Url' => $url, 'NeedToken' => true];
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGetWithAuth', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
 
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);

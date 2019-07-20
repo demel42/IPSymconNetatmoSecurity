@@ -1163,33 +1163,33 @@ class NetatmoSecurityCamera extends IPSModule
         $product_id = $this->ReadPropertyString('product_id');
         $home_id = $this->ReadPropertyString('home_id');
 
-		$event = false;
-		$data = $this->GetEvents();
-		$events = json_decode($data, true);
-		foreach ($events as $e) {
-			if ($event_id == $e['id']) {
-				$event = $e;
-				break;
-			}
-		}
+        $event = false;
+        $data = $this->GetEvents();
+        $events = json_decode($data, true);
+        foreach ($events as $e) {
+            if ($event_id == $e['id']) {
+                $event = $e;
+                break;
+            }
+        }
 
-		if ($event == false) {
-			$this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' not found', 0);
-			return false;
-		}
-		if (isset($event['deleted']) && $event['deleted']) {
-			$this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' found but deleted', 0);
-			return false;
-		}
+        if ($event == false) {
+            $this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' not found', 0);
+            return false;
+        }
+        if (isset($event['deleted']) && $event['deleted']) {
+            $this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' found but deleted', 0);
+            return false;
+        }
 
         $url = 'https://api.netatmo.com/api/deleteevent';
 
-		$postdata = [
-				'home_id'   => $home_id,
-				'camera_id' => $product_id,
-				'event_id'  => $event_id,
-			];
-		$pdata = json_encode($postdata);
+        $postdata = [
+                'home_id'   => $home_id,
+                'camera_id' => $product_id,
+                'event_id'  => $event_id,
+            ];
+        $pdata = json_encode($postdata);
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -1197,8 +1197,8 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
 
         $jdata = json_decode($data, true);
-		$status = isset($jdata['status']) ? $jdata['status'] : 'error';
-		$this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' deleted => ' . $status, 0);
+        $status = isset($jdata['status']) ? $jdata['status'] : 'error';
+        $this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' deleted => ' . $status, 0);
 
         return $status == 'ok';
     }

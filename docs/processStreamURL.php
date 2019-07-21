@@ -26,7 +26,7 @@ $posterURL = isset($_IPS['alternate_url']) ? 'poster="' . $_IPS['alternate_url']
 
 if (preg_match('/\.m3u8$/', $url)) {
     $html = '<link href="https://vjs.zencdn.net/7.6.0/video-js.css" rel="stylesheet">  ';
-	$html .= '<video id="' . $video_id . '" class="video-js vjs-default-skin vjs-big-play-centered" height="' . $height . '" controls ' . $posterURL . $autoplay . '>  ';
+    $html .= '<video id="' . $video_id . '" class="video-js vjs-default-skin vjs-big-play-centered" height="' . $height . '" controls ' . $posterURL . $autoplay . '>  ';
     $html .= '<source type="application/x-mpegURL" src="' . $url . '">  ';
     $html .= '</video>    ';
 
@@ -34,10 +34,10 @@ if (preg_match('/\.m3u8$/', $url)) {
 
     $html .= '<script>  ';
     $html .= 'function refreshPoster() {  ';
-    $html .= 'player.poster("'.$posterURL.'?" + new Date().getTime());  ';
+    $html .= 'player.poster("' . $posterURL . '?" + new Date().getTime());  ';
     $html .= '}  ';
     $html .= 'var player = videojs("' . $video_id . '");  ';
-    $html .= 'player.setInterval(refreshPoster, '.$refreshRate.');  ';
+    $html .= 'player.setInterval(refreshPoster, ' . $refreshRate . ');  ';
     $html .= '</script>';
 } elseif (preg_match('/\.jpg$/', $url)) {
     $html = '<img src="' . $url . '" height="' . $height . '">';

@@ -1,4 +1,4 @@
-<?
+<?php
 
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
 
@@ -7,6 +7,6 @@ $vpn_url = NetatmoSecurity_GetVpnUrl($instID);
 
 IPS_LogMessage($scriptName, 'vpn_url=' . $vpn_url);
 
-/* 
+/*
  * hier den Code um eventuell notwendige Änderungen nachzuführen
  */

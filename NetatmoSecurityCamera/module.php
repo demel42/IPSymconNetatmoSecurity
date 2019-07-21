@@ -496,7 +496,7 @@ class NetatmoSecurityCamera extends IPSModule
 
             switch ($source) {
                 case 'QUERY':
-					$url_changed = false;
+                    $url_changed = false;
                     $homes = $this->GetArrayElem($jdata, 'body.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
@@ -513,14 +513,14 @@ class NetatmoSecurityCamera extends IPSModule
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
                                     if ($vpn_url != $this->GetBuffer('vpn_url')) {
-										$url_changed = true;
+                                        $url_changed = true;
                                         $this->SetBuffer('vpn_url', $vpn_url);
                                         $this->SetBuffer('local_url', '');
                                     }
 
                                     $is_local = $this->GetArrayElem($camera, 'is_local', false);
                                     if ($is_local != $this->GetBuffer('is_local')) {
-										$url_changed = true;
+                                        $url_changed = true;
                                         $this->SetBuffer('is_local', $is_local);
                                         $this->SetBuffer('local_url', '');
                                     }
@@ -763,13 +763,13 @@ class NetatmoSecurityCamera extends IPSModule
                         }
                     }
 
-					if ($url_changed) {
+                    if ($url_changed) {
                         $url_changed_script = $this->ReadPropertyInteger('url_changed_script');
                         if ($url_changed_script > 0) {
                             $r = IPS_RunScriptWaitEx($url_changed_script, ['InstanceID' => $this->InstanceID]);
                             $this->SendDebug(__FUNCTION__, 'url_changed_script=' . IPS_GetName($url_changed_script) . ', ret=' . $r, 0);
                         }
-					}
+                    }
                     break;
                 case 'EVENT':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
@@ -1367,23 +1367,25 @@ class NetatmoSecurityCamera extends IPSModule
         $last_new_ts = $n_events > 0 ? $events[$n_events - 1]['tstamp'] : 0;
 
         $timeline = [];
-		
-		foreach ($events as $event) {
-			$deleted = isset($event['deleted']) ? $event['deleted'] : false;
-			if ($withDeleted == false && $deleted == true)
-				continue;
-			$event_types = [];
-			if (isset($event['subevents'])) {
-				$subevents = $event['subevents'];
-				foreach ($subevents as $subevent) {
-					$event_type = $subevent['event_type'];
-					if (!in_array($event_type, $event_types))
-						$event_types[] = $event_type;
-				}
-			}
-			$event['event_types'] = $event_types;
-			$timeline[] = $event;
-		}
+
+        foreach ($events as $event) {
+            $deleted = isset($event['deleted']) ? $event['deleted'] : false;
+            if ($withDeleted == false && $deleted == true) {
+                continue;
+            }
+            $event_types = [];
+            if (isset($event['subevents'])) {
+                $subevents = $event['subevents'];
+                foreach ($subevents as $subevent) {
+                    $event_type = $subevent['event_type'];
+                    if (!in_array($event_type, $event_types)) {
+                        $event_types[] = $event_type;
+                    }
+                }
+            }
+            $event['event_types'] = $event_types;
+            $timeline[] = $event;
+        }
 
         $n_add_notifications = 0;
         foreach ($notifications as $notification) {

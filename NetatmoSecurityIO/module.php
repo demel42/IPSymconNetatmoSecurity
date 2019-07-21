@@ -30,6 +30,11 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->RegisterPropertyInteger('sync_event_count', '30');
 
+        if (IPS_GetKernelVersion() >= 5.1) {
+            $this->RegisterAttributeString('ApiRefreshToken', '');
+            $this->RegisterAttributeString('AppRefreshToken', '');
+        }
+
         $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurity_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
 
@@ -69,6 +74,11 @@ class NetatmoSecurityIO extends IPSModule
         $client = $this->ReadPropertyString('Netatmo_Client');
         $secret = $this->ReadPropertyString('Netatmo_Secret');
 
+        if ($user == '' || $password == '' || $client == '' || $secret == '') {
+            $this->SetStatus(IS_INACTIVE);
+			return;
+		}
+
         $register_webhook = $this->ReadPropertyBoolean('register_webhook');
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
 
@@ -86,26 +96,14 @@ class NetatmoSecurityIO extends IPSModule
                     $this->SetStatus(IS_USEDWEBHOOK);
                     return;
                 }
+				$this->AddWebhook();
+			} else {
+				$this->DropWebhook();
             }
+			$this->SetTimerInterval('UpdateData', 1000);
         }
 
-        if ($user != '' && $password != '' && $client != '' && $secret != '') {
-            $this->SetUpdateInterval();
-            if (IPS_GetKernelRunlevel() == KR_READY) {
-                $this->UpdateData();
-            }
-            $this->SetStatus(IS_ACTIVE);
-
-            if (IPS_GetKernelRunlevel() == KR_READY) {
-                if ($register_webhook) {
-                    $this->AddWebhook();
-                } else {
-                    $this->DropWebhook();
-                }
-            }
-        } else {
-            $this->SetStatus(IS_INACTIVE);
-        }
+		$this->SetStatus(IS_ACTIVE);
     }
 
     public function GetConfigurationForm()
@@ -185,7 +183,7 @@ class NetatmoSecurityIO extends IPSModule
                     break;
                 case 'CmdUrlGetWithAuth':
                     $url = $jdata['Url'];
-                    $url .= '&access_token=' . $this->GetToken();
+                    $url .= '&access_token=' . $this->GetApiAccessToken();
                     $ret = $this->SendCommand($url);
                     $this->SetTimerInterval('UpdateData', 1000);
                     break;
@@ -207,7 +205,7 @@ class NetatmoSecurityIO extends IPSModule
         return $ret;
     }
 
-    private function GetToken()
+    private function GetApiAccessToken()
     {
         $url = 'https://api.netatmo.net/oauth2/token';
 
@@ -216,13 +214,17 @@ class NetatmoSecurityIO extends IPSModule
         $client = $this->ReadPropertyString('Netatmo_Client');
         $secret = $this->ReadPropertyString('Netatmo_Secret');
 
-        $dtoken = $this->GetBuffer('Token');
-        $jtoken = json_decode($dtoken, true);
-        $token = isset($jtoken['token']) ? $jtoken['token'] : '';
-        $token_expiration = isset($jtoken['token_expiration']) ? $jtoken['token_expiration'] : 0;
-        $refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
+        $jtoken = json_decode($this->GetBuffer('ApiToken'), true);
+        $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
+        $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
 
-        if ($token_expiration < time()) {
+        if ($expiration < time()) {
+            if (IPS_GetKernelVersion() >= 5.1) {
+                $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
+            } else {
+				$jtoken = json_decode($this->GetBuffer('ApiRefreshToken'), true);
+				$refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
+            }
             if ($refresh_token == '') {
                 $postdata = [
                         'grant_type'    => 'password',
@@ -241,9 +243,6 @@ class NetatmoSecurityIO extends IPSModule
                     ];
             }
 
-            $token = '';
-            $token_expiration = 0;
-
             $data = '';
             $err = '';
             $statuscode = $this->do_HttpRequest($url, '', $postdata, 'POST', $data, $err);
@@ -253,11 +252,6 @@ class NetatmoSecurityIO extends IPSModule
                 if ($params['access_token'] == '') {
                     $statuscode = IS_INVALIDDATA;
                     $err = "no 'access_token' in response";
-                } else {
-                    $token = $params['access_token'];
-                    $expires_in = $params['expires_in'];
-                    $refresh_token = $params['refresh_token'];
-                    $token_expiration = time() + $expires_in - 60;
                 }
             }
 
@@ -269,20 +263,35 @@ class NetatmoSecurityIO extends IPSModule
                 return false;
             }
 
+			$access_token = $params['access_token'];
+			$expires_in = $params['expires_in'];
+			$expiration = time() + $expires_in - 60;
+			$this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
             $jtoken = [
-                    'token'            => $token,
-                    'token_expiration' => $token_expiration,
-                    'refresh_token'    => $refresh_token
+                    'access_token' => $access_token,
+                    'expiration'   => $expiration,
                 ];
-            $this->SendDebug(__FUNCTION__, 'token=' . print_r($jtoken, true), 0);
-            $this->SetBuffer('Token', json_encode($jtoken));
+            $this->SetBuffer('ApiToken', json_encode($jtoken));
+
+			if (isset($params['refresh_token'])) {
+				$refresh_token = $params['refresh_token'];
+				$this->SendDebug(__FUNCTION__, 'new refresh_token=' . $refresh_token, 0);
+				if (IPS_GetKernelVersion() >= 5.1) {
+					$this->WriteAttributeString('ApiRefreshToken', $refresh_token);
+				} else {
+					$jtoken = [
+							'refresh_token' => $refresh_token,
+						];
+					$this->SetBuffer('ApiRefreshToken', json_encode($jtoken));
+				}
+			}
 
             $this->SetStatus(IS_ACTIVE);
         }
-        return $token;
+        return $access_token;
     }
 
-    private function GetAppToken()
+    private function GetAppAccessToken()
     {
         $url = 'https://api.netatmo.net/oauth2/token';
 
@@ -291,13 +300,17 @@ class NetatmoSecurityIO extends IPSModule
         $client = $this->ReadPropertyString('Netatmo_Client');
         $secret = $this->ReadPropertyString('Netatmo_Secret');
 
-        $dtoken = $this->GetBuffer('AppToken');
-        $jtoken = json_decode($dtoken, true);
-        $token = isset($jtoken['token']) ? $jtoken['token'] : '';
-        $token_expiration = isset($jtoken['token_expiration']) ? $jtoken['token_expiration'] : 0;
-        $refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
+        $jtoken = json_decode($this->GetBuffer('AppToken'), true);
+        $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
+        $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
 
-        if ($token_expiration < time()) {
+        if ($expiration < time()) {
+            if (IPS_GetKernelVersion() >= 5.1) {
+                $refresh_token = $this->ReadAttributeString('AppRefreshToken');
+            } else {
+				$jtoken = json_decode($this->GetBuffer('AppRefreshToken'), true);
+				$refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
+            }
             $auth = 'QXV0aG9yaXphdGlvbjogQmFzaWMgYm1GZlkyeHBaVzUwWDJsdmN6bzFObU5qTmpSaU56azBOak5oT1RrMU9HSTNOREF4TkRjeVpEbGxNREUxT0E9PQ==';
             $header = [
                     base64_decode($auth)
@@ -317,9 +330,6 @@ class NetatmoSecurityIO extends IPSModule
                     ];
             }
 
-            $token = '';
-            $token_expiration = 0;
-
             $data = '';
             $err = '';
             $statuscode = $this->do_HttpRequest($url, $header, $postdata, 'POST', $data, $err);
@@ -328,11 +338,6 @@ class NetatmoSecurityIO extends IPSModule
                 if ($params['access_token'] == '') {
                     $statuscode = IS_INVALIDDATA;
                     $err = "no 'access_token' in response";
-                } else {
-                    $token = $params['access_token'];
-                    $expires_in = $params['expires_in'];
-                    $token_expiration = time() + $expires_in - 60;
-                    $refresh_token = $params['refresh_token'];
                 }
             }
 
@@ -344,17 +349,31 @@ class NetatmoSecurityIO extends IPSModule
                 return false;
             }
 
+			$access_token = $params['access_token'];
+			$expires_in = $params['expires_in'];
+			$expiration = time() + $expires_in - 60;
+			$this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
             $jtoken = [
-                    'token'            => $token,
-                    'token_expiration' => $token_expiration,
-                    'refresh_token'    => $refresh_token
+                    'access_token'  => $access_token,
+                    'expiration'    => $expiration,
                 ];
-            $this->SendDebug(__FUNCTION__, 'token=' . print_r($jtoken, true), 0);
             $this->SetBuffer('AppToken', json_encode($jtoken));
 
+			if (isset($params['refresh_token'])) {
+				$refresh_token = $params['refresh_token'];
+				$this->SendDebug(__FUNCTION__, 'new refresh_token=' . $refresh_token, 0);
+				if (IPS_GetKernelVersion() >= 5.1) {
+					$this->WriteAttributeString('AppRefreshToken', $refresh_token);
+				} else {
+					$jtoken = [
+							'refresh_token' => $refresh_token,
+						];
+					$this->SetBuffer('AppRefreshToken', json_encode($jtoken));
+				}
+			}
             $this->SetStatus(IS_ACTIVE);
         }
-        return $token;
+        return $access_token;
     }
 
     public function UpdateData()
@@ -364,8 +383,8 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
-        $token = $this->GetToken();
-        if ($token == false) {
+        $access_token = $this->GetApiAccessToken();
+        if ($access_token == false) {
             return;
         }
 
@@ -373,7 +392,7 @@ class NetatmoSecurityIO extends IPSModule
 
         // Anfrage mit Token
         $url = 'https://api.netatmo.net/api/gethomedata';
-        $url .= '?access_token=' . $token;
+        $url .= '?access_token=' . $access_token;
         $url .= '&size=' . $sync_event_count;
 
         $data = '';
@@ -412,7 +431,7 @@ class NetatmoSecurityIO extends IPSModule
                 }
             }
         } elseif ($statuscode == IS_FORBIDDEN) {
-            $this->SetBuffer('Token', '');
+            $this->SetBuffer('ApiToken', '');
         }
 
         if ($statuscode) {
@@ -491,13 +510,13 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
-        $token = $this->GetToken();
-        if ($token == false) {
+        $access_token = $this->GetApiAccessToken();
+        if ($access_token == false) {
             return;
         }
 
         $url = 'https://api.netatmo.net/api/addwebhook';
-        $url .= '?access_token=' . $token;
+        $url .= '?access_token=' . $access_token;
 
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
         if ($webhook_baseurl == '') {
@@ -540,13 +559,13 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
-        $token = $this->GetToken();
-        if ($token == false) {
+        $access_token = $this->GetApiAccessToken();
+        if ($access_token == false) {
             return;
         }
 
         $url = 'https://api.netatmo.net/api/dropwebhook';
-        $url .= '?access_token=' . $token;
+        $url .= '?access_token=' . $access_token;
         $url .= '&app_types=app_security';
 
         $data = '';
@@ -610,14 +629,14 @@ class NetatmoSecurityIO extends IPSModule
             return false;
         }
 
-        $token = $this->GetAppToken();
-        if ($token == false) {
+        $access_token = $this->GetAppAccessToken();
+        if ($access_token == false) {
             return;
         }
 
         $header = [
                 'Accept: application/json; charset=utf-8',
-                'Authorization: Bearer ' . $token,
+                'Authorization: Bearer ' . $access_token,
                 'Content-Type: application/json;charset=utf-8',
                 'Content-Length: ' . strlen($postdata),
             ];

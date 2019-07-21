@@ -11,8 +11,8 @@ IPS_LogMessage($scriptName, 'vpn_url=' . $vpn_url);
 
 // ID's der HTML-Box-Variablen
 $varIDs = [
-		1234,
-	];
+        1234,
+    ];
 
 foreach ($varIDs as $varID) {
     SetValue($varID, GetValue($varId));

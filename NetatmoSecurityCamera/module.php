@@ -1666,7 +1666,13 @@ class NetatmoSecurityCamera extends IPSModule
             $html .= '</head>';
             $html .= '<body>';
             $html .= '</body>';
-        }
+        } else {
+            $html .= '<head>';
+            $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+            $html .= '</head>';
+            $html .= '<body>';
+            $html .= '</body>';
+		}
         $html .= '</html>';
 
         return $html;

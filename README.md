@@ -249,7 +249,7 @@ Bei allen Kommandos kann Option _result_ angfügt werden
 | :----- | :------------| 
 | html   | Standardwert, liefert einen kleine HMTL-Code, der per _iframe_ eigebunden werden kann |
 | url    | es wird die reine URL, ansonsten ein einbettbarer HTML-Code geliefert |
-| custon | es wird das in der Konfiguration angegebene Script aufgerufen. |
+| custom | es wird das in der Konfiguration angegebene Script aufgerufen. |
 
 Hinweis zu dem _custom_-Script:
 Dem Script wird übergeben:
@@ -464,5 +464,5 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.0 @ 19.07.2019 12:34<br>
+- 1.0 @ 21.07.2019 12:47<br>
   Initiale Version

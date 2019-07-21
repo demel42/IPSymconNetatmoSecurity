@@ -5,25 +5,27 @@
 // Modified:  21.07.19
 //
 // Hinweise:
-// - Code for ~HTMLBox:  <iframe width="100%" height="360" src="<IPS-URL>/hook/<HookName>/video?live&result=custom"></iframe>
-//                       <IPS-URL> kann sein: "https://<ipmagic-Adresse>" oder "http://<IPS-IP>:3777"
-//                       <HookName> ist der Name der Hook aus der Konfiguration der Kamera
-//                       Anstelle von "video/live" kann das Kommando auch "snapshot/live" etc lauten (siehe README.md)
-//
-// - Instanz:            Dieses Script in der Kamera-Instanz als Webhook-Script eintragen
+// - Variable:           Create variable of datatype "String" with profile "~HTML-Box"
+//   ... with Content:   <iframe width="100%" height="360" src="<IPS-URL>/hook/<HookName>/video?live&result=custom"></iframe>
+//                       - <IPS-URL> may be "https://<ipmagic-Adresse>" (preffered) or "http://<IPS-IP>:3777"
+//                       - <HookName> ist the name of the Hook (from Configuration of the Instance)
+//                       - Instead of "video/live", the command can also be "snapshot/live" etc (see README.md)
 //
 // - Player Height:      Add '&height=xxx' to the URL in the iframe. Also change the iframe height accordingly (Player height + 20)
 // - Poster RefreshRate: Add &refreshRate=60000 to the URL. Sets the time for when a new Preview JPG should be fetched in milliseconds
 // - AutoPlay:           Add '&autoplay' to the URL in the iframe
 
-// URL-Parameter parsen
-$SERVER = json_decode($_IPS['_SERVER'], true);
+// URL's ausleѕen
+$url = $_IPS['url'];
+$posterURL = isset($_IPS['alternate_url']) ? 'poster="' . $_IPS['alternate_url'] . '" ' : '';
+
+// URL-GET-Parameter parsen
 $GET = json_decode($_IPS['_GET'], true);
 $height = isset($GET['height']) ? $GET['height'] : '340';
 $autoplay = isset($GET['autoplay']) ? 'autoplay' : '';
-
-$url = $_IPS['url'];
-$posterURL = isset($_IPS['alternate_url']) ? 'poster="' . $_IPS['alternate_url'] . '" ' : '';
+$refreshRate = isset($GET["refreshRate"]) ? $GET["refreshRate"] : '300000';
+// _SERVER-Variablen bereitstellen
+$SERVER = json_decode($_IPS['_SERVER'], true);
 
 $video_id = 'NetatmoStream_' . substr(uniqid(), -4);
 

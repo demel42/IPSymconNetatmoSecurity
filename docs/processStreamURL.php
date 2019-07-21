@@ -2,7 +2,7 @@
 
 // Author:    Christopher Wansing
 // Created:   13.07.19
-// Modified:  15.07.19
+// Modified:  21.07.19
 //
 // Hinweise:
 // - Code for ~HTMLBox:  <iframe width="100%" height="360" src="<IPS-URL>/hook/<HookName>/video?live&result=custom"></iframe>
@@ -11,6 +11,7 @@
 //                       Anstelle von "video/live" kann das Kommando auch "snapshot/live" etc lauten (siehe README.md)
 //
 // - Player Height:      Add '&height=xxx' to the URL in the iframe. Also change the iframe height accordingly (Player height + 20)
+// - Poster RefreshRate: Add &refreshRate=60000 to the URL. Sets the time for when a new Preview JPG should be fetched in milliseconds
 // - AutoPlay:           Add '&autoplay' to the URL in the iframe
 
 // URL-Parameter parsen
@@ -25,14 +26,18 @@ $posterURL = isset($_IPS['alternate_url']) ? 'poster="' . $_IPS['alternate_url']
 
 if (preg_match('/\.m3u8$/', $url)) {
     $html = '<link href="https://vjs.zencdn.net/7.6.0/video-js.css" rel="stylesheet">  ';
-    $html .= '<video id="' . $video_id . '" class="video-js vjs-default-skin vjs-big-play-centered" height="' . $height . '" controls ' . $posterURL . $autoplay . '>  ';
+	$html .= '<video id="' . $video_id . '" class="video-js vjs-default-skin vjs-big-play-centered" height="' . $height . '" controls ' . $posterURL . $autoplay . '>  ';
     $html .= '<source type="application/x-mpegURL" src="' . $url . '">  ';
     $html .= '</video>    ';
 
     $html .= '<script src="https://vjs.zencdn.net/7.6.0/video.js"></script>    ';
 
     $html .= '<script>  ';
+    $html .= 'function refreshPoster() {  ';
+    $html .= 'player.poster("'.$posterURL.'?" + new Date().getTime());  ';
+    $html .= '}  ';
     $html .= 'var player = videojs("' . $video_id . '");  ';
+    $html .= 'player.setInterval(refreshPoster, '.$refreshRate.');  ';
     $html .= '</script>';
 } elseif (preg_match('/\.jpg$/', $url)) {
     $html = '<img src="' . $url . '" height="' . $height . '">';

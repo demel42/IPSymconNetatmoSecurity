@@ -37,30 +37,29 @@ $video_id = 'NetatmoStream_' . substr(uniqid(), -4);
 if (preg_match('/\.m3u8$/', $url)) {
     $html = '<link href="https://vjs.zencdn.net/7.6.0/video-js.css" rel="stylesheet">';
     $html .= '<video id="' . $video_id . '" class="video-js vjs-default-skin vjs-big-play-centered" ';
-	$html .= 'height="' . $height . '" ';
-	$html .= 'controls ';
-	if ($posterURL != '') {
-		$html .= 'poster="'. $posterURL . '" ';
-	}
-	if ($autoplay) {
-		$html .= 'autoplay ';
-	}
-	$html .= '>  ';
+    $html .= 'height="' . $height . '" ';
+    $html .= 'controls ';
+    if ($posterURL != '') {
+        $html .= 'poster="' . $posterURL . '" ';
+    }
+    if ($autoplay) {
+        $html .= 'autoplay ';
+    }
+    $html .= '>  ';
     $html .= '  <source type="application/x-mpegURL" src="' . $url . '">  ';
     $html .= '</video>    ';
 
     $html .= '<script src="https://vjs.zencdn.net/7.6.0/video.js"></script>    ';
 
-	$html .= '<script>  ';
+    $html .= '<script>  ';
     $html .= 'function refreshPoster() {  ';
     $html .= 'player.poster("' . $posterURL . '?" + new Date().getTime());  ';
     $html .= '}  ';
     $html .= 'var player = videojs("' . $video_id . '");  ';
-	if ($refreshRate > 0) {
-    	$html .= 'player.setInterval(refreshPoster, ' . ( $refreshRate * 1000 ) . ');  ';
-	}
+    if ($refreshRate > 0) {
+        $html .= 'player.setInterval(refreshPoster, ' . ($refreshRate * 1000) . ');  ';
+    }
     $html .= '</script>';
-
 } elseif (preg_match('/\.jpg$/', $url)) {
     $html = '<img src="' . $url . '" height="' . $height . '">';
 } elseif (preg_match('/\.mp4$/', $url)) {

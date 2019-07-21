@@ -41,6 +41,8 @@
 			" ... external IP": " ... externe IP",
 			" ... local CIDR's": " ... lokale CIDR's",
 
+			"Call with changed VPN-URL": "Aufruf bei geänderter VPN-URL",
+
 			"Power state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",
 			"Camera state": "Kamera",

@@ -43,6 +43,8 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyInteger('webhook_script', 0);
 
+        $this->RegisterPropertyInteger('url_changed_script', 0);
+
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
         $associations = [];
@@ -417,6 +419,8 @@ class NetatmoSecurityCamera extends IPSModule
             $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_hour', 'caption' => ' ... starttime', 'suffix' => 'hour of day'];
             $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
         }
+        $formElements[] = ['type' => 'Label', 'caption' => 'Call with changed VPN-URL'];
+        $formElements[] = ['type' => 'SelectScript', 'name' => 'url_changed_script', 'caption' => ' ... Script'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
         $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
         $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of new events'];
@@ -492,6 +496,7 @@ class NetatmoSecurityCamera extends IPSModule
 
             switch ($source) {
                 case 'QUERY':
+					$url_changed = false;
                     $homes = $this->GetArrayElem($jdata, 'body.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
@@ -508,12 +513,14 @@ class NetatmoSecurityCamera extends IPSModule
 
                                     $vpn_url = $this->GetArrayElem($camera, 'vpn_url', '');
                                     if ($vpn_url != $this->GetBuffer('vpn_url')) {
+										$url_changed = true;
                                         $this->SetBuffer('vpn_url', $vpn_url);
                                         $this->SetBuffer('local_url', '');
                                     }
 
                                     $is_local = $this->GetArrayElem($camera, 'is_local', false);
                                     if ($is_local != $this->GetBuffer('is_local')) {
+										$url_changed = true;
                                         $this->SetBuffer('is_local', $is_local);
                                         $this->SetBuffer('local_url', '');
                                     }
@@ -755,6 +762,14 @@ class NetatmoSecurityCamera extends IPSModule
                             $this->SendDebug(__FUNCTION__, 'new_event_script=' . IPS_GetName($new_event_script) . ', ret=' . $r, 0);
                         }
                     }
+
+					if ($url_changed) {
+                        $url_changed_script = $this->ReadPropertyInteger('url_changed_script');
+                        if ($url_changed_script > 0) {
+                            $r = IPS_RunScriptWaitEx($url_changed_script, ['InstanceID' => $this->InstanceID]);
+                            $this->SendDebug(__FUNCTION__, 'url_changed_script=' . IPS_GetName($url_changed_script) . ', ret=' . $r, 0);
+                        }
+					}
                     break;
                 case 'EVENT':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
@@ -1334,7 +1349,7 @@ class NetatmoSecurityCamera extends IPSModule
         return $data;
     }
 
-    public function GetTimeline()
+    public function GetTimeline(bool $withDeleted = false)
     {
         $data = $this->GetEvents();
         $events = json_decode($data, true);
@@ -1351,7 +1366,25 @@ class NetatmoSecurityCamera extends IPSModule
         $n_events = count($events);
         $last_new_ts = $n_events > 0 ? $events[$n_events - 1]['tstamp'] : 0;
 
-        $timeline = $events;
+        $timeline = [];
+		
+		foreach ($events as $event) {
+			$deleted = isset($event['deleted']) ? $event['deleted'] : false;
+			if ($withDeleted == false && $deleted == true)
+				continue;
+			$event_types = [];
+			if (isset($event['subevents'])) {
+				$subevents = $event['subevents'];
+				foreach ($subevents as $subevent) {
+					$event_type = $subevent['event_type'];
+					if (!in_array($event_type, $event_types))
+						$event_types[] = $event_type;
+				}
+			}
+			$event['event_types'] = $event_types;
+			$timeline[] = $event;
+		}
+
         $n_add_notifications = 0;
         foreach ($notifications as $notification) {
             $id = $notification['id'];

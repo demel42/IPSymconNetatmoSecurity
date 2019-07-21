@@ -167,11 +167,12 @@ liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifi
 Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
 
 
-`NetatmoSecurity_GetTimeline(int $InstanzID)`<br>
+`NetatmoSecurity_GetTimeline(int $InstanzID, bool $withDeleted)`<br>
 Zusammenfassung aus den Ereignissen und Benachrichtigungen. Es umfasst alle Ereignisse, von den Benachrichtigungen aber nur die, die
 a) bіsher noch nicht zu einem Ereignis wurden
 b) die Benachrichtigungen, die nie zu einem Ereignis werden (z.N. Kameraüberwachung ein/aus).
 Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
+Der Paranmeter _withDeleted_ sterut, ob Ereignisse, die in der App gelöscht wurden, enthalten sind.
 
 `NetatmoSecurity_MergeTimeline(int $InstanzID, string $total_timeline, string $add_timeline, string $tag)`<br>
 Fügt _add_timeline_ der _total_timeline_ hinzu und versieht alle neuen Einträge mit dem Element _tag_.
@@ -344,6 +345,9 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | neue Ereignisse          |                |              | |
 |  ... Script              | integer        |              | Script, das beim Emfang neuer Ereignisse aufgerufen wird |
 |                          |                |              | |
+| geänderte VPN-URL        |                |              | |
+|  ... Script              | integer        |              | Script, das bei Änderung der VPN-URL aufgerufen wird |
+|                          |                |              | |
 
 - Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
@@ -361,6 +365,9 @@ Nachdem eine Benachrichtigung empfangen wurde, wird automatisch nach 5 Sekunden 
 
 - Script bei neuen Ereignissen: das Script wird aufgerufen, wenn bei dem zyklischen Abruf von Daten festgestellt wurde, das entweder neue Ereignisse eingetroffen sind oder ein vorhandenes Ereignis verändert oder gelöscht wurde.<br>
 Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelken und in einer HTML-Box abzulegen.
+
+- Script bei geänderter VPN-URL: das Script wird aufgerufen, wenn die VPN-URL bei einem Datenabruf festgestellt wird, das sich die VPN-URL geändert hat (kann jederzeit erfolgen).
+Rumpscript siehe [docs/processUrlChanged.php](docs/processUrlChanged.php).
 
 ### Variablenprofile
 
@@ -389,6 +396,8 @@ NetatmoSecurity.PowerStatus
 | person_id         | string         | ja       | |
 | is_arrival        | boolen         | ja       | |
 | subevents         | Objekt-Liste   | ja       | Liste der Einzel-Ereignisse |
+|                   |                |          | |
+| event_type        | String-Array   | ja       | Zusammnefassung der _event_typ_ der Sub-Events (nur bei _GetTimeline()_) |
 
 #### Einzel-Ereignisse (Sub-Events)
 
@@ -406,7 +415,7 @@ NetatmoSecurity.PowerStatus
 | vignette.key      | string         | ja       | |
 | vignette.filename | string         | ja       | |
 
-- _event_types_: _human_, _animal_, _vehicle_
+- _event_type_: _human_, _animal_, _vehicle_, _movement_
 
 #### Benachrichtigungen (Notifications)
 

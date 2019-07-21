@@ -23,7 +23,7 @@ $posterURL = isset($_IPS['alternate_url']) ? 'poster="' . $_IPS['alternate_url']
 $GET = json_decode($_IPS['_GET'], true);
 $height = isset($GET['height']) ? $GET['height'] : '340';
 $autoplay = isset($GET['autoplay']) ? 'autoplay' : '';
-$refreshRate = isset($GET["refreshRate"]) ? $GET["refreshRate"] : '300000';
+$refreshRate = isset($GET['refreshRate']) ? $GET['refreshRate'] : '300000';
 // _SERVER-Variablen bereitstellen
 $SERVER = json_decode($_IPS['_SERVER'], true);
 

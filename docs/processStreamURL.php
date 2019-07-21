@@ -10,6 +10,8 @@
 //                       <HookName> ist der Name der Hook aus der Konfiguration der Kamera
 //                       Anstelle von "video/live" kann das Kommando auch "snapshot/live" etc lauten (siehe README.md)
 //
+// - Instanz:            Dieses Script in der Kamera-Instanz als Webhook-Script eintragen
+//
 // - Player Height:      Add '&height=xxx' to the URL in the iframe. Also change the iframe height accordingly (Player height + 20)
 // - Poster RefreshRate: Add &refreshRate=60000 to the URL. Sets the time for when a new Preview JPG should be fetched in milliseconds
 // - AutoPlay:           Add '&autoplay' to the URL in the iframe
@@ -20,9 +22,10 @@ $GET = json_decode($_IPS['_GET'], true);
 $height = isset($GET['height']) ? $GET['height'] : '340';
 $autoplay = isset($GET['autoplay']) ? 'autoplay' : '';
 
-$video_id = 'NetatmoStream_' . substr(uniqid(), -4);
 $url = $_IPS['url'];
 $posterURL = isset($_IPS['alternate_url']) ? 'poster="' . $_IPS['alternate_url'] . '" ' : '';
+
+$video_id = 'NetatmoStream_' . substr(uniqid(), -4);
 
 if (preg_match('/\.m3u8$/', $url)) {
     $html = '<link href="https://vjs.zencdn.net/7.6.0/video-js.css" rel="stylesheet">  ';

@@ -10,9 +10,9 @@ IPS_LogMessage($scriptName, 'vpn_url=' . $vpn_url);
 // hier den Code um eventuell notwendige Änderungen nachzuführen, z.B.
 
 // ID's der HTML-Box-Variablen
- $varIDs = [
-        1234,
-    ];
+$varIDs = [
+		1234,
+	];
 
 foreach ($varIDs as $varID) {
     SetValue($varID, GetValue($varId));

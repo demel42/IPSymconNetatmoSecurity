@@ -1,9 +1,12 @@
 <?php
 
+// String-Variable mit Profil "~HTML-Box"
+$varID = 1234;
+
+// max. Benachrichtigungen
 $max_lines = 20;
 
 $instID = $_IPS['InstanceID'];
-$varID = 1234 /* HTML-Box */;
 
 $html = '<style>' . PHP_EOL;
 $html .= 'th, td { padding: 2px 10px; text-align: left; }' . PHP_EOL;

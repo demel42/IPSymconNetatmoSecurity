@@ -6,7 +6,7 @@ $varID = 52073;
 // max. Ereignisse
 $max_lines = 20;
 // Größe des Video-Fensters
-$video_width = 720;
+$video_width = 635;
 $video_height = 360;
 
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
@@ -19,8 +19,8 @@ if ($base_url == false) {
 }
 IPS_LogMessage($scriptName, 'base_url=' . $base_url);
 
-$instID = isset($_IPS['InstanceID']) ? $_IPS['InstanceID'] : 24143;
-$events = isset($_IPS['new_events']) ? json_decode($_IPS['new_events'], true) : [];
+$instID = $_IPS['InstanceID'];
+$events = json_decode($_IPS['new_events'], true);
 
 foreach ($events as $event) {
     $event_id = $event['id'];
@@ -160,7 +160,7 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
         }
         $html .= '</td>' . PHP_EOL;
 
-        $video_url = $hook_url . '/video?event_id=' . $event_id . '&mode=custom';
+        $video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom';
         $html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
         if (isset($item['subevents'])) {
             $subevents = $item['subevents'];

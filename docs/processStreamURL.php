@@ -4,7 +4,7 @@
 // Created:   13.07.19
 // Modified:  21.07.19
 //
-// Hinweise:
+// Hints
 // - Variable:           Create variable of datatype "String" with profile "~HTML-Box"
 //   ... with Content:   <iframe width="100%" height="360" src="<IPS-URL>/hook/<HookName>/video?live&result=custom"></iframe>
 //                       - <IPS-URL> may be "https://<ipmagic-Adresse>" (preffered) or "http://<IPS-IP>:3777"
@@ -14,6 +14,19 @@
 // - Player Height:      Add '&height=xxx' to the URL in the iframe. Also change the iframe height accordingly (Player height + 20)
 // - Poster RefreshRate: Add &refreshRate=600 to the URL. Sets the time for when a new Preview JPG should be fetched in seconds
 // - AutoPlay:           Add '&autoplay' to the URL in the iframe
+
+$scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
+$instName = IPS_GetName($_IPS['InstanceID']);
+
+// IPS_LogMessage($scriptName, '_IPS=' . print_r($_IPS, true));
+
+// _SERVER-Variablen bereitstellen
+$SERVER = json_decode($_IPS['_SERVER'], true);
+// IPS_LogMessage($scriptName, 'SERVER=' . print_r($SERVER, true));
+
+// _GET-Variablen bereitstellen
+$GET = json_decode($_IPS['_GET'], true);
+// IPS_LogMessage($scriptName, 'GET=' . print_r($GET, true));
 
 // URL's ausleѕen
 $url = $_IPS['url'];
@@ -25,11 +38,6 @@ $height = isset($GET['height']) ? $GET['height'] : '340';
 $autoplay = isset($GET['autoplay']) ? true : false;
 $refreshRate = isset($GET['refreshRate']) ? $GET['refreshRate'] : '300';
 
-// _SERVER-Variablen bereitstellen
-$SERVER = json_decode($_IPS['_SERVER'], true);
-
-$scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
-$instName = IPS_GetName($_IPS['InstanceID']);
 // IPS_LogMessage($scriptName, 'inst=' . $instName . ', height=' . $height . ', autoplay=' . $autoplay . ', refreshRate=' . $refreshRate);
 
 $video_id = 'NetatmoStream_' . substr(uniqid(), -4);
@@ -75,4 +83,5 @@ if (preg_match('/\.m3u8$/', $url)) {
 $html = preg_replace('/[ ]{2}/', "\n", $html);   //Ersetzt doppelte Leerzeichen durch Zeilenumbrüche
 
 // IPS_LogMessage($scriptName, 'inst=' . $instName . ', html=' . $html);
+
 echo $html;     // Ausgabe zurück an das aufrufende Modul

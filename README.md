@@ -143,8 +143,8 @@ Sucht einen Sub-Event in den gespeicherten Events
 
 `NetatmoSecurity_DeleteEvent(int $InstanzID, string $event_id)`<br>
 löscht den angegeben Event.
-Damit kann man z.B. unerwünscht Ereignisse automatisch löschen.
-Beispiel siehe [docs/processNotificationswithCleanup.php](docs/processNotificationswithCleanup.php).
+Damit kann man z.B. unerwünscht Ereignisse automatisch löschen. Achtung: das geht leider **nicht* im _Script bei Benachrichtigungen_, da hier die Ereignisse bei netatmo noch nicht vorliegen.
+Beispiel siehe [docs/processEventsCleanup.php](docs/processEventsCleanup.php).
 
 `NetatmoSecurity_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution, bool $preferLocal)`<br>
 Liefert die URL des Videos zu einem bestimmten Event
@@ -358,13 +358,15 @@ Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das W
 Die Angabe der externen IP und der lokalen CIDR's dienen zur Ermittlung, ob sich der Client im lokalen Netzwerk befindet und daher auf die lokalen Adresse der Kamera zugreifen kann oder über die VPN-URL's von Netatmo gehen muss. Ist nichts angegeben, wird angenommen, das der Aufruf über die _http.://xxx.ipmagic.de_ immer von extern kommt.
 
 - Script bei Benachrichtigungen: das Script wird aufgerufen, wenn eine Benachrichtigung eingetroffen ist und verarbeitet wurde.<br>
-Es dient dazu, bei einer Benachrichtigung direkt eine Meldung, z.B. ein _WFC_SendNotification()_ aufzurufen. Dem Script wird neben der _InstanceID_ auch die neuen Benachrichtigungen als json-kodierte String in _new_notifications_ übergeben.<br>
-Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit den Benachrichtigungen siehe _docs/process_notification.php_
+Es dient dazu, bei einer Benachrichtigung direkt eine Meldung, z.B. ein _WFC_SendNotification()_ aufzurufen.
+Dem Script wird neben der _InstanceID_ auch die neuen Benachrichtigungen als json-kodierte String in _new_notifications_ übergeben.<br>
+Ein passendes Code-Fragment für ein Script zur Erstellung einer HTML-Box mit den Benachrichtigungen siehe _docs/processNotification.php_
 Wichtig: die Laufzeit dieses Scriptes sollte so kurz wiel möglich sein.
 Nachdem eine Benachrichtigung empfangen wurde, wird automatisch nach 5 Sekunden ein Datenabgleich angefordert und damit die Ereignisliste zeitnah vervollständigt.
 
 - Script bei neuen Ereignissen: das Script wird aufgerufen, wenn bei dem zyklischen Abruf von Daten festgestellt wurde, das entweder neue Ereignisse eingetroffen sind oder ein vorhandenes Ereignis verändert oder gelöscht wurde.<br>
-Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelken und in einer HTML-Box abzulegen.
+Dem Script wird neben der _InstanceID_ auch die neuen Benachrichtigungen als json-kodierte String in _new_events_ übergeben.<br>
+Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelln und in einer HTML-Box abzulegen.
 
 - Script bei geänderter VPN-URL: das Script wird aufgerufen, wenn die VPN-URL bei einem Datenabruf festgestellt wird, das sich die VPN-URL geändert hat (kann jederzeit erfolgen).
 Rumpscript siehe [docs/processUrlChanged.php](docs/processUrlChanged.php).
@@ -464,5 +466,5 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.0 @ 21.07.2019 12:47<br>
+- 1.0 @ 22.07.2019 16:22<br>
   Initiale Version

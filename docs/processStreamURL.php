@@ -71,7 +71,7 @@ if (preg_match('/\.m3u8$/', $url)) {
 } elseif (preg_match('/\.jpg$/', $url)) {
     $html = '<img src="' . $url . '" height="' . $height . '">';
 } elseif (preg_match('/\.mp4$/', $url)) {
-    if (preg_match('/firefox/i', $_SERVER['HTTP_USER_AGENT']) || preg_match('/[5-9]\.[2-9]/', IPS_GetKernelVersion())) {
+    if (preg_match('/firefox/i', $SERVER['HTTP_USER_AGENT']) || preg_match('/[5-9]\.[2-9]/', IPS_GetKernelVersion())) {
         $html = '<video height="' . $height . '">  ';
         $html .= '<source src="' . $url . '" type="video/mp4">  ';
         $html .= '</video>';

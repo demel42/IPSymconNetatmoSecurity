@@ -1078,7 +1078,7 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        $url .= '/command/floodlight_set_config?intensity=' . urlencode('{"mode":"' . $intensity . '"}');
+        $url .= '/command/floodlight_set_config?config=' . urlencode('{"intensity":"' . $intensity . '"}');
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGet', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));

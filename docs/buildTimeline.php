@@ -53,7 +53,7 @@ $html = '';
 
 $html .= '<script type="text/javascript">' . PHP_EOL;
 $html .= 'function set_video(url) {' . PHP_EOL;
-$html .= '   document.getElementById("event_video").innerHTML = "<iframe width=\"' . $video_width . '\" height=\"' . $video_height . '\" src=\"" + url + "\"></iframe>";' . PHP_EOL;
+$html .= '   document.getElementById("event_video").innerHTML = "<iframe width=\"' . $video_width . '\" height=\"' . $video_height . '\" frameborder=\"0\" src=\"" + url + "\"></iframe>";' . PHP_EOL;
 $html .= '     console.log("url=" + url);' . PHP_EOL;
 $html .= '}' . PHP_EOL;
 $html .= '</script>' . PHP_EOL;

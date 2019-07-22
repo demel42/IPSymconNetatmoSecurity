@@ -6,7 +6,7 @@
 //
 // Hints
 // - Variable:           Create variable of datatype "String" with profile "~HTML-Box"
-//   ... with Content:   <iframe width="100%" height="360" src="<IPS-URL>/hook/<HookName>/video?live&result=custom"></iframe>
+//   ... with Content:   <iframe width="100%" height="360" frameborder="0" src="<IPS-URL>/hook/<HookName>/video?live&result=custom"></iframe>
 //                       - <IPS-URL> may be "https://<ipmagic-Adresse>" (preffered) or "http://<IPS-IP>:3777"
 //                       - <HookName> ist the name of the Hook (from Configuration of the Instance)
 //                       - Instead of "video/live", the command can also be "snapshot/live" etc (see README.md)

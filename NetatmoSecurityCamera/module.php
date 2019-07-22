@@ -566,10 +566,10 @@ class NetatmoSecurityCamera extends IPSModule
                         }
                     }
 
-                    $n_new_events = 0;
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
                     $cur_events = [];
+                    $new_events = [];
                     $s = $this->GetMediaData('Events');
                     $prev_events = json_decode($s, true);
                     $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
@@ -688,11 +688,12 @@ class NetatmoSecurityCamera extends IPSModule
                                 }
                             }
                             if ($fnd == false) {
-                                $n_new_events++;
+								$new_events[] = $new_event;
                             }
                         }
                     }
 
+                    $n_new_events = count($new_events);
                     $first_new_ts = false;
                     if ($cur_events != []) {
                         usort($cur_events, ['NetatmoSecurityCamera', 'cmp_events']);
@@ -758,7 +759,11 @@ class NetatmoSecurityCamera extends IPSModule
                     if ($n_new_events > 0 || $n_chg_events > 0 || $n_del_events > 0) {
                         $new_event_script = $this->ReadPropertyInteger('new_event_script');
                         if ($new_event_script > 0) {
-                            $r = IPS_RunScriptWaitEx($new_event_script, ['InstanceID' => $this->InstanceID]);
+                            $opts = [
+                                    'InstanceID'  => $this->InstanceID,
+                                    'new_events'  => json_encode($new_events)
+                                ];
+                            $r = IPS_RunScriptWaitEx($new_event_script, $opts);
                             $this->SendDebug(__FUNCTION__, 'new_event_script=' . IPS_GetName($new_event_script) . ', ret=' . $r, 0);
                         }
                     }
@@ -1215,6 +1220,16 @@ class NetatmoSecurityCamera extends IPSModule
         $status = isset($jdata['status']) ? $jdata['status'] : 'error';
         $this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' deleted => ' . $status, 0);
 
+		if ($status == 'ok') {
+			for ($i = 0; $i < count($events); $i++) {
+				if ($events[$i]['id'] == $event_id) {
+					$events[$i]['deleted'] = true;
+					break;
+				}
+			}
+			$this->SetMediaData('Notifications', json_encode($events), false);
+		}
+
         return $status == 'ok';
     }
 
@@ -1349,7 +1364,7 @@ class NetatmoSecurityCamera extends IPSModule
         return $data;
     }
 
-    public function GetTimeline(bool $withDeleted = false)
+    public function GetTimeline(bool $withDeleted)
     {
         $data = $this->GetEvents();
         $events = json_decode($data, true);
@@ -1564,13 +1579,24 @@ class NetatmoSecurityCamera extends IPSModule
                     $filename = $this->GetVideoFilename($video_id, $tstamp);
                     $this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
                     if ($filename != '') {
-                        $path = IPS_GetKernelDir() . 'webfront';
-                        $path = substr($filename, strlen($path));
-                        if ($preferLocal) {
-                            $url = 'http://' . gethostbyname(gethostname()) . ':3777' . $path;
-                        } else {
-                            $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
-                            $url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+						$path = IPS_GetKernelDir() . 'webfront';
+						if ($path == substr($filename, 0, strlen($path))) {
+							$path = substr($filename, strlen($path));
+							if ($preferLocal) {
+								$url = 'http://' . gethostbyname(gethostname()) . ':3777';
+							}
+							if ($url == false && isset($_SERVER['HTTP_HOST'])) {
+								$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+								$url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+							}
+							if ($url == false) {
+								$instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+								$url = CC_GetUrl($instID);
+							}
+							if($url != false) {
+								$url .= $path;
+								$url = 'http://' . gethostbyname(gethostname()) . ':3777' . $path;
+							}
                         }
                     }
                 }
@@ -1813,6 +1839,16 @@ class NetatmoSecurityCamera extends IPSModule
                 }
                 $this->SendDebug(__FUNCTION__, 'option: date=' . date('d.m.Y', $date), 0);
                 $url = $this->GetTimelapseUrl($date, $preferLocal);
+                break;
+            case 'script':
+				if ($webhook_script == 0) {
+					http_response_code(404);
+					die('no custom-script not found!');
+				}
+				$this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
+				$html = IPS_RunScriptWaitEx($webhook_script, $opts);
+				$this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
+                break;
             default:
                 break;
         }
@@ -1853,6 +1889,8 @@ class NetatmoSecurityCamera extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
                 echo $html;
                 break;
+			case 'script':
+				break;
             default:
                 $path = realpath($root . '/' . $basename);
                 if ($path === false) {
@@ -1977,7 +2015,7 @@ class NetatmoSecurityCamera extends IPSModule
         return true;
     }
 
-    public function GetTimelapseFilename(int $refdate = 0)
+    public function GetTimelapseFilename(int $refdate)
     {
         $path = $this->ReadPropertyString('timelapse_path');
         if ($path == '') {
@@ -2027,13 +2065,23 @@ class NetatmoSecurityCamera extends IPSModule
         $filename = $this->GetTimelapseFilename($refdate);
         if ($filename != false) {
             $path = IPS_GetKernelDir() . 'webfront';
-            $path = substr($filename, strlen($path));
-            if ($preferLocal) {
-                $url = 'http://' . gethostbyname(gethostname()) . ':3777' . $path;
-            } else {
-                $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
-                $url .= '://' . $_SERVER['HTTP_HOST'] . $path;
-            }
+			if ($path == substr($filename, 0, strlen($path))) {
+				$path = substr($filename, strlen($path));
+				if ($preferLocal) {
+					$url = 'http://' . gethostbyname(gethostname()) . ':3777';
+				}
+				if ($url == false && isset($_SERVER['HTTP_HOST'])) {
+					$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+					$url .= '://' . $_SERVER['HTTP_HOST'] . $path;
+				}
+				if ($url == false) {
+					$instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+					$url = CC_GetUrl($instID);
+				}
+				if($url != false) {
+					$url .= $path;
+				}
+			}
         }
         $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;

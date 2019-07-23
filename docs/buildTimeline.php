@@ -38,7 +38,8 @@ foreach ($events as $event) {
         }
     }
     $event_type = implode($event_types, '+');
-    if ($event_type == 'vehicle' && $instID == xx /* Garten */ ) {
+	// Keine Fahrzeuge im Garten melden
+    if ($event_type == 'vehicle' && $instID == xx) {
         $r = NetatmoSecurity_DeleteEvent($instID, $event_id);
         IPS_LogMessage($scriptName, 'delete event ' . $event_id . ' => ' . ($r ? 'ok' : 'fail'));
     }

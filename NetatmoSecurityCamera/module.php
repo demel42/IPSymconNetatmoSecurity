@@ -815,6 +815,23 @@ class NetatmoSecurityCamera extends IPSModule
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
                                 $vignette_id = $this->GetArrayElem($notification, 'vignette.id', '');
                                 $vignette_key = $this->GetArrayElem($notification, 'vignette.key', '');
+								$this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
+								switch ($push_type) {
+									case 'NOC-human':
+										$message = $this->Translate('Person captured');
+										break;
+									case 'NOC-animal':
+										$message = $this->Translate('Animal captured');
+										break;
+									case 'NOC-vehicle':
+										$message = $this->Translate('Vehicle captured');
+										break;
+									default:
+										if ($message == '') {
+											$message = $event_type . '-' . $sub_type;
+										}
+										break;
+								}
                                 $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $event_id,
@@ -837,7 +854,20 @@ class NetatmoSecurityCamera extends IPSModule
                                 $message = $this->GetArrayElem($notification, 'message', '');
                                 $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
-
+								$this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
+								switch ($push_type) {
+									case 'NACamera-movement':
+										$message = $this->Translate('Movement detected');
+										break;
+									case 'NACamera-movement':
+										$message = $this->Translate('Person captured');
+										break;
+									default:
+										if ($message == '') {
+											$message = $event_type . '-' . $sub_type;
+										}
+										break;
+								}
                                 $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $event_id,
@@ -893,36 +923,37 @@ class NetatmoSecurityCamera extends IPSModule
                                 $event_type = $this->GetArrayElem($notification, 'event_type', '');
                                 $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                                 $message = $this->GetArrayElem($notification, 'message', '');
-                                if ($message == '') {
-                                    switch ($push_type) {
-                                        case 'NOC-connection':
-                                            $message = $this->Translate('Camera connected');
-                                            break;
-                                        case 'NOC-disconnection':
-                                            $message = $this->Translate('Camera disconnected');
-                                            break;
-                                        case 'NOC-light_mode':
-                                            $message = $this->Translate('Light-mode changed') . ' : ' . $this->Translate($sub_type);
-                                            break;
-                                        case 'NOC-movement':
-                                            $message = $this->Translate('Movement detected');
-                                            break;
-                                        case 'NACamera-on':
-                                        case 'NOC-off':
-                                            $message = $this->Translate('Monitoring disabled');
-                                            break;
-                                        case 'NACamera-off':
-                                        case 'NOC-on':
-                                            $message = $this->Translate('Monitoring enabled');
-                                            break;
-                                        case 'NACamera-alarm_started':
-                                            $message = $this->Translate('Alarm detected');
-                                            break;
-                                        default:
-                                            $message = $event_type . '-' . $sub_type;
-                                            break;
-                                    }
-                                }
+								$this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
+								switch ($push_type) {
+									case 'NOC-connection':
+										$message = $this->Translate('Camera connected');
+										break;
+									case 'NOC-disconnection':
+										$message = $this->Translate('Camera disconnected');
+										break;
+									case 'NOC-light_mode':
+										$message = $this->Translate('Light-mode changed to ' . $sub_type);
+										break;
+									case 'NOC-movement':
+										$message = $this->Translate('Movement detected');
+										break;
+									case 'NACamera-on':
+									case 'NOC-off':
+										$message = $this->Translate('Monitoring disabled');
+										break;
+									case 'NACamera-off':
+									case 'NOC-on':
+										$message = $this->Translate('Monitoring enabled');
+										break;
+									case 'NACamera-alarm_started':
+										$message = $this->Translate('Alarm detected');
+										break;
+									default:
+										if ($message == '') {
+											$message = $event_type . '-' . $sub_type;
+										}
+										break;
+								}
                                 $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $id,
@@ -2267,7 +2298,8 @@ class NetatmoSecurityCamera extends IPSModule
                 'on'            => 'on_icon.png',
                 'off'           => 'off_icon.png',
                 'alarm_started' => 'alarm_started.png',
-                'person_away'   => 'home_away.png'
+                'person_away'   => 'home_away.png',
+                'light_mode'    => 'light.png'
             ];
 
         if (isset($val2icon[$val])) {

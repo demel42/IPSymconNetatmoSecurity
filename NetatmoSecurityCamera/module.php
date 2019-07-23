@@ -1799,7 +1799,16 @@ class NetatmoSecurityCamera extends IPSModule
                         die('event_id missing');
                     }
                     $url = $this->GetVideoUrl4Event($event_id, $resolution, $preferLocal);
-                }
+					$event = $this->SearchEvent( $event_id);
+					if ($event != false && isset($event['subevents'])) {
+						$subevents = $event['subevents'] ;
+						foreach ($subevents as $subevent) {
+							$alternate_url = $this->GetSnapshotUrl4Subevent($subevent['id'], $preferLocal);
+							if ($alternate_url != false)
+								break;
+						}
+					}
+				}
                 break;
             case 'snapshot':
                 if (isset($_GET['live'])) {

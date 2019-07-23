@@ -167,6 +167,14 @@ liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifi
 Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
 
 
+`NetatmoSecurity_EventType2Icon(int $InstanzID, string $event_type, bool $asPath)`<br>
+liefert das zu einem Ereignistyp passende Icon; mit _asPath_ steuert ma, ob es nur der Datenname ist oder der korrekte Pfad.
+Beispiel siehe [docs/buildTimeline.php](docs/buildTimeline.php).
+
+`NetatmoSecurity_EventType2Text(int $InstanzID, string $event_type)`<br>
+liefert den zu einem Ereignistyp passende Text.
+
+
 `NetatmoSecurity_GetTimeline(int $InstanzID, bool $withDeleted)`<br>
 Zusammenfassung aus den Ereignissen und Benachrichtigungen. Es umfasst alle Ereignisse, von den Benachrichtigungen aber nur die, die
 a) bіsher noch nicht zu einem Ereignis wurden
@@ -466,5 +474,5 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.0 @ 22.07.2019 16:22<br>
+- 1.0 @ 23.07.2019 15:48<br>
   Initiale Version

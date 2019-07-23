@@ -620,6 +620,11 @@ class NetatmoSecurityCamera extends IPSModule
                                 $new_event['is_arrival'] = $is_arrival;
                             }
 
+							$type = $this->GetArrayElem($event, 'type', '');
+                            if ($type != '') {
+                                $new_event['event_type'] = $type;
+                            }
+
                             $new_subevents = [];
                             $subevents = $this->GetArrayElem($event, 'event_list', '');
                             if ($subevents != '') {
@@ -911,7 +916,7 @@ class NetatmoSecurityCamera extends IPSModule
                                             $message = $this->Translate('Monitoring enabled');
                                             break;
                                         case 'NACamera-alarm_started':
-                                            $message = $this->Translate('Alarm started');
+                                            $message = $this->Translate('Alarm detected');
                                             break;
                                         default:
                                             $message = $event_type . '-' . $sub_type;
@@ -1389,6 +1394,9 @@ class NetatmoSecurityCamera extends IPSModule
                 continue;
             }
             $event_types = [];
+            if (isset($event['event_type'])) {
+				$event_types[] = $event['event_type'];
+			}
             if (isset($event['subevents'])) {
                 $subevents = $event['subevents'];
                 foreach ($subevents as $subevent) {
@@ -1405,6 +1413,8 @@ class NetatmoSecurityCamera extends IPSModule
         $n_add_notifications = 0;
         foreach ($notifications as $notification) {
             $id = $notification['id'];
+            $tstamp = $notification['tstamp'];
+            $event_type = isset($notification['event_type']) ? $notification['event_type'] : '';
             $subevent_id = isset($notification['subevent_id']) ? $notification['subevent_id'] : '';
 
             if ($id != '') {
@@ -1417,6 +1427,10 @@ class NetatmoSecurityCamera extends IPSModule
             $fnd = false;
             foreach ($events as $event) {
                 if ($event['id'] == $id) {
+                    $fnd = true;
+                    break;
+                }
+				if ($event['tstamp'] == $tstamp && isset($event['event_type']) && $event['event_type'] == $event_type) {
                     $fnd = true;
                     break;
                 }
@@ -2240,4 +2254,64 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SendDebug(__FUNCTION__, $msg, 0);
         $this->LogMessage(__FUNCTION__ . ': path=' . $path . ', ' . $msg, KL_MESSAGE);
     }
+
+    // Event-Typ
+    private function event_type2icon($val)
+    {
+        $val2icon = [
+				'human'    => 'human.png',
+				'animal'   => 'animal.png',
+				'vehicle'  => 'car.png',
+				'movement' => 'movements.png',
+				'person' => 'human.png',
+				'on' => 'on_icon.png',
+				'off' => 'off_icon.png',
+				'alarm_started' => 'alarm_started.png',
+				'person_away' => 'home_away.png'
+			];
+
+        if (isset($val2icon[$val])) {
+            $img = $val2icon[$val];
+        } else {
+            $img = false;
+        }
+        return $img;
+    }
+
+    private function event_type2text($val)
+    {
+        $val2txt = [
+				'human'    => 'Human',
+				'animal'   => 'Animal',
+				'vehicle'  => 'Vehicle',
+				'movement' => 'Movement',
+				'person' => 'Person',
+				'on' => 'Monitoring enabled',
+				'off' => 'Monitoring disabled',
+				'alarm_started' => 'Alarm detected',
+				'person_away' => 'Person has left the house'
+			];
+
+        if (isset($val2txt[$val])) {
+            $txt = $this->Translate($val2txt[$val]);
+        } else {
+            $txt = '';
+        }
+        return $txt;
+    }
+
+    public function EventType2Icon(string $event_type, bool $asPath)
+    {
+		$img = $this->event_type2icon($event_type);
+		if ($img != false) {
+			$hook = $this->ReadPropertyString('hook');
+			$img = $hook . '/imgs/' . $img;
+		}
+		return $img;
+	}
+
+    public function EventType2Text(string $event_type)
+    {
+		$txt = $this->event_type2text($event_type);
+	}
 }

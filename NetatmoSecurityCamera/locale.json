@@ -61,14 +61,6 @@
 			"SD-Card state": "SD-Karte",
 			"State": "Status",
 
-			"Camera connected": "Kamera verbunden",
-			"Camera disconnected": "Kamera getrennt",
-			"Light-mode changed": "Licht-Modus geändert",
-			"Movement detected": "Bewegung erkannt",
-			"Monitoring disabled": "Überwachung deaktiviert",
-			"Monitoring enabled": "Überwachung aktiviert",
-			"Alarm started": "Alarm aktiviert",
-
             "No": "Nein",
             "Yes": "Ja",
 
@@ -84,6 +76,20 @@
 
 			"last seen": "zuletzt gesehen",
 			"presence": "Anwesenheit",
+
+			"Alarm detected": "Alarm erkannt",
+			"Animal": "Tier",
+			"Camera connected": "Kamera verbunden",
+			"Camera disconnected": "Kamera getrennt",
+			"Human": "Mensch",
+			"Light-mode changed": "Licht-Modus geändert",
+			"Monitoring disabled": "Überwachung deaktiviert",
+			"Monitoring enabled": "Überwachung aktiviert",
+			"Movement": "Bewegung",
+			"Movement detected": "Bewegung erkannt",
+			"Person has left the house": "Person hat das Haus verlassen",
+			"Person": "Person",
+			"Vehicle": "Fahrzeug",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

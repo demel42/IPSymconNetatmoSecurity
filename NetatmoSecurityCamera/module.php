@@ -620,7 +620,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 $new_event['is_arrival'] = $is_arrival;
                             }
 
-							$type = $this->GetArrayElem($event, 'type', '');
+                            $type = $this->GetArrayElem($event, 'type', '');
                             if ($type != '') {
                                 $new_event['event_type'] = $type;
                             }
@@ -1395,8 +1395,8 @@ class NetatmoSecurityCamera extends IPSModule
             }
             $event_types = [];
             if (isset($event['event_type'])) {
-				$event_types[] = $event['event_type'];
-			}
+                $event_types[] = $event['event_type'];
+            }
             if (isset($event['subevents'])) {
                 $subevents = $event['subevents'];
                 foreach ($subevents as $subevent) {
@@ -1430,7 +1430,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $fnd = true;
                     break;
                 }
-				if ($event['tstamp'] == $tstamp && isset($event['event_type']) && $event['event_type'] == $event_type) {
+                if ($event['tstamp'] == $tstamp && isset($event['event_type']) && $event['event_type'] == $event_type) {
                     $fnd = true;
                     break;
                 }
@@ -2259,16 +2259,16 @@ class NetatmoSecurityCamera extends IPSModule
     private function event_type2icon($val)
     {
         $val2icon = [
-				'human'    => 'human.png',
-				'animal'   => 'animal.png',
-				'vehicle'  => 'car.png',
-				'movement' => 'movements.png',
-				'person' => 'human.png',
-				'on' => 'on_icon.png',
-				'off' => 'off_icon.png',
-				'alarm_started' => 'alarm_started.png',
-				'person_away' => 'home_away.png'
-			];
+                'human'         => 'human.png',
+                'animal'        => 'animal.png',
+                'vehicle'       => 'car.png',
+                'movement'      => 'movements.png',
+                'person'        => 'human.png',
+                'on'            => 'on_icon.png',
+                'off'           => 'off_icon.png',
+                'alarm_started' => 'alarm_started.png',
+                'person_away'   => 'home_away.png'
+            ];
 
         if (isset($val2icon[$val])) {
             $img = $val2icon[$val];
@@ -2281,16 +2281,16 @@ class NetatmoSecurityCamera extends IPSModule
     private function event_type2text($val)
     {
         $val2txt = [
-				'human'    => 'Human',
-				'animal'   => 'Animal',
-				'vehicle'  => 'Vehicle',
-				'movement' => 'Movement',
-				'person' => 'Person',
-				'on' => 'Monitoring enabled',
-				'off' => 'Monitoring disabled',
-				'alarm_started' => 'Alarm detected',
-				'person_away' => 'Person has left the house'
-			];
+                'human'         => 'Human',
+                'animal'        => 'Animal',
+                'vehicle'       => 'Vehicle',
+                'movement'      => 'Movement',
+                'person'        => 'Person',
+                'on'            => 'Monitoring enabled',
+                'off'           => 'Monitoring disabled',
+                'alarm_started' => 'Alarm detected',
+                'person_away'   => 'Person has left the house'
+            ];
 
         if (isset($val2txt[$val])) {
             $txt = $this->Translate($val2txt[$val]);
@@ -2302,16 +2302,16 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function EventType2Icon(string $event_type, bool $asPath)
     {
-		$img = $this->event_type2icon($event_type);
-		if ($img != false) {
-			$hook = $this->ReadPropertyString('hook');
-			$img = $hook . '/imgs/' . $img;
-		}
-		return $img;
-	}
+        $img = $this->event_type2icon($event_type);
+        if ($img != false) {
+            $hook = $this->ReadPropertyString('hook');
+            $img = $hook . '/imgs/' . $img;
+        }
+        return $img;
+    }
 
     public function EventType2Text(string $event_type)
     {
-		$txt = $this->event_type2text($event_type);
-	}
+        $txt = $this->event_type2text($event_type);
+    }
 }

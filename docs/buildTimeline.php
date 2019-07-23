@@ -143,7 +143,8 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
 		}
 		$html .= '</td>' . PHP_EOL;
 		$hasMsg = false;
-		switch ($item['video_status']) {
+		$video_status = isset($item['video_status']) ? $item['video_status'] : 'available';
+		switch ($video_status) {
 			case 'available':
 				$video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom&refresh=0';
 				$html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;

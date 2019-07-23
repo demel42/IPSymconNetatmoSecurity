@@ -20,8 +20,11 @@ if ($base_url == false) {
 IPS_LogMessage($scriptName, 'base_url=' . $base_url);
 
 $instID = $_IPS['InstanceID'];
-$events = json_decode($_IPS['new_events'], true);
 
+/*
+ * hier ggfs Events löschen ...
+
+$events = json_decode($_IPS['new_events'], true);
 foreach ($events as $event) {
     $event_id = $event['id'];
     $event_types = [];
@@ -35,18 +38,20 @@ foreach ($events as $event) {
         }
     }
     $event_type = implode($event_types, '+');
-    if ($event_type == 'vehicle' && $instID == 24143) {
+    if ($event_type == 'vehicle' && $instID == xx /* Garten */ ) {
         $r = NetatmoSecurity_DeleteEvent($instID, $event_id);
         IPS_LogMessage($scriptName, 'delete event ' . $event_id . ' => ' . ($r ? 'ok' : 'fail'));
     }
 }
+*/
 
 $timeline = '';
 $instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}');
 foreach ($instIDs as $instID) {
-    $data = NetatmoSecurity_GetTimeline($instID, false);
-    $timeline = NetatmoSecurity_MergeTimeline($instID, $timeline, $data, $instID);
+	$data = NetatmoSecurity_GetTimeline($instID, false);
+	$timeline = NetatmoSecurity_MergeTimeline($instID, $timeline, $data, $instID);
 }
+
 $timeline = json_decode($timeline, true);
 
 $html = '';
@@ -70,111 +75,103 @@ $html .= '</tr>' . PHP_EOL;
 
 $cur_date = 0;
 
-$event_type2text = [
-        'human'    => 'Mensch',
-        'animal'   => 'Tier',
-        'vehicle'  => 'Fahrzeug',
-        'movement' => 'Bewegung'
-    ];
-$event_type2img = [
-        'human'    => 'human.png',
-        'animal'   => 'animal.png',
-        'vehicle'  => 'car.png',
-        'movement' => 'movements.png'
-    ];
-
 $n_timeline = count($timeline);
 for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
-    $item = $timeline[$i];
+	$item = $timeline[$i];
 
-    $event_id = $item['id'];
-    $tstamp = $item['tstamp'];
-
-    $dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));
+	$event_id = $item['id'];
+	$tstamp = $item['tstamp'];
+	
+	$dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));
     $ts = $dt->format('U');
-    if ($cur_date != $ts) {
-        if ($cur_date != 0) {
-            $html .= '<tr>' . PHP_EOL;
-            $html .= '<td>&nbsp;</td>' . PHP_EOL;
-            $html .= '<td colspan=2>' . strftime('%A, %e. %B', $tstamp) . '</td>' . PHP_EOL;
-            $html .= '</tr>' . PHP_EOL;
-        }
-        $cur_date = $ts;
-    }
+	if ($cur_date != $ts) {
+		if ($cur_date != 0) {
+			$html .= '<tr>' . PHP_EOL;
+			$html .= '<td>&nbsp;</td>' . PHP_EOL;
+			$html .= '<td colspan=2>' . strftime('%A, %e. %B', $tstamp) . '</td>' . PHP_EOL;
+			$html .= '</tr>' . PHP_EOL;
+			
+		}
+		$cur_date = $ts;
+	}
+	
+	$html .= '<tr>' . PHP_EOL;
+	$html .= '<td>' . date('H:i', $tstamp) . '</td>' . PHP_EOL;
+	
+	$instID = $item['tag'];
+	$hook = IPS_GetProperty($instID, 'hook');
+	$img_path =  $hook . '/imgs/';
+	$hook_url = $base_url . $hook;
+			
+	$message = isset($item['message']) ? $item['message'] : '';
+	if (isset($item['push_type'])) {
+		$html .= '<td>';
+		if (isset($item['event_type'])) {
+			$event_type = $item['event_type'];
+			$event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
+			$event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
+			if ($event_type_icon != '') {
+				$html .= '<img src=' . $event_type_icon . ' width="40" height="40" title="' . $event_type_text . '">';
+			} else if ($message != '') {
+				$html .= $message;
+			} else if ($event_type_text != '') {
+				$html .= $event_type_text;
+			} else {
+				$html .= '&nbsp;';
+			}
+		} else {
+			$html .= $event_type;
+		}
+		$html .= '</td>' . PHP_EOL;
 
-    $html .= '<tr>' . PHP_EOL;
-    $html .= '<td>' . date('H:i', $tstamp) . '</td>' . PHP_EOL;
-
-    $instID = $item['tag'];
-    $hook = IPS_GetProperty($instID, 'hook');
-    $img_path = $hook . '/imgs/';
-    $hook_url = $base_url . $hook;
-
-    if (isset($item['push_type'])) {
-        $html .= '<td>';
-        $message = isset($item['message']) ? $item['message'] : '';
-        if (isset($item['event_type'])) {
-            $event_type = $item['event_type'];
-            if (isset($event_type2img[$event_type])) {
-                $event_type_img = $img_path . $event_type2img[$event_type];
-            } else {
-                $event_type_img = '';
-            }
-            if (isset($event_type2text[$event_type])) {
-                $event_type_text = $event_type2text[$event_type];
-            } else {
-                $event_type_text = $event_type;
-            }
-            if ($event_type_img != '') {
-                $html .= '<img src=' . $event_type_img . ' width="40" height="40" title="' . $event_type_text . '">';
-            } elseif ($message == '') {
-                $html .= $event_type_text;
-            } else {
-                $html .= '&nbsp;';
-            }
-        } else {
-            $html .= $event_type;
-        }
-        $html .= '</td>' . PHP_EOL;
-
-        $html .= '<td>' . $message . '</td>' . PHP_EOL;
-    } else {
-        $html .= '<td>';
-        if (isset($item['event_types'])) {
-            $event_types = $item['event_types'];
-            foreach ($event_types as $event_type) {
-                if (isset($event_type2img[$event_type])) {
-                    $event_type_img = $img_path . $event_type2img[$event_type];
-                    if (isset($event_type2text[$event_type])) {
-                        $event_type_text = $event_type2text[$event_type];
-                    } else {
-                        $event_type_text = $event_type;
-                    }
-                    $html .= '<img src=' . $event_type_img . ' width="40" height="40" title="' . $event_type_text . '">';
-                    $html .= '&nbsp;';
-                }
-            }
-        } else {
-            $html .= '&nbsp;';
-        }
-        $html .= '</td>' . PHP_EOL;
-
-        $video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom&refresh=0';
-        $html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
-        if (isset($item['subevents'])) {
-            $subevents = $item['subevents'];
-            foreach ($subevents as $subevent) {
-                $subevent_id = $subevent['id'];
-                $url = NetatmoSecurity_GetVignetteUrl4Subevent($instID, $subevent_id, false);
-                if ($url != false) {
-                    $html .= '<img src=' . $url . ' width="60" height="60">';
-                    $html .= '&nbsp;&nbsp;';
-                }
-            }
-        }
-        $html .= '</td>' . PHP_EOL;
-    }
-
+		$html .= '<td>' . $message . '</td>' . PHP_EOL;
+	} else {
+		$html .= '<td>';
+		if (isset($item['event_types'])) {
+			$event_types = $item['event_types'];
+			foreach ($event_types as $event_type) {
+				$event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
+				if ($event_type_icon != '') {
+					$event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
+					$html .= '<img src=' . $event_type_icon . ' width="40" height="40" title="' . $event_type_text . '">';
+					$html .= '&nbsp;';
+					
+				}					
+			}
+		} else {
+			$html .= '&nbsp;';
+		}
+		$html .= '</td>' . PHP_EOL;
+		$hasMsg = false;
+		switch ($item['video_status']) {
+			case 'available':
+				$video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom&refresh=0';
+				$html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
+				if (isset($item['subevents'])) {
+					$subevents = $item['subevents'];
+		            foreach ($subevents as $subevent) {
+						$subevent_id = $subevent['id'];
+						$url = NetatmoSecurity_GetVignetteUrl4Subevent($instID, $subevent_id, false);
+						if ($url != false) {
+							$html .= '<img src=' . $url . ' width="60" height="60">';
+							$html .= '&nbsp;&nbsp;';
+							$hasMsg = true;
+						}
+					}
+				}
+				break;
+			case 'recording':
+				$message = 'Aufzeichnung läuft';
+				break;
+			default:
+				$html .= '<td>';
+		}
+		if (!$hasMsg && $message != '') {
+			$html .= $message;
+		}
+		$html .= '</td>' . PHP_EOL;
+	}
+    
     $html .= '</tr>' . PHP_EOL;
 }
 $html .= '</table>' . PHP_EOL;

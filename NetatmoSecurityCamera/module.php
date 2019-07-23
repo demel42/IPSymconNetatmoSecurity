@@ -1232,7 +1232,7 @@ class NetatmoSecurityCamera extends IPSModule
                     break;
                 }
             }
-            $this->SetMediaData('Notifications', json_encode($events), false);
+            $this->SetMediaData('Events', json_encode($events), false);
         }
 
         return $status == 'ok';

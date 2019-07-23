@@ -2322,7 +2322,7 @@ class NetatmoSecurityCamera extends IPSModule
                 'off'           => 'Monitoring disabled',
                 'alarm_started' => 'Alarm detected',
                 'person_away'   => 'Person has left the house',
-				'light_mode'    => 'Light'
+                'light_mode'    => 'Light'
             ];
 
         if (isset($val2txt[$val])) {

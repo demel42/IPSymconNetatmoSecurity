@@ -131,13 +131,13 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
     $hook = IPS_GetProperty($instID, 'hook');
     $img_path = $hook . '/imgs/';
     $hook_url = $base_url . $hook;
-	
-	$instName = IPS_GetName($instID);
+
+    $instName = IPS_GetName($instID);
 
     $message = isset($item['message']) ? $item['message'] : '';
     if (isset($item['push_type'])) {
-		// Benachrichtigungen
-		
+        // Benachrichtigungen
+
         $html .= '<td>';
         if (isset($item['event_type'])) {
             $event_type = $item['event_type'];
@@ -157,27 +157,27 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
         }
         $html .= '</td>' . PHP_EOL;
 
-		$hasMsg = false;
-		if ($event_id != '') {
-			$vignette_url = NetatmoSecurity_GetVignetteUrl4Notification($instID, $event_id, false);
-			if ($vignette_url == false) {
-				$vignette_url = NetatmoSecurity_GetSnapshotUrl4Notification($instID, $event_id, false);
-			}
-			if ($vignette_url != false) {
-				$snapshot_url = $hook_url . '/snapshot?notification_id=' . $event_id . '&result=custom';
-				$snapshot_url .= '&refresh=0';
-				$snapshot_url .= '&width=' . $video_player_width;
-				$snapshot_url .= '&height=' . $video_player_height;
-				$html .= '<td onclick="set_video(\'' . $snapshot_url . '\')">' . PHP_EOL;
-				$html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
-				$hasMsg = true;
-			}
-		}
-		if (!$hasMsg) {
-			$html .= '<td>' . $instName . ': ' . $message . '</td>' . PHP_EOL;
-		}
+        $hasMsg = false;
+        if ($event_id != '') {
+            $vignette_url = NetatmoSecurity_GetVignetteUrl4Notification($instID, $event_id, false);
+            if ($vignette_url == false) {
+                $vignette_url = NetatmoSecurity_GetSnapshotUrl4Notification($instID, $event_id, false);
+            }
+            if ($vignette_url != false) {
+                $snapshot_url = $hook_url . '/snapshot?notification_id=' . $event_id . '&result=custom';
+                $snapshot_url .= '&refresh=0';
+                $snapshot_url .= '&width=' . $video_player_width;
+                $snapshot_url .= '&height=' . $video_player_height;
+                $html .= '<td onclick="set_video(\'' . $snapshot_url . '\')">' . PHP_EOL;
+                $html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
+                $hasMsg = true;
+            }
+        }
+        if (!$hasMsg) {
+            $html .= '<td>' . $instName . ': ' . $message . '</td>' . PHP_EOL;
+        }
     } else {
-		// Ereignisse
+        // Ereignisse
 
         $html .= '<td>';
         if (isset($item['event_types'])) {
@@ -194,88 +194,88 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
             $html .= '&nbsp;';
         }
         $html .= '</td>' . PHP_EOL;
-		if (isset($item['video_id'])) {
-			$video_status = isset($item['video_status']) ? $item['video_status'] : 'available';
-			switch ($video_status) {
-				case 'recording':
-				case 'available':
-					$hasMsg = false;
-					$video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom';
-					$video_url .= '&refresh=0';
-					$video_url .= '&width=' . $video_player_width;
-					$video_url .= '&height=' . $video_player_height;
-					$html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
-					if (isset($item['subevents'])) {
-						$subevents = $item['subevents'];
-						foreach ($subevents as $subevent) {
-							$subevent_id = $subevent['id'];
-							$vignette_url = NetatmoSecurity_GetVignetteUrl4Subevent($instID, $subevent_id, false);
-							if ($vignette_url != false) {
-								if (!$hasMsg) {
-									$html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
-								}
-								$html .= '&nbsp;&nbsp;';
-								$hasMsg = true;
-							}
-						}
-					}
-					if (!$hasMsg && isset($item['snapshot'])) {
-						$vignette_url = NetatmoSecurity_GetSnapshotUrl4Event($instID, $event_id, false);
-						if ($vignette_url != false) {
-							if (!$hasMsg) {
-								$html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
-							}
-							$html .= '&nbsp;&nbsp;';
-							$hasMsg = true;
-						}
-					}
-					switch ($video_status) {
-						case 'recording':
-							$html .= '&nbsp;&nbsp;Aufzeichnung läuft!';
-							IPS_LogMessage($scriptName, 'recording ts=' . date('H:i', $tstamp) . ', itim=' . print_r($item, true));
-							break;
-						default:
-							if (!$hasMsg) {
-								$html .= $message;
-							}
-							break;
-					}
-					$html .= '<td>' . PHP_EOL;
-					break;
-				default:
-					$html .= '<td>';
-					if ($message != '') {
-						$html .= $instName . ': ' . $message;
-					}
-					$html .= '</td>' . PHP_EOL;
-					break;
-			}
-		} else if (isset($item['snapshot'])) {
-			$snapshot_url = $hook_url . '/snapshot?event_id=' . $id . '&result=custom';
-			$snapshot_url .= '&refresh=0';
-			$snapshot_url .= '&width=' . $video_player_width;
-			$snapshot_url .= '&height=' . $video_player_height;
-			$html .= '<td onclick="set_video(\'' . $snapshot_url . '\')">' . PHP_EOL;
+        if (isset($item['video_id'])) {
+            $video_status = isset($item['video_status']) ? $item['video_status'] : 'available';
+            switch ($video_status) {
+                case 'recording':
+                case 'available':
+                    $hasMsg = false;
+                    $video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom';
+                    $video_url .= '&refresh=0';
+                    $video_url .= '&width=' . $video_player_width;
+                    $video_url .= '&height=' . $video_player_height;
+                    $html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
+                    if (isset($item['subevents'])) {
+                        $subevents = $item['subevents'];
+                        foreach ($subevents as $subevent) {
+                            $subevent_id = $subevent['id'];
+                            $vignette_url = NetatmoSecurity_GetVignetteUrl4Subevent($instID, $subevent_id, false);
+                            if ($vignette_url != false) {
+                                if (!$hasMsg) {
+                                    $html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
+                                }
+                                $html .= '&nbsp;&nbsp;';
+                                $hasMsg = true;
+                            }
+                        }
+                    }
+                    if (!$hasMsg && isset($item['snapshot'])) {
+                        $vignette_url = NetatmoSecurity_GetSnapshotUrl4Event($instID, $event_id, false);
+                        if ($vignette_url != false) {
+                            if (!$hasMsg) {
+                                $html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
+                            }
+                            $html .= '&nbsp;&nbsp;';
+                            $hasMsg = true;
+                        }
+                    }
+                    switch ($video_status) {
+                        case 'recording':
+                            $html .= '&nbsp;&nbsp;Aufzeichnung läuft!';
+                            IPS_LogMessage($scriptName, 'recording ts=' . date('H:i', $tstamp) . ', itim=' . print_r($item, true));
+                            break;
+                        default:
+                            if (!$hasMsg) {
+                                $html .= $message;
+                            }
+                            break;
+                    }
+                    $html .= '<td>' . PHP_EOL;
+                    break;
+                default:
+                    $html .= '<td>';
+                    if ($message != '') {
+                        $html .= $instName . ': ' . $message;
+                    }
+                    $html .= '</td>' . PHP_EOL;
+                    break;
+            }
+        } elseif (isset($item['snapshot'])) {
+            $snapshot_url = $hook_url . '/snapshot?event_id=' . $id . '&result=custom';
+            $snapshot_url .= '&refresh=0';
+            $snapshot_url .= '&width=' . $video_player_width;
+            $snapshot_url .= '&height=' . $video_player_height;
+            $html .= '<td onclick="set_video(\'' . $snapshot_url . '\')">' . PHP_EOL;
 
-			$vignette_url = NetatmoSecurity_GetVignetteUrl4Event($instID, $event_id, false);
-			if ($vignette_url != false) {
-				$vignette_url = NetatmoSecurity_GetSnapshotUrl4Event($instID, $event_id, false);
-			}
-			if ($vignette_url != false) {
-				$html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
-			} else {
-				if ($message != '') {
-					$html .= $message;
-				}
-			}
-			$html .= '<td>' . PHP_EOL;
+            $vignette_url = NetatmoSecurity_GetVignetteUrl4Event($instID, $event_id, false);
+            if ($vignette_url != false) {
+                $vignette_url = NetatmoSecurity_GetSnapshotUrl4Event($instID, $event_id, false);
+            }
+            if ($vignette_url != false) {
+                $html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
+            } else {
+                if ($message != '') {
+                    $html .= $message;
+                }
+            }
+            $html .= '<td>' . PHP_EOL;
         } else {
-			$html .= '<td>';
-			if ($message != '') {
-				$html .= $message;
-			}
-			$html .= '</td>' . PHP_EOL;
-		}
+            $html .= '<td>';
+            if ($message != '') {
+                $html .= $message;
+            }
+            $html .= '</td>' . PHP_EOL;
+        }
     }
 
     $html .= '</tr>' . PHP_EOL;

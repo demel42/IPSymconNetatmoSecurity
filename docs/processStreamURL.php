@@ -12,7 +12,10 @@
 //                       - Instead of "video/live", the command can also be "snapshot/live" etc (see README.md)
 //
 // - Player Height:      Add '&height=xxx' to the URL in the iframe. Also change the iframe height accordingly (Player height + 20)
-// - Poster RefreshRate: Add &refreshRate=600 to the URL. Sets the time for when a new Preview JPG should be fetched in seconds
+//                       no given or empty 'height' meens 'auto'
+// - Player Width:       Add '&width=xxx' to the URL in the iframe. Also change the iframe width accordingly (Player width + 20)
+//                       no given or empty 'width' meens 'auto'
+// - Poster RefreshRate: Add '&refreshRate=xxx' to the URL. Sets the time for when a new Preview JPG should be fetched in seconds
 // - AutoPlay:           Add '&autoplay' to the URL in the iframe
 
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
@@ -34,46 +37,68 @@ $posterURL = isset($_IPS['alternate_url']) ? $_IPS['alternate_url'] : '';
 
 // URL-GET-Parameter parsen
 $height = isset($GET['height']) ? $GET['height'] : '340';
+$width = isset($GET['width']) ? $GET['width'] : '';
 $autoplay = isset($GET['autoplay']) ? true : false;
 $refreshRate = isset($GET['refreshRate']) ? $GET['refreshRate'] : '300';
 
-// IPS_LogMessage($scriptName, 'inst=' . $instName . ', height=' . $height . ', autoplay=' . $autoplay . ', refreshRate=' . $refreshRate);
+// IPS_LogMessage($scriptName, 'inst=' . $instName . ', height=' . $height . ', width=' . $width . ', autoplay=' . $autoplay . ', refreshRate=' . $refreshRate);
 
 $video_id = 'NetatmoStream_' . substr(uniqid(), -4);
+
+$html = '';
 
 if (preg_match('/\.m3u8$/', $url)) {
     $html = '<link href="https://vjs.zencdn.net/7.6.0/video-js.css" rel="stylesheet">';
     $html .= '<video id="' . $video_id . '" class="video-js vjs-default-skin vjs-big-play-centered" ';
-    $html .= 'height="' . $height . '" ';
-    $html .= 'controls ';
-    if ($posterURL != '') {
-        $html .= 'poster="' . $posterURL . '" ';
-    }
-    if ($autoplay) {
-        $html .= 'autoplay ';
-    }
-    $html .= '>  ';
+	if ($height != '') {
+		$html .= 'height="' . $height . '" ';
+	}
+	if ($width != '') {
+		$html .= 'width="' . $width . '" ';
+	}
+	$html .= 'controls ';
+	if ($posterURL != '') {
+		$html .= 'poster="'. $posterURL . '" ';
+	}
+	if ($autoplay) {
+		$html .= 'autoplay ';
+	}
+	$html .= '>  ';
     $html .= '  <source type="application/x-mpegURL" src="' . $url . '">  ';
     $html .= '</video>    ';
 
     $html .= '<script src="https://vjs.zencdn.net/7.6.0/video.js"></script>    ';
 
-    $html .= '<script>  ';
-    if ($posterURL != '') {
-        $html .= 'function refreshPoster() {  ';
-        $html .= 'player.poster("' . $posterURL . '?" + new Date().getTime());  ';
-        $html .= '}  ';
-    }
+	$html .= '<script>  ';
+	if ($posterURL != '') {
+	    $html .= 'function refreshPoster() {  ';
+	    $html .= 'player.poster("' . $posterURL . '?" + new Date().getTime());  ';
+	    $html .= '}  ';
+	}
     $html .= 'var player = videojs("' . $video_id . '");  ';
-    if ($posterURL != '' && $refreshRate > 0) {
-        $html .= 'player.setInterval(refreshPoster, ' . ($refreshRate * 1000) . ');  ';
-    }
+	if ($posterURL != '' && $refreshRate > 0) {
+    	$html .= 'player.setInterval(refreshPoster, ' . ( $refreshRate * 1000 ) . ');  ';
+	}
     $html .= '</script>';
 } elseif (preg_match('/\.jpg$/', $url)) {
-    $html = '<img src="' . $url . '" height="' . $height . '">';
+    $html = '<img src="' . $url . '" ';
+	if ($height != '') {
+		$html .= 'height="' . $height . '" ';
+	}
+	if ($width != '') {
+		$html .= 'width="' . $width . '" ';
+	}
+	$html .= '>';
 } elseif (preg_match('/\.mp4$/', $url)) {
     if (preg_match('/firefox/i', $SERVER['HTTP_USER_AGENT']) || preg_match('/[5-9]\.[2-9]/', IPS_GetKernelVersion())) {
-        $html = '<video height="' . $height . '">  ';
+        $html = '<video ';
+		if ($height != '') {
+			$html .= 'height="' . $height . '" ';
+		}
+		if ($width != '') {
+			$html .= 'width="' . $width . '" ';
+		}
+		$html .= '>  ';
         $html .= '<source src="' . $url . '" type="video/mp4">  ';
         $html .= '</video>';
     } else {
@@ -81,7 +106,7 @@ if (preg_match('/\.m3u8$/', $url)) {
     }
 }
 
-$html = preg_replace('/[ ]{2}/', "\n", $html);   //Ersetzt doppelte Leerzeichen durch Zeilenumbrüche
+$html = preg_replace('/[ ]{2}/', "\n", $html);   // Ersetzt doppelte Leerzeichen durch Zeilenumbrüche
 
 // IPS_LogMessage($scriptName, 'inst=' . $instName . ', html=' . $html);
 echo $html;     // Ausgabe zurück an das aufrufende Modul

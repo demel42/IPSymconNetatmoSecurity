@@ -446,12 +446,16 @@ class NetatmoSecurityIO extends IPSModule
         $this->SetMultiBuffer('LastData', $data);
 
         if (WELCOME_TEST) {
-            // $xtra_data = $this->testData_Welcome_Query();
-            // $this->SendData($xtra_data, 'QUERY');
-            // $xtra_data = $this->testData_Welcome_Notification_unknownPerson();
-            $xtra_data = $this->testData_Welcome_Notification_knownPerson();
-            // $xtra_data = $this->testData_Welcome_Notification_Alarm();
+            $xtra_data = $this->testData_Welcome_Query();
+            $this->SendData($xtra_data, 'QUERY');
+			/*
+            $xtra_data = $this->testData_Welcome_Notification_unknownPerson();
             $this->SendData($xtra_data, 'EVENT');
+            $xtra_data = $this->testData_Welcome_Notification_knownPerson();
+            $this->SendData($xtra_data, 'EVENT');
+            $xtra_data = $this->testData_Welcome_Notification_Alarm();
+            $this->SendData($xtra_data, 'EVENT');
+			*/
         }
 
         $this->SetStatus(IS_ACTIVE);

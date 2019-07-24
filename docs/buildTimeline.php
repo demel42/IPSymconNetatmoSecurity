@@ -67,10 +67,11 @@ foreach ($events as $event) {
 $timeline = '';
 $instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}');
 foreach ($instIDs as $instID) {
-	if (IPS_GetInstance($instID)['InstanceStatus'] != 102)
-		continue;
-	$data = NetatmoSecurity_GetTimeline($instID, false);
-	$timeline = NetatmoSecurity_MergeTimeline($instID, $timeline, $data, $instID);
+    if (IPS_GetInstance($instID)['InstanceStatus'] != 102) {
+        continue;
+    }
+    $data = NetatmoSecurity_GetTimeline($instID, false);
+    $timeline = NetatmoSecurity_MergeTimeline($instID, $timeline, $data, $instID);
 }
 $timeline = json_decode($timeline, true);
 
@@ -88,10 +89,10 @@ $html .= 'th, td { padding: 2px 10px; text-align: left; }' . PHP_EOL;
 $html .= '</style>' . PHP_EOL;
 
 if ($video_bottom == false) {
-	$html .= '<iframe id="event_video" ';
-	$html .= 'width="' . $video_iframe_width . '" height="' . $video_iframe_height . '" ';
-	$html .= 'frameborder="0" src="">';
-	$html .= '</iframe>' . PHP_EOL;
+    $html .= '<iframe id="event_video" ';
+    $html .= 'width="' . $video_iframe_width . '" height="' . $video_iframe_height . '" ';
+    $html .= 'frameborder="0" src="">';
+    $html .= '</iframe>' . PHP_EOL;
 }
 
 $html .= '<table>' . PHP_EOL;
@@ -105,119 +106,118 @@ $cur_date = 0;
 
 $n_timeline = count($timeline);
 for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
-	$item = $timeline[$i];
+    $item = $timeline[$i];
 
-	$event_id = $item['id'];
-	$tstamp = $item['tstamp'];
-	
-	$dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));
+    $event_id = $item['id'];
+    $tstamp = $item['tstamp'];
+
+    $dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));
     $ts = $dt->format('U');
-	if ($cur_date != $ts) {
-		if ($cur_date != 0) {
-			$html .= '<tr>' . PHP_EOL;
-			$html .= '<td>&nbsp;</td>' . PHP_EOL;
-			$html .= '<td colspan=2>' . strftime('%A, %e. %B', $tstamp) . '</td>' . PHP_EOL;
-			$html .= '</tr>' . PHP_EOL;
-			
-		}
-		$cur_date = $ts;
-	}
-	
-	$html .= '<tr>' . PHP_EOL;
-	$html .= '<td>' . date('H:i', $tstamp) . '</td>' . PHP_EOL;
-	
-	$instID = $item['tag'];
-	$hook = IPS_GetProperty($instID, 'hook');
-	$img_path =  $hook . '/imgs/';
-	$hook_url = $base_url . $hook;
-			
-	$message = isset($item['message']) ? $item['message'] : '';
-	if (isset($item['push_type'])) {
-		$html .= '<td>';
-		if (isset($item['event_type'])) {
-			$event_type = $item['event_type'];
-			$event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
-			$event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
-			if ($event_type_icon != '') {
-				$html .= '<img src=' . $event_type_icon . ' width="' . $icon_width . '" height="' . $icon_height . '" title="' . $event_type_text . '">';
-			} else if ($message != '') {
-				$html .= $message;
-			} else if ($event_type_text != '') {
-				$html .= $event_type_text;
-			} else {
-				$html .= '&nbsp;';
-			}
-		} else {
-			$html .= $event_type;
-		}
-		$html .= '</td>' . PHP_EOL;
+    if ($cur_date != $ts) {
+        if ($cur_date != 0) {
+            $html .= '<tr>' . PHP_EOL;
+            $html .= '<td>&nbsp;</td>' . PHP_EOL;
+            $html .= '<td colspan=2>' . strftime('%A, %e. %B', $tstamp) . '</td>' . PHP_EOL;
+            $html .= '</tr>' . PHP_EOL;
+        }
+        $cur_date = $ts;
+    }
 
-		$html .= '<td>' . $message . '</td>' . PHP_EOL;
-	} else {
-		$html .= '<td>';
-		if (isset($item['event_types'])) {
-			$event_types = $item['event_types'];
-			foreach ($event_types as $event_type) {
-				$event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
-				if ($event_type_icon != '') {
-					$event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
-					$html .= '<img src=' . $event_type_icon . ' width="' . $icon_width . '" height="' . $icon_height . '" title="' . $event_type_text . '">';
-					$html .= '&nbsp;';
-					
-				}					
-			}
-		} else {
-			$html .= '&nbsp;';
-		}
-		$html .= '</td>' . PHP_EOL;
-		$hasMsg = false;
-		$video_status = isset($item['video_status']) ? $item['video_status'] : 'available';
-		switch ($video_status) {
-			case 'available':
-				$video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom';
-				$video_url .= '&refresh=0';
-				$video_url .= '&width=' . $video_player_width;
-				$video_url .= '&height=' . $video_player_height;
-				$html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
-				if (isset($item['subevents'])) {
-					$subevents = $item['subevents'];
-		            foreach ($subevents as $subevent) {
-						$subevent_id = $subevent['id'];
-						$url = NetatmoSecurity_GetVignetteUrl4Subevent($instID, $subevent_id, false);
-						if ($url != false) {
-							if (!$hasMsg)
-							$html .= '<img src=' . $url . ' width="' . $snapshot_width . '" height="' . $snapshot_height . '">';
-							$html .= '&nbsp;&nbsp;';
-							$hasMsg = true;
-						}
-					}
-				}
-				if (!$hasMsg && $message != '') {
-					$html .= $message;
-					$hasMsg = true;
-				}
-				$html .= '<td>' . PHP_EOL;
-				break;
-			case 'recording':
-				$message = 'Aufzeichnung läuft';
-				break;
-			default:
-				break;
-		}
-		if (!$hasMsg && $message != '') {
-			$html .= '<td>' . $message . '</td>' . PHP_EOL;
-		}
-	}
-    
+    $html .= '<tr>' . PHP_EOL;
+    $html .= '<td>' . date('H:i', $tstamp) . '</td>' . PHP_EOL;
+
+    $instID = $item['tag'];
+    $hook = IPS_GetProperty($instID, 'hook');
+    $img_path = $hook . '/imgs/';
+    $hook_url = $base_url . $hook;
+
+    $message = isset($item['message']) ? $item['message'] : '';
+    if (isset($item['push_type'])) {
+        $html .= '<td>';
+        if (isset($item['event_type'])) {
+            $event_type = $item['event_type'];
+            $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
+            $event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
+            if ($event_type_icon != '') {
+                $html .= '<img src=' . $event_type_icon . ' width="' . $icon_width . '" height="' . $icon_height . '" title="' . $event_type_text . '">';
+            } elseif ($message != '') {
+                $html .= $message;
+            } elseif ($event_type_text != '') {
+                $html .= $event_type_text;
+            } else {
+                $html .= '&nbsp;';
+            }
+        } else {
+            $html .= $event_type;
+        }
+        $html .= '</td>' . PHP_EOL;
+
+        $html .= '<td>' . $message . '</td>' . PHP_EOL;
+    } else {
+        $html .= '<td>';
+        if (isset($item['event_types'])) {
+            $event_types = $item['event_types'];
+            foreach ($event_types as $event_type) {
+                $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
+                if ($event_type_icon != '') {
+                    $event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
+                    $html .= '<img src=' . $event_type_icon . ' width="' . $icon_width . '" height="' . $icon_height . '" title="' . $event_type_text . '">';
+                    $html .= '&nbsp;';
+                }
+            }
+        } else {
+            $html .= '&nbsp;';
+        }
+        $html .= '</td>' . PHP_EOL;
+        $hasMsg = false;
+        $video_status = isset($item['video_status']) ? $item['video_status'] : 'available';
+        switch ($video_status) {
+            case 'available':
+                $video_url = $hook_url . '/video?event_id=' . $event_id . '&result=custom';
+                $video_url .= '&refresh=0';
+                $video_url .= '&width=' . $video_player_width;
+                $video_url .= '&height=' . $video_player_height;
+                $html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
+                if (isset($item['subevents'])) {
+                    $subevents = $item['subevents'];
+                    foreach ($subevents as $subevent) {
+                        $subevent_id = $subevent['id'];
+                        $url = NetatmoSecurity_GetVignetteUrl4Subevent($instID, $subevent_id, false);
+                        if ($url != false) {
+                            if (!$hasMsg) {
+                                $html .= '<img src=' . $url . ' width="' . $snapshot_width . '" height="' . $snapshot_height . '">';
+                            }
+                            $html .= '&nbsp;&nbsp;';
+                            $hasMsg = true;
+                        }
+                    }
+                }
+                if (!$hasMsg && $message != '') {
+                    $html .= $message;
+                    $hasMsg = true;
+                }
+                $html .= '<td>' . PHP_EOL;
+                break;
+            case 'recording':
+                $message = 'Aufzeichnung läuft';
+                break;
+            default:
+                break;
+        }
+        if (!$hasMsg && $message != '') {
+            $html .= '<td>' . $message . '</td>' . PHP_EOL;
+        }
+    }
+
     $html .= '</tr>' . PHP_EOL;
 }
 $html .= '</table>' . PHP_EOL;
 
 if ($video_bottom) {
-	$html .= '<iframe id="event_video" ';
-	$html .= 'width="' . $video_iframe_width . '" height="' . $video_iframe_height . '" ';
-	$html .= 'frameborder="0" src="">';
-	$html .= '</iframe>' . PHP_EOL;
+    $html .= '<iframe id="event_video" ';
+    $html .= 'width="' . $video_iframe_width . '" height="' . $video_iframe_height . '" ';
+    $html .= 'frameborder="0" src="">';
+    $html .= '</iframe>' . PHP_EOL;
 }
 
 SetValueString($varID, $html);

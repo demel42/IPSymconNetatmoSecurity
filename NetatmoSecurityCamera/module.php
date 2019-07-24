@@ -625,6 +625,36 @@ class NetatmoSecurityCamera extends IPSModule
                                 $new_event['event_type'] = $type;
                             }
 
+							$snapshot_id = $this->GetArrayElem($event, 'snapshot.id', '');
+							$snapshot_key = $this->GetArrayElem($event, 'snapshot.key', '');
+							$snapshot_filename = $this->GetArrayElem($event, 'snapshot.filename', '');
+							$snapshot = [];
+							if ($snapshot_id != '' && $snapshot_key != '') {
+								$snapshot['id'] = $snapshot_id;
+								$snapshot['key'] = $snapshot_key;
+							}
+							if ($snapshot_filename != '') {
+								$snapshot['filename'] = $snapshot_filename;
+							}
+							if ($snapshot != []) {
+								$new_event['snapshot'] = $snapshot;
+							}
+
+							$vignette_id = $this->GetArrayElem($event, 'vignette.id', '');
+							$vignette_key = $this->GetArrayElem($event, 'vignette.key', '');
+							$vignette_filename = $this->GetArrayElem($event, 'vignette.filename', '');
+							$vignette = [];
+							if ($vignette_id != '' && $vignette_key != '') {
+								$vignette['id'] = $vignette_id;
+								$vignette['key'] = $vignette_key;
+							}
+							if ($vignette_filename != '') {
+								$vignette['filename'] = $vignette_filename;
+							}
+							if ($vignette != []) {
+								$new_event['vignette'] = $vignette;
+							}
+
                             $new_subevents = [];
                             $subevents = $this->GetArrayElem($event, 'event_list', '');
                             if ($subevents != '') {
@@ -633,12 +663,6 @@ class NetatmoSecurityCamera extends IPSModule
                                     $type = $this->GetArrayElem($subevent, 'type', '');
                                     $ts = $this->GetArrayElem($subevent, 'time', 0);
                                     $message = $this->GetArrayElem($subevent, 'message', '');
-                                    $snapshot_id = $this->GetArrayElem($subevent, 'snapshot.id', '');
-                                    $snapshot_key = $this->GetArrayElem($subevent, 'snapshot.key', '');
-                                    $snapshot_filename = $this->GetArrayElem($subevent, 'snapshot.filename', '');
-                                    $vignette_id = $this->GetArrayElem($subevent, 'vignette.id', '');
-                                    $vignette_key = $this->GetArrayElem($subevent, 'vignette.key', '');
-                                    $vignette_filename = $this->GetArrayElem($subevent, 'vignette.filename', '');
 
                                     $new_subevent = [
                                             'id'         => $id,
@@ -647,11 +671,12 @@ class NetatmoSecurityCamera extends IPSModule
                                             'message'    => $message,
                                         ];
 
+                                    $snapshot_id = $this->GetArrayElem($subevent, 'snapshot.id', '');
+                                    $snapshot_key = $this->GetArrayElem($subevent, 'snapshot.key', '');
+                                    $snapshot_filename = $this->GetArrayElem($subevent, 'snapshot.filename', '');
                                     $snapshot = [];
-                                    if ($snapshot_id != '') {
+                                    if ($snapshot_id != '' && $snapshot_key != '') {
                                         $snapshot['id'] = $snapshot_id;
-                                    }
-                                    if ($snapshot_key != '') {
                                         $snapshot['key'] = $snapshot_key;
                                     }
                                     if ($snapshot_filename != '') {
@@ -661,11 +686,12 @@ class NetatmoSecurityCamera extends IPSModule
                                         $new_subevent['snapshot'] = $snapshot;
                                     }
 
+                                    $vignette_id = $this->GetArrayElem($subevent, 'vignette.id', '');
+                                    $vignette_key = $this->GetArrayElem($subevent, 'vignette.key', '');
+                                    $vignette_filename = $this->GetArrayElem($subevent, 'vignette.filename', '');
                                     $vignette = [];
-                                    if ($vignette_id != '') {
+                                    if ($vignette_id != '' && $vignette_key != '') {
                                         $vignette['id'] = $vignette_id;
-                                    }
-                                    if ($vignette_key != '') {
                                         $vignette['key'] = $vignette_key;
                                     }
                                     if ($vignette_filename != '') {
@@ -810,12 +836,8 @@ class NetatmoSecurityCamera extends IPSModule
                                 $event_id = $this->GetArrayElem($notification, 'event_id', '');
                                 $subevent_id = $this->GetArrayElem($notification, 'subevent_id', '');
                                 $event_type = $this->GetArrayElem($notification, 'event_type', '');
+                                $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                                 $message = $this->GetArrayElem($notification, 'message', '');
-                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
-                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
-                                $vignette_id = $this->GetArrayElem($notification, 'vignette.id', '');
-                                $vignette_key = $this->GetArrayElem($notification, 'vignette.key', '');
-                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
                                 switch ($push_type) {
                                     case 'NOC-human':
                                         $message = $this->Translate('Person captured');
@@ -832,6 +854,9 @@ class NetatmoSecurityCamera extends IPSModule
                                         }
                                         break;
                                 }
+
+								$this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
+
                                 $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $event_id,
@@ -839,11 +864,26 @@ class NetatmoSecurityCamera extends IPSModule
                                         'event_type'   => $event_type,
                                         'message'      => $message,
                                         'subevent_id'  => $subevent_id,
-                                        'snapshot_id'  => $snapshot_id,
-                                        'snapshot_key' => $snapshot_key,
-                                        'vignette_id'  => $vignette_id,
-                                        'vignette_key' => $vignette_key,
                                     ];
+
+								$snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
+								$snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
+								$snapshot = [];
+								if ($snapshot_id != '' && $snapshot_key != '') {
+									$snapshot['id'] = $snapshot_id;
+									$snapshot['key'] = $snapshot_key;
+									$cur_notification['snapshot'] = $snapshot;
+								}
+
+                                $vignette_id = $this->GetArrayElem($notification, 'vignette.id', '');
+								$vignette_key = $this->GetArrayElem($notification, 'vignette.key', '');
+								$vignette = [];
+								if ($vignette_id != '' && $vignette_key != '') {
+									$vignette['id'] = $vignette_id;
+									$vignette['key'] = $vignette_key;
+									$cur_notification['vignette'] = $vignette;
+								}
+
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
                                 break;
@@ -851,10 +891,8 @@ class NetatmoSecurityCamera extends IPSModule
                             case 'NACamera-person':
                                 $event_id = $this->GetArrayElem($notification, 'event_id', '');
                                 $event_type = $this->GetArrayElem($notification, 'event_type', '');
+                                $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                                 $message = $this->GetArrayElem($notification, 'message', '');
-                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
-                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
-                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
                                 switch ($push_type) {
                                     case 'NACamera-movement':
                                         $message = $this->Translate('Movement detected');
@@ -868,15 +906,34 @@ class NetatmoSecurityCamera extends IPSModule
                                         }
                                         break;
                                 }
+
+								$this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
+
                                 $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $event_id,
                                         'push_type'    => $push_type,
                                         'event_type'   => $event_type,
                                         'message'      => $message,
-                                        'snapshot_id'  => $snapshot_id,
-                                        'snapshot_key' => $snapshot_key,
                                     ];
+
+								$snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
+								$snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
+								$snapshot = [];
+								if ($snapshot_id != '' && $snapshot_key != '') {
+									$snapshot['id'] = $snapshot_id;
+									$snapshot['key'] = $snapshot_key;
+									$cur_notification['snapshot'] = $snapshot;
+								}
+
+                                $vignette_id = $this->GetArrayElem($notification, 'vignette.id', '');
+								$vignette_key = $this->GetArrayElem($notification, 'vignette.key', '');
+								$vignette = [];
+								if ($vignette_id != '' && $vignette_key != '') {
+									$vignette['id'] = $vignette_id;
+									$vignette['key'] = $vignette_key;
+									$cur_notification['vignette'] = $vignette;
+								}
 
                                 if (isset($notification['persons'])) {
                                     $cur_persons = [];
@@ -915,6 +972,7 @@ class NetatmoSecurityCamera extends IPSModule
                             case 'NACamera-on':
                             case 'NOC-connection':
                             case 'NOC-disconnection':
+                            case 'NOC-ftp':
                             case 'NOC-light_mode':
                             case 'NOC-movement':
                             case 'NOC-off':
@@ -923,7 +981,6 @@ class NetatmoSecurityCamera extends IPSModule
                                 $event_type = $this->GetArrayElem($notification, 'event_type', '');
                                 $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                                 $message = $this->GetArrayElem($notification, 'message', '');
-                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
                                 switch ($push_type) {
                                     case 'NOC-connection':
                                         $message = $this->Translate('Camera connected');
@@ -954,6 +1011,9 @@ class NetatmoSecurityCamera extends IPSModule
                                         }
                                         break;
                                 }
+
+                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
+
                                 $cur_notification = [
                                         'tstamp'       => $now,
                                         'id'           => $id,
@@ -968,7 +1028,6 @@ class NetatmoSecurityCamera extends IPSModule
                                 $this->SendDebug(__FUNCTION__, 'cur_notification=' . print_r($cur_notification, true), 0);
                                 break;
                             case 'daily_summary':
-                            case 'NOC-ftp':
                             case 'topology_changed':
                             case 'webhook_activation':
                                 $err = 'ignore push_type "' . $push_type . '"';
@@ -1563,6 +1622,55 @@ class NetatmoSecurityCamera extends IPSModule
         return $ok ? $filename : false;
     }
 
+    public function SearchNotification(string $id)
+    {
+        $notification = false;
+        $data = $this->GetMediaData('Notifications');
+        $notifications = json_decode($data, true);
+        foreach ($notifications as $n) {
+            if ($n['id'] == $id) {
+                $notification = $n;
+                break;
+            }
+        }
+        $this->SendDebug(__FUNCTION__, 'id=' . $id . ', notification=' . print_r($notification, true), 0);
+        return $notification;
+    }
+
+    public function GetSnapshotUrl4Notification(string $notification_id, bool $preferLocal)
+    {
+        $url = false;
+        $notification = $this->SearchNotification($notification_id);
+        if ($notification != false) {
+			if (isset($notification['snapshot'])) {
+				$snapshot = $notification['snapshot'];
+				if (isset($snapshot['id']) && isset($snapshot['key'])) {
+					$url = $this->GetPictureUrl($snapshot['id'], $snapshot['key']);
+				}
+            }
+        }
+
+        $this->SendDebug(__FUNCTION__, 'notification_id=' . $notification_id . ', url=' . $url, 0);
+        return $url;
+    }
+
+    public function GetVignetteUrl4Notification(string $notification_id, bool $preferLocal)
+    {
+        $url = false;
+        $notification = $this->SearchNotification($notification_id);
+        if ($notification != false) {
+			if (isset($notification['vignette'])) {
+				$vignette = $notification['vignette'];
+				if (isset($vignette['id']) && isset($vignette['key'])) {
+					$url = $this->GetPictureUrl($vignette['id'], $vignette['key']);
+				}
+			}
+        }
+
+        $this->SendDebug(__FUNCTION__, 'notification_id=' . $notification_id . ', url=' . $url, 0);
+        return $url;
+    }
+
     public function SearchEvent(string $event_id)
     {
         $event = false;
@@ -1654,18 +1762,60 @@ class NetatmoSecurityCamera extends IPSModule
         return $url;
     }
 
+    public function GetSnapshotUrl4Event(string $event_id, bool $preferLocal)
+    {
+        $url = false;
+        $event = $this->SearchEvent($event_id);
+        if ($event != false) {
+			if (isset($event['snapshot'])) {
+				$snapshot = $event['snapshot'];
+				if (isset($snapshot['id']) && isset($snapshot['key'])) {
+					$url = $this->GetPictureUrl($snapshot['id'], $snapshot['key']);
+				}
+				if (isset($snapshot['filename'])) {
+					$url = $this->GetPictureUrl4Filename($snapshot['filename'], $preferLocal);
+				}
+            }
+        }
+
+        $this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', url=' . $url, 0);
+        return $url;
+    }
+
+    public function GetVignetteUrl4Event(string $event_id, bool $preferLocal)
+    {
+        $url = false;
+        $event = $this->SearchEvent($event_id);
+        if ($event != false) {
+			if (isset($event['vignette'])) {
+				$vignette = $event['vignette'];
+				if (isset($vignette['id']) && isset($vignette['key'])) {
+					$url = $this->GetPictureUrl($vignette['id'], $vignette['key']);
+				}
+				if (isset($vignette['filename'])) {
+					$url = $this->GetPictureUrl4Filename($vignette['filename'], $preferLocal);
+				}
+			}
+        }
+
+        $this->SendDebug(__FUNCTION__, 'event_id=' . $event_id . ', url=' . $url, 0);
+        return $url;
+    }
+
     public function GetSnapshotUrl4Subevent(string $subevent_id, bool $preferLocal)
     {
         $url = false;
         $subevent = $this->SearchSubEvent($subevent_id);
         if ($subevent != false) {
-            $snapshot = $subevent['snapshot'];
-            if (isset($snapshot['id']) && isset($snapshot['key'])) {
-                $url = $this->GetPictureUrl($snapshot['id'], $snapshot['key']);
-            }
-            if (isset($snapshot['filename'])) {
-                $url = $this->GetPictureUrl4Filename($snapshot['filename'], $preferLocal);
-            }
+			if (isset($subevent['snapshot'])) {
+				$snapshot = $subevent['snapshot'];
+				if (isset($snapshot['id']) && isset($snapshot['key'])) {
+					$url = $this->GetPictureUrl($snapshot['id'], $snapshot['key']);
+				}
+				if (isset($snapshot['filename'])) {
+					$url = $this->GetPictureUrl4Filename($snapshot['filename'], $preferLocal);
+				}
+			}
         }
 
         $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id . ', url=' . $url, 0);
@@ -1677,13 +1827,15 @@ class NetatmoSecurityCamera extends IPSModule
         $url = false;
         $subevent = $this->SearchSubEvent($subevent_id);
         if ($subevent != false) {
-            $vignette = $subevent['vignette'];
-            if (isset($vignette['id']) && isset($vignette['key'])) {
-                $url = $this->GetPictureUrl($vignette['id'], $vignette['key']);
-            }
-            if (isset($vignette['filename'])) {
-                $url = $this->GetPictureUrl4Filename($vignette['filename'], $preferLocal);
-            }
+			if (isset($subevent['vignette'])) {
+				$vignette = $subevent['vignette'];
+				if (isset($vignette['id']) && isset($vignette['key'])) {
+					$url = $this->GetPictureUrl($vignette['id'], $vignette['key']);
+				}
+				if (isset($vignette['filename'])) {
+					$url = $this->GetPictureUrl4Filename($vignette['filename'], $preferLocal);
+				}
+			}
         }
 
         $this->SendDebug(__FUNCTION__, 'subevent_id=' . $subevent_id . ', url=' . $url, 0);
@@ -1870,6 +2022,24 @@ class NetatmoSecurityCamera extends IPSModule
                     }
                     $url = $this->GetSnapshotUrl4Subevent($subevent_id, $preferLocal);
                 }
+                if (isset($_GET['event_id'])) {
+                    $event_id = $_GET['event_id'];
+                    $this->SendDebug(__FUNCTION__, 'option: event_id=' . $event_id, 0);
+                    if ($event_id == '') {
+                        http_response_code(404);
+                        die('event_id missing');
+                    }
+					$url = $this->GetSnapshotUrl4Event($event_id, $preferLocal);
+                }
+                if (isset($_GET['notification_id'])) {
+                    $notification_id = $_GET['notification_id'];
+                    $this->SendDebug(__FUNCTION__, 'option: notification_id=' . $notification_id, 0);
+                    if ($notification_id == '') {
+                        http_response_code(404);
+                        die('notification_id missing');
+                    }
+					$url = $this->GetSnapshotUrl4Notification($notification_id, $preferLocal);
+                }
                 break;
             case 'vignette':
                 if (isset($_GET['subevent_id'])) {
@@ -1880,6 +2050,24 @@ class NetatmoSecurityCamera extends IPSModule
                         die('subevent_id missing');
                     }
                     $url = $this->GetVignetteUrl4Subevent($subevent_id, $preferLocal);
+                }
+                if (isset($_GET['event_id'])) {
+                    $notification_id = $_GET['event_id'];
+                    $this->SendDebug(__FUNCTION__, 'option: event_id=' . $event_id, 0);
+                    if ($event_id == '') {
+                        http_response_code(404);
+                        die('event_id missing');
+                    }
+					$url = $this->GetVignetteUrl4Event($event_id, $preferLocal);
+                }
+                if (isset($_GET['notification_id'])) {
+                    $notification_id = $_GET['notification_id'];
+                    $this->SendDebug(__FUNCTION__, 'option: notification_id=' . $notification_id, 0);
+                    if ($notification_id == '') {
+                        http_response_code(404);
+                        die('notification_id missing');
+                    }
+					$url = $this->GetVignetteUrl4Notification($notification_id, $preferLocal);
                 }
                 break;
             case 'timelaps':

@@ -357,10 +357,8 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |                          |                |              | |
 | Ereignisse               |                |              | |
 |  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
-|  ... Medienobjekt cachen | boolean        | Nein         | Medien-Objekt cachen, spart Resource, gehlt aber bei einem Absturz verloren |
 | Benachrichtigung         |                |              | |
 |  ... max. Alter          | integer        | 2            | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
-|  ... Medienobjekt cachen | boolean        | Nein         | Medien-Objekt cachen, spart Resource, gehlt aber bei einem Absturz verloren |
 |                          |                |              | |
 | FTP-Verzeichnis          |                |              | |
 |  ... Verzeichnis         | string         |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |

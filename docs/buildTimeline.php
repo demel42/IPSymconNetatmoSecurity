@@ -9,7 +9,6 @@
 //
 // die Einstellungen im Script nach Belieben anpassen
 
-
 // String-Variable mit Profil "~HTML-Box"
 $varID = 52073;
 

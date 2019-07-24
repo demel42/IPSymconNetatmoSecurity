@@ -151,6 +151,14 @@ Liefert die URL des Videos zu einem bestimmten Event
 _resolution_ hat die Ausprägungen: _poor_, _low_, _medium_, _high_.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
+`NetatmoSecurity_GetSnapshotUrl4Event(int $InstanzID, string $event_in, bool $preferLocal)`<br>
+Liefert die URL des Snapshot zu einem bestimmten Event.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
+
+`NetatmoSecurity_GetVignetteUrl4Event(int $InstanzID, string $event_in, bool $preferLocal)`<br>
+Liefert die URL der Vignette zu einem bestimmten Event.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
+
 `NetatmoSecurity_GetSnapshotUrl4Subevent(int $InstanzID, string $subevent_id, bool $preferLocal)`<br>
 Liefert die URL des Snapshot zu einem bestimmten Sub-Event.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
@@ -165,6 +173,17 @@ Anmerkung: als Vignette bezeichnet Netatmo in diesem Zusammenhang den Bildaussch
 `NetatmoSecurity_GetNotifications(int $InstanzID)`<br>
 liefert alle gespeicherten Benachrichtigungen der Kamera; Datentyp siehe _Notifications_.
 Die Liste ist json-kodiert und zeitlich aufsteigend sortiert.
+
+`NetatmoSecurity_SearchNotification(int $InstanzID, string $notification_id)`<br>
+Sucht eine Notification in den gespeicherten Notifications. Achtung: nicht alle Benachrichtigungen haben eine _id_.
+
+`NetatmoSecurity_GetSnapshotUrl4Notification(int $InstanzID, string $notification_id, bool $preferLocal)`<br>
+Liefert die URL des Snapshot zu einer bestimmten Notification.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
+
+`NetatmoSecurity_GetVignetteUrl4Notification(int $InstanzID, string $notification_id, bool $preferLocal)`<br>
+Liefert die URL der Vignette zu einer bestimmten Notification.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
 
 `NetatmoSecurity_EventType2Icon(int $InstanzID, string $event_type, bool $asPath)`<br>
@@ -235,17 +254,21 @@ gibt die Url zu dem Bild der Person zurück.
 
 Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder zurückgegriffen werden kann (siehe Konfigurationsdialog).
 
-| Kommando                             | Bedeutung |
-| :----------------------------------- | :-------- |
-| video?live                           | liefert die (interne oder externe) URL zu dem Live-Video |
-| video?event_id=\<event-id\>          | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
-|                                      | |
-| snapshot?live                        | liefert die (interne oder externe) URL zu dem Live-Snapshot |
-| snapshot?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu dem Snapshot |
-|                                      | |
-| vignette?subevent_id=\<subevent-id\> | liefert die (interne oder externe) URL zu der Vignette |
-|                                      | |
-| timelapse                            | liefert die (interne oder externe) URL zu der Zeitrafferdarstellung |
+| Kommando                                 | Bedeutung |
+| :--------------------------------------- | :-------- |
+| video?live                               | liefert die (interne oder externe) URL zu dem Live-Video |
+| video?event_id=\<event-id\>              | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
+|                                          | |
+| snapshot?live                            | liefert die (interne oder externe) URL zu dem Live-Snapshot |
+| snapshot?subevent_id=\<event-id\>        | liefert die (interne oder externe) URL zu dem Snapshot eines Events |
+| snapshot?subevent_id=\<subevent-id\>     | liefert die (interne oder externe) URL zu dem Snapshot eines Sub-Events |
+| snapshot?subevent_id=\<notification-id\> | liefert die (interne oder externe) URL zu dem Snapshot einer Notification |
+|                                          | |
+| vignette?subevent_id=\<event-id\>        | liefert die (interne oder externe) URL zu der Vignette eines Events |
+| vignette?subevent_id=\<subevent-id\>     | liefert die (interne oder externe) URL zu der Vignette eines Sub-Events |
+| vignette?subevent_id=\<notification-id\> | liefert die (interne oder externe) URL zu der Vignette einer Notification |
+|                                          | |
+| timelapse                                | liefert die (interne oder externe) URL zu der Zeitrafferdarstellung |
 
 Das _Kommando_ wird an den angegenegen WebHook angehängt.
 
@@ -474,5 +497,5 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.0 @ 23.07.2019 15:48<br>
+- 1.0 @ 24.07.2019 17:12<br>
   Initiale Version

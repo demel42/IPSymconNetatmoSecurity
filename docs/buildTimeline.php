@@ -1,12 +1,24 @@
 <?php
 
+// Einrichtung:
+// String-Variable mit Profil "~HTML-Box" anlegen, VariablenID weitern unter vermerken
+//
+// Konfiguration (aller Kameras) ergänzen
+// - dieses Script als 'new_event_script' ("neue Ereignisse ... Script") eintragen
+// - das Script '.../docs/processStremURL.php' als 'webhook_script' ("Webhook ... Script") eintragen
+//
+// die Einstellungen im Script nach Belieben anpassen
+
+
 // String-Variable mit Profil "~HTML-Box"
 $varID = 52073;
+
+/ Einstellungen *************************************/
 
 // max. Benachrichtigungen
 $max_lines = 20;
 
-// Angabe zum Video-Player passen zu processStreamURL.php als 'webhook_script'
+// Angabe zum Video-Player passen zu processStreamURL.php als 'webhook_script'!
 
 // Größe des Video-Fensters
 $video_iframe_width = 630; // 1260;
@@ -26,6 +38,8 @@ $snapshot_height = 60;
 // Größe der Icons
 $icon_width = 40;
 $icon_height = 40;
+
+/****************************************************/
 
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
 IPS_LogMessage($scriptName, '_IPS=' . print_r($_IPS, true));
@@ -66,6 +80,7 @@ foreach ($events as $event) {
 
 /****************************************************/
 
+// Auslesen der Timelines aller aktiven Kameras
 $timeline = '';
 $instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}');
 foreach ($instIDs as $instID) {
@@ -232,7 +247,6 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
                     switch ($video_status) {
                         case 'recording':
                             $html .= '&nbsp;&nbsp;Aufzeichnung läuft!';
-                            IPS_LogMessage($scriptName, 'recording ts=' . date('H:i', $tstamp) . ', itim=' . print_r($item, true));
                             break;
                         default:
                             if (!$hasMsg) {

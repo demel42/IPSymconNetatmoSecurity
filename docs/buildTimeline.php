@@ -13,7 +13,7 @@
 // String-Variable mit Profil "~HTML-Box"
 $varID = 52073;
 
-/ Einstellungen *************************************/
+/* Einstellungen ************************************/
 
 // max. Benachrichtigungen
 $max_lines = 20;

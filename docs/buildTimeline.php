@@ -1,7 +1,7 @@
 <?php
 
 // Einrichtung:
-// String-Variable mit Profil "~HTML-Box" anlegen, VariablenID weitern unter vermerken
+// String-Variable mit Profil "~HTML-Box" anlegen, VariablenID weitern unter eintragen
 //
 // Konfiguration (aller Kameras) ergänzen
 // - dieses Script als 'new_event_script' ("neue Ereignisse ... Script") eintragen
@@ -9,8 +9,8 @@
 //
 // die Einstellungen im Script nach Belieben anpassen
 
-// String-Variable mit Profil "~HTML-Box"
-$varID = 52073;
+// HTML-Box
+$varID = xxxx;
 
 /* Einstellungen ************************************/
 

@@ -187,7 +187,7 @@ _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt 
 
 
 `NetatmoSecurity_EventType2Icon(int $InstanzID, string $event_type, bool $asPath)`<br>
-liefert das zu einem Ereignistyp passende Icon; mit _asPath_ steuert ma, ob es nur der Datenname ist oder der korrekte Pfad.
+liefert das zu einem Ereignistyp passende Icon; mit _asPath_ steuert man, ob der Datenname ist oder der korrekte Pfad geliefert wird.
 Beispiel siehe [docs/buildTimeline.php](docs/buildTimeline.php).
 
 `NetatmoSecurity_EventType2Text(int $InstanzID, string $event_type)`<br>

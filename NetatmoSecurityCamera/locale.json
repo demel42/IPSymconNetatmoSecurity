@@ -7,6 +7,8 @@
 			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",
 			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
 
+			"Basis configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
+
 			"Product-Type": "Produkt-Typ",
 			"Product-ID": "Produkt-ID",
 			"Home-ID": "Heim-ID",
@@ -22,24 +24,33 @@
 			"Module description": "Modulbeschreibung",
 
 			"optional data": "optionale Daten",
-			" ... last communication with Netatmo": " ... letzte Kommunikation mit Netatmo",
+			"last communication with Netatmo": "letzte Kommunikation mit Netatmo",
+			"last event from Netatmo": "letztes Ereignis von Netatmo",
+			"last notification from Netatmo": "letzte Benachrichtigung von Netatmo",
 
-			" ... max. age": " ... max. Alter",
+			"Custom-script for adjustment of the returned HTML code":
+				"Benutzerdefiniertes Skript für den zurückgegebenen HTML-Code",
+
+			"external IP": "externe IP",
+			"local CIDR's": "lokale CIDR's",
+			"Check whether the retrieval is from the local network":
+				"Prüfung, ob der Abruf aus dem lokalen Netz erfolgt",
+
+			"maximum age until deletion": "maximales Alter bis zum Löschen",
 			"days": "Tage",
+
+			"FTP": "FTP",
 			"Local copy of videos from Netatmo via FTP": "lokale Kopien der Videos von Netatmo per FTP",
-			" ... path": " ... Verzeichnis",
+			"Path": "Verzeichnis",
+
+			"Timelapse": "Zeitraffer",
 			"Local copy of Netatmo-Timelapse": "lokale Kopie der Netatmo-Zeitraffer-Darstellung",
-			" ... startime": " ... Startzeitpunkt",
+			"Startime": "Startzeitpunkt",
 			"hour of day": "Stunde des Tages",
 
 			"Call upon receipt of a notification": "Aufruf bei Empfang einer Benachrichtigung",
 			" ... Script": " ... Script",
 			"Call upon receipt of new events": "Aufruf bei Empfang neuer Ereignisse",
-
-			" ... Custom script": " ... Benutzerdefiniertes Script",
-
-			" ... external IP": " ... externe IP",
-			" ... local CIDR's": " ... lokale CIDR's",
 
 			"Call with changed VPN-URL": "Aufruf bei geänderter VPN-URL",
 
@@ -47,9 +58,6 @@
 			"Camera operation": "Kamera schalten",
 			"Camera state": "Kamera",
 			"Events": "Ereignisse",
-			" ... last communication with Netatmo": " ... letzte Kommunikation mit Netatmo",
-			" ... last event from Netatmo": " ... letztes Ereignis von Netatmo",
-			" ... last notification from Netatmo": " ... letzte Benachrichtigung von Netatmo",
 			"Last communication": "letzte Kommunikation",
 			"Last event": "letzes Ereignis",
 			"Last notification": "letzte Benachrichtgigung",

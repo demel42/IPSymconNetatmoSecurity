@@ -15,18 +15,22 @@
 			"Client ID": "Client ID",
 			"Client Secret": "Client Secret",
 
+			"Call settings": "Abrufeinstellungen",
+
 			"Number of events retrieved during an update": "Anzahl der Ereignisse die bei einem Update abgerufen werden",
 			"Count": "Anzahl",
 
-			"Webhook for receive events from Netatmo (must be reachable from internet)":
-				"Webhook zum Empfang von Netatmo-Events (muss aus dem Internet erreichbar sein)",
+			"Update data every X minutes": "Aktualisiere Daten alle X Minuten",
+			"Minutes": "Minuten",
+
+			"Notification settings": "Benachrichtigungs-Einstellungen",
+
+			"Webhook for receive notifications from Netatmo (must be reachable from internet)":
+				"Webhook zum Empfang von Benachrichtibungen von Netatmo (muss aus dem Internet erreichbar sein)",
 			"Register Webhook": "Webhook registrieren",
 			"to the base-URL '/hook/NetatmoSecurity/event' is appended": "an die Basis-URL wird '/hook/NetatmoSecurity/event' angehängt",
 			" ... if not given, the Connect-URL is used" : " ... falls nicht angegeben, wird die Connect-URL verwendet",
 			"Base-URL": "Basis-URL",
-
-			"Update data every X minutes": "Aktualisiere Daten alle X Minuten",
-			"Minutes": "Minuten",
 
 			"Update data": "Aktualisiere Daten",
 			"Register Webhook": "Webhook registrieren",

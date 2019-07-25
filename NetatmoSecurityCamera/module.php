@@ -256,17 +256,19 @@ class NetatmoSecurityCamera extends IPSModule
 
     private function SetLocation()
     {
-        $category = $this->ReadPropertyInteger('ImportCategoryID');
         $tree_position = [];
-        $tree_position[] = IPS_GetName($category);
-        $parent = IPS_GetObject($category)['ParentID'];
-        while ($parent > 0) {
-            if ($parent > 0) {
-                $tree_position[] = IPS_GetName($parent);
-            }
-            $parent = IPS_GetObject($parent)['ParentID'];
-        }
-        $tree_position = array_reverse($tree_position);
+        $category = $this->ReadPropertyInteger('ImportCategoryID');
+		if (IPS_ObjectExists($category)) {
+			$tree_position[] = IPS_GetName($category);
+			$parent = IPS_GetObject($category)['ParentID'];
+			while ($parent > 0) {
+				if ($parent > 0) {
+					$tree_position[] = IPS_GetName($parent);
+				}
+				$parent = IPS_GetObject($parent)['ParentID'];
+			}
+			$tree_position = array_reverse($tree_position);
+		}
         return $tree_position;
     }
 
@@ -393,45 +395,63 @@ class NetatmoSecurityCamera extends IPSModule
                 $product_type_s = 'Netatmo Camera';
                 break;
         }
+
         $formElements[] = ['type' => 'Label', 'caption' => $product_type_s];
 
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'product_type', 'caption' => 'Product-Type'];
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'product_id', 'caption' => 'Product-ID'];
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
-        $formElements[] = ['type' => 'Label', 'caption' => 'optional data'];
-        $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_contact', 'caption' => ' ... last communication with Netatmo'];
-        $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_event', 'caption' => ' ... last event from Netatmo'];
-        $formElements[] = ['type' => 'CheckBox', 'name' => 'with_last_notification', 'caption' => ' ... last notification from Netatmo'];
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'hook', 'caption' => 'WebHook'];
-        $formElements[] = ['type' => 'SelectScript', 'name' => 'webhook_script', 'caption' => ' ... Custom script'];
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'externalIP', 'caption' => ' ... external IP'];
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'localCIDRs', 'caption' => ' ... local CIDR\'s'];
-        $formElements[] = ['type' => 'Label', 'caption' => 'Events'];
-        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'event_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
-        $formElements[] = ['type' => 'Label', 'caption' => 'Notifications'];
-        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'notification_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
-        $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of videos from Netatmo via FTP'];
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'ftp_path', 'caption' => ' ... path'];
-        $formElements[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
+		$items = [];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'product_type', 'caption' => 'Product-Type'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'product_id', 'caption' => 'Product-ID'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
+		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Basis configuration (don\'t change)'];
+
+		$items = [];
+        $items[] = ['type' => 'CheckBox', 'name' => 'with_last_contact', 'caption' => 'last communication with Netatmo'];
+        $items[] = ['type' => 'CheckBox', 'name' => 'with_last_event', 'caption' => 'last event from Netatmo'];
+        $items[] = ['type' => 'CheckBox', 'name' => 'with_last_notification', 'caption' => 'last notification from Netatmo'];
+		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'optional data'];
+
+		$items = [];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'hook', 'caption' => 'WebHook'];
+        $items[] = ['type' => 'SelectScript', 'name' => 'webhook_script', 'caption' => 'Custom-script for adjustment of the returned HTML code'];
+        $items[] = ['type' => 'Label', 'caption' => 'Check whether the retrieval is from the local network'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'externalIP', 'caption' => 'external IP'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'localCIDRs', 'caption' => 'local CIDR\'s'];
+        $items[] = ['type' => 'SelectScript', 'name' => 'url_changed_script', 'caption' => 'Call with changed VPN-URL'];
+		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'WebHook'];
+
+		$items = [];
+        $items[] = ['type' => 'NumberSpinner', 'name' => 'event_max_age', 'caption' => 'maximum age until deletion', 'suffix' => 'days'];
+        $items[] = ['type' => 'SelectScript', 'name' => 'new_event_script', 'caption' => 'Call upon receipt of new events'];
+		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Events'];
+
+		$items = [];
+        $items[] = ['type' => 'NumberSpinner', 'name' => 'notification_max_age', 'caption' => 'maximum age until deletion', 'suffix' => 'days'];
+        $items[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => 'Call upon receipt of a notification'];
+		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Notifications'];
+
+		$items = [];
+        $items[] = ['type' => 'Label', 'caption' => 'Local copy of videos from Netatmo via FTP'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'ftp_path', 'caption' => 'Path'];
+        $items[] = ['type' => 'NumberSpinner', 'name' => 'ftp_max_age', 'caption' => 'maximum age until deletion', 'suffix' => 'days'];
+		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'FTP'];
+
         if ($product_type == 'NOC') {
-            $formElements[] = ['type' => 'Label', 'caption' => 'Local copy of Netatmo-Timelapse'];
-            $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'timelapse_path', 'caption' => ' ... path'];
-            $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_hour', 'caption' => ' ... starttime', 'suffix' => 'hour of day'];
-            $formElements[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_max_age', 'caption' => ' ... max. age', 'suffix' => 'days'];
+			$items = [];
+            $items[] = ['type' => 'Label', 'caption' => 'Local copy of Netatmo-Timelapse'];
+            $items[] = ['type' => 'ValidationTextBox', 'name' => 'timelapse_path', 'caption' => 'Path'];
+            $items[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_hour', 'caption' => 'Startime', 'suffix' => 'hour of day'];
+            $items[] = ['type' => 'NumberSpinner', 'name' => 'timelapse_max_age', 'caption' => 'maximum age until deletion', 'suffix' => 'days'];
+			$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Timelapse'];
         }
-        $formElements[] = ['type' => 'Label', 'caption' => 'Call with changed VPN-URL'];
-        $formElements[] = ['type' => 'SelectScript', 'name' => 'url_changed_script', 'caption' => ' ... Script'];
-        $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of a notification'];
-        $formElements[] = ['type' => 'SelectScript', 'name' => 'notify_script', 'caption' => ' ... Script'];
-        $formElements[] = ['type' => 'Label', 'caption' => 'Call upon receipt of new events'];
-        $formElements[] = ['type' => 'SelectScript', 'name' => 'new_event_script', 'caption' => ' ... Script'];
+
         if ($product_type == 'NACamera') {
             $configurator = $this->GetConfigurator4Person();
             if ($configurator != false) {
-                $formElements[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
-                $formElements[] = ['type' => 'Label', 'caption' => 'category for persons to be created:'];
-                $formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
-                $formElements[] = $configurator;
+				$items = [];
+                $items[] = ['type' => 'Label', 'caption' => 'category for persons to be created:'];
+                $items[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
+                $items[] = $configurator;
+				$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Persons'];
             }
         }
 

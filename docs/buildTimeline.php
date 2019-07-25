@@ -31,8 +31,8 @@ $video_player_height = ($video_iframe_height - 20);
 $video_bottom = false;
 
 // Größe der Vignetten
-$snapshot_width = 60;
-$snapshot_height = 60;
+$vignette_width = 60;
+$vignette_height = 60;
 
 // Größe der Icons
 $icon_width = 40;

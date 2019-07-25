@@ -1736,17 +1736,17 @@ class NetatmoSecurityCamera extends IPSModule
                         if ($path == substr($filename, 0, strlen($path))) {
                             $path = substr($filename, strlen($path));
                             if ($preferLocal) {
-								$url = $this->GetLocalServerUrl();
+                                $url = $this->GetLocalServerUrl();
                             }
                             if ($url == false && isset($_SERVER['HTTP_HOST'])) {
                                 $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
                                 $url .= '://' . $_SERVER['HTTP_HOST'];
                             }
                             if ($url == false) {
-								$url = $this->GetServerUrl();
-							}
+                                $url = $this->GetServerUrl();
+                            }
                             if ($url != false) {
-								$url .= $path;
+                                $url .= $path;
                             }
                         }
                     }
@@ -2308,19 +2308,19 @@ class NetatmoSecurityCamera extends IPSModule
             $path = IPS_GetKernelDir() . 'webfront';
             if ($path == substr($filename, 0, strlen($path))) {
                 $path = substr($filename, strlen($path));
-				if ($preferLocal) {
-					$url = $this->GetLocalServerUrl();
-				}
-				if ($url == false && isset($_SERVER['HTTP_HOST'])) {
-					$url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
-					$url .= '://' . $_SERVER['HTTP_HOST'];
-				}
-				if ($url == false) {
-					$url = $this->GetServerUrl();
-				}
-				if ($url != false) {
-					$url .= $path;
-				}
+                if ($preferLocal) {
+                    $url = $this->GetLocalServerUrl();
+                }
+                if ($url == false && isset($_SERVER['HTTP_HOST'])) {
+                    $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+                    $url .= '://' . $_SERVER['HTTP_HOST'];
+                }
+                if ($url == false) {
+                    $url = $this->GetServerUrl();
+                }
+                if ($url != false) {
+                    $url .= $path;
+                }
             }
         }
         $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
@@ -2533,18 +2533,18 @@ class NetatmoSecurityCamera extends IPSModule
         $txt = $this->event_type2text($event_type);
     }
 
-	public function GetLocalServerUrl()
-	{
-		$url = 'http://' . gethostbyname(gethostname()) . ':3777';
-		return $url;
-	}
+    public function GetLocalServerUrl()
+    {
+        $url = 'http://' . gethostbyname(gethostname()) . ':3777';
+        return $url;
+    }
 
-	public function GetServerUrl()
-	{
-		$url = $this->GetConnectUrl();
-		if ($url == false) {
-			$url = $this->GetLocalServerUrl();
+    public function GetServerUrl()
+    {
+        $url = $this->GetConnectUrl();
+        if ($url == false) {
+            $url = $this->GetLocalServerUrl();
         }
-		return $url;
-	}
+        return $url;
+    }
 }

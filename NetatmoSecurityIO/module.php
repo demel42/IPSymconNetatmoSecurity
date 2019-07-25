@@ -110,31 +110,31 @@ class NetatmoSecurityIO extends IPSModule
         $formElements = [];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'module_disable', 'caption' => 'Instance is disabled'];
 
-		$items = [];
-		$items[] = ['type' => 'Label', 'caption' => 'Netatmo-Account from https://my.netatmo.com'];
-		$items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_User', 'caption' => 'Username'];
-		$items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Password', 'caption' => 'Password'];
-		$items[] = ['type' => 'Label', 'caption' => 'Netatmo-Connect from https://dev.netatmo.com'];
-		$items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Client', 'caption' => 'Client ID'];
-		$items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Secret', 'caption' => 'Client Secret'];
-		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Netatmo Access-Details'];
+        $items = [];
+        $items[] = ['type' => 'Label', 'caption' => 'Netatmo-Account from https://my.netatmo.com'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_User', 'caption' => 'Username'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Password', 'caption' => 'Password'];
+        $items[] = ['type' => 'Label', 'caption' => 'Netatmo-Connect from https://dev.netatmo.com'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Client', 'caption' => 'Client ID'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'Netatmo_Secret', 'caption' => 'Client Secret'];
+        $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Netatmo Access-Details'];
 
-		$items = [];
-		$items[] = ['type' => 'Label', 'caption' => 'Number of events retrieved during an update'];
-		$items[] = ['type' => 'NumberSpinner', 'name' => 'sync_event_count', 'caption' => 'Count'];
-		$items[] = ['type' => 'Label', 'caption' => 'Update data every X minutes'];
-		$items[] = ['type' => 'NumberSpinner', 'name' => 'UpdateDataInterval', 'caption' => 'Minutes'];
-		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Call settings'];
+        $items = [];
+        $items[] = ['type' => 'Label', 'caption' => 'Number of events retrieved during an update'];
+        $items[] = ['type' => 'NumberSpinner', 'name' => 'sync_event_count', 'caption' => 'Count'];
+        $items[] = ['type' => 'Label', 'caption' => 'Update data every X minutes'];
+        $items[] = ['type' => 'NumberSpinner', 'name' => 'UpdateDataInterval', 'caption' => 'Minutes'];
+        $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Call settings'];
 
-		$items = [];
-		$items[] = ['type' => 'Label', 'caption' => 'Webhook for receive notifications from Netatmo (must be reachable from internet)'];
-		$items[] = ['type' => 'CheckBox', 'name' => 'register_webhook', 'caption' => 'Register Webhook'];
-		$items[] = ['type' => 'Label', 'caption' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'];
-		$items[] = ['type' => 'ValidationTextBox', 'name' => 'webhook_baseurl', 'caption' => 'Base-URL'];
+        $items = [];
+        $items[] = ['type' => 'Label', 'caption' => 'Webhook for receive notifications from Netatmo (must be reachable from internet)'];
+        $items[] = ['type' => 'CheckBox', 'name' => 'register_webhook', 'caption' => 'Register Webhook'];
+        $items[] = ['type' => 'Label', 'caption' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'webhook_baseurl', 'caption' => 'Base-URL'];
         if ($this->GetConnectUrl() != false) {
-			$items[] = ['type' => 'Label', 'caption' => ' ... if not given, the Connect-URL is used'];
+            $items[] = ['type' => 'Label', 'caption' => ' ... if not given, the Connect-URL is used'];
         }
-		$formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Notification settings'];
+        $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Notification settings'];
 
         $formActions = [];
         $formActions[] = ['type' => 'Button', 'label' => 'Update data', 'onClick' => 'NetatmoSecurity_UpdateData($id);'];

@@ -210,6 +210,10 @@ Beispiel siehe [docs/mergeTimelines.php](docs/mergeTimelines.php).
 `NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
 schaltet die Kamera (0=aus, 1=ein)
 
+
+`NetatmoSecurity_GetServerUrl(int $InstanzID)`<br>
+liefert die öffentliche (_ipmagic_) oder die lokale URL des Servers
+
 #### _Outdoor_
 
 `NetatmoSecurity_SwitchLight(int $InstanzID, int $mode)`<br>
@@ -495,5 +499,5 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.0 @ 24.07.2019 17:12<br>
+- 1.0 @ 25.07.2019 11:01<br>
   Initiale Version

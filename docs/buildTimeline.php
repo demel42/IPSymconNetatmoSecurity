@@ -43,14 +43,10 @@ $icon_height = 40;
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
 IPS_LogMessage($scriptName, '_IPS=' . print_r($_IPS, true));
 
-$instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-$base_url = CC_GetUrl($instID);
-if ($base_url == false) {
-    $base_url = 'http://' . gethostbyname(gethostname()) . ':3777';
-}
-IPS_LogMessage($scriptName, 'base_url=' . $base_url);
-
 $instID = $_IPS['InstanceID'];
+
+$base_url = NetatmoSecurity_GetServerUrl($instID);
+IPS_LogMessage($scriptName, 'base_url=' . $base_url);
 
 /* Löschen unerwünschter Events *********************/
 
@@ -91,6 +87,8 @@ foreach ($instIDs as $instID) {
 }
 $timeline = json_decode($timeline, true);
 
+/****************************************************/
+
 $html = '';
 
 $html .= '<script type="text/javascript">' . PHP_EOL;
@@ -121,11 +119,19 @@ $html .= '</tr>' . PHP_EOL;
 $cur_date = 0;
 
 $n_timeline = count($timeline);
-for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
+for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     $item = $timeline[$i];
 
     $event_id = $item['id'];
     $tstamp = $item['tstamp'];
+	
+	if (isset($item['push_type']) && isset($item['event_type'])) {
+		// 'Bewegung erkannt' aber ohne das ein Ereignis draus wird
+		if ($item['event_type'] == 'movement' && $event_id == '') {
+			continue;
+		}
+	}
+
     $dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));
     $ts = $dt->format('U');
     if ($cur_date != $ts) {
@@ -151,23 +157,19 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
     $message = isset($item['message']) ? $item['message'] : '';
     if (isset($item['push_type'])) {
         // Benachrichtigungen
-
+		
+		$event_type = $item['event_type'];
         $html .= '<td>';
-        if (isset($item['event_type'])) {
-            $event_type = $item['event_type'];
-            $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
-            $event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
-            if ($event_type_icon != '') {
-                $html .= '<img src=' . $event_type_icon . ' width="' . $icon_width . '" height="' . $icon_height . '" title="' . $event_type_text . '">';
-            } elseif ($message != '') {
-                $html .= $message;
-            } elseif ($event_type_text != '') {
-                $html .= $event_type_text;
-            } else {
-                $html .= '&nbsp;';
-            }
+        $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
+        $event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
+        if ($event_type_icon != '') {
+            $html .= '<img src=' . $event_type_icon . ' width="' . $icon_width . '" height="' . $icon_height . '" title="' . $event_type_text . '">';
+        } elseif ($message != '') {
+            $html .= $message;
+        } elseif ($event_type_text != '') {
+            $html .= $event_type_text;
         } else {
-            $html .= $event_type;
+            $html .= '&nbsp;';
         }
         $html .= '</td>' . PHP_EOL;
 
@@ -292,6 +294,8 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $n++, $i--) {
     }
 
     $html .= '</tr>' . PHP_EOL;
+	
+	$n++;
 }
 $html .= '</table>' . PHP_EOL;
 

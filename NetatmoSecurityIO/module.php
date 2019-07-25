@@ -85,8 +85,7 @@ class NetatmoSecurityIO extends IPSModule
         if (IPS_GetKernelRunlevel() == KR_READY) {
             if ($register_webhook) {
                 if ($webhook_baseurl == '') {
-                    $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-                    $webhook_baseurl = CC_GetUrl($instID);
+                    $webhook_baseurl = $this->GetConnectUrl();
                     if ($webhook_baseurl == '') {
                         $this->SetStatus(IS_NOWEBHOOK);
                         return;
@@ -127,9 +126,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $formElements[] = ['type' => 'Label', 'caption' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'];
         $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'webhook_baseurl', 'caption' => 'Base-URL'];
-        $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-        $url = CC_GetUrl($instID);
-        if ($url != '') {
+        if ($this->GetConnectUrl() != false) {
             $formElements[] = ['type' => 'Label', 'caption' => ' ... if not given, the Connect-URL is used'];
         }
 
@@ -524,8 +521,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
         if ($webhook_baseurl == '') {
-            $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-            $webhook_baseurl = CC_GetUrl($instID);
+            $webhook_baseurl = $this->GetConnectUrl();
             if ($webhook_baseurl == '') {
                 $this->SendDebug(__FUNCTION__, 'webhook missing', 0);
                 return;

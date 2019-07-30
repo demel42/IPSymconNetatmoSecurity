@@ -26,17 +26,17 @@ class NetatmoSecurityConfig extends IPSModule
     {
         $category = $this->ReadPropertyInteger('ImportCategoryID');
         $tree_position = [];
-		if ($category > 0 && IPS_ObjectExists($category)) {
-			$tree_position[] = IPS_GetName($category);
-			$parent = IPS_GetObject($category)['ParentID'];
-			while ($parent > 0) {
-				if ($parent > 0) {
-					$tree_position[] = IPS_GetName($parent);
-				}
-				$parent = IPS_GetObject($parent)['ParentID'];
-			}
-			$tree_position = array_reverse($tree_position);
-		}
+        if ($category > 0 && IPS_ObjectExists($category)) {
+            $tree_position[] = IPS_GetName($category);
+            $parent = IPS_GetObject($category)['ParentID'];
+            while ($parent > 0) {
+                if ($parent > 0) {
+                    $tree_position[] = IPS_GetName($parent);
+                }
+                $parent = IPS_GetObject($parent)['ParentID'];
+            }
+            $tree_position = array_reverse($tree_position);
+        }
         return $tree_position;
     }
 

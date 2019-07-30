@@ -258,7 +258,7 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $tree_position = [];
         $category = $this->ReadPropertyInteger('ImportCategoryID');
-        if (IPS_ObjectExists($category)) {
+        if ($category > 0 && IPS_ObjectExists($category)) {
             $tree_position[] = IPS_GetName($category);
             $parent = IPS_GetObject($category)['ParentID'];
             while ($parent > 0) {
@@ -378,7 +378,7 @@ class NetatmoSecurityCamera extends IPSModule
         return $configurator;
     }
 
-    public function GetConfigurationForm()
+	protected function GetFormElements()
     {
         $formElements = [];
         $formElements[] = ['type' => 'CheckBox', 'name' => 'module_disable', 'caption' => 'Instance is disabled'];
@@ -455,6 +455,11 @@ class NetatmoSecurityCamera extends IPSModule
             }
         }
 
+		return $formElements;
+	}
+
+	protected function GetFormActions()
+    {
         $formActions = [];
         $formActions[] = [
                             'type'    => 'Button',
@@ -462,9 +467,23 @@ class NetatmoSecurityCamera extends IPSModule
                             'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
                         ];
 
+		return $formActions;
+	}
+
+    public function GetConfigurationForm()
+    {
+        $formElements = $this->GetFormElements();
+        $formActions = $this->GetFormActions();
         $formStatus = $this->GetFormStatus();
 
-        return json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
+		$form = json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
+        if ($form == '') {
+			$this->SendDebug(__FUNCTION__, 'json_error=' . json_last_error_msg(), 0);
+            $this->SendDebug(__FUNCTION__, '=> formElements=' . print_r($formElements, true), 0);
+			$this->SendDebug(__FUNCTION__, '=> formActions=' . print_r($formActions, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> formStatus=' . print_r($formStatus, true), 0);
+		}
+        return $form;
     }
 
     public function ReceiveData($data)

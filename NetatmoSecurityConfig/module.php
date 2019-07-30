@@ -26,15 +26,17 @@ class NetatmoSecurityConfig extends IPSModule
     {
         $category = $this->ReadPropertyInteger('ImportCategoryID');
         $tree_position = [];
-        $tree_position[] = IPS_GetName($category);
-        $parent = IPS_GetObject($category)['ParentID'];
-        while ($parent > 0) {
-            if ($parent > 0) {
-                $tree_position[] = IPS_GetName($parent);
-            }
-            $parent = IPS_GetObject($parent)['ParentID'];
-        }
-        $tree_position = array_reverse($tree_position);
+		if ($category > 0 && IPS_ObjectExists($category)) {
+			$tree_position[] = IPS_GetName($category);
+			$parent = IPS_GetObject($category)['ParentID'];
+			while ($parent > 0) {
+				if ($parent > 0) {
+					$tree_position[] = IPS_GetName($parent);
+				}
+				$parent = IPS_GetObject($parent)['ParentID'];
+			}
+			$tree_position = array_reverse($tree_position);
+		}
         return $tree_position;
     }
 
@@ -200,6 +202,13 @@ class NetatmoSecurityConfig extends IPSModule
 
         $formStatus = $this->GetFormStatus();
 
-        return json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
+        $form = json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
+        if ($form == '') {
+            $this->SendDebug(__FUNCTION__, 'json_error=' . json_last_error_msg(), 0);
+            $this->SendDebug(__FUNCTION__, '=> formElements=' . print_r($formElements, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> formActions=' . print_r($formActions, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> formStatus=' . print_r($formStatus, true), 0);
+        }
+        return $form;
     }
 }

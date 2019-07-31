@@ -1954,6 +1954,9 @@ class NetatmoSecurityCamera extends IPSModule
             http_response_code(404);
             die('File not found!');
         }
+		if (substr($uri, -1) != '/') {
+            $hook .= '/';
+        }
         $path = parse_url($uri, PHP_URL_PATH);
         $basename = substr($path, strlen($hook));
         $command = $basename;

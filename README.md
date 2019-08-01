@@ -1,7 +1,7 @@
 # IPSymconNetatmoSecurity
 
 [![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.0+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-![Module-Version](https://img.shields.io/badge/Modul_Version-1.1-blue.svg)
+![Module-Version](https://img.shields.io/badge/Modul_Version-1.2-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![StyleCI](https://github.styleci.io/repos/192195342/shield?branch=master)](https://github.styleci.io/repos/192195342)
@@ -498,6 +498,10 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.2 @ 01.08.2019 18:29<br>
+  - AddWebHook() wird nun jedesmal gemacht, wenn der ApiToken abgelaufen ist.
+  - buildTimele.php + 'max_vignettes'
 
 - 1.1 @ 30.07.2019 19:07<br>
   - Absicherung bei fehlerhafter _ImportCategoryID_

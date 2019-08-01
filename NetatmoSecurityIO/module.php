@@ -50,11 +50,6 @@ class NetatmoSecurityIO extends IPSModule
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
             $this->RegisterHook('/hook/NetatmoSecurity');
             $this->UpdateData();
-
-            $register_webhook = $this->ReadPropertyBoolean('register_webhook');
-            if ($register_webhook) {
-                $this->AddWebhook();
-            }
         }
     }
 
@@ -287,7 +282,9 @@ class NetatmoSecurityIO extends IPSModule
             }
 
             $this->SetStatus(IS_ACTIVE);
+			$this->do_AddWebhook($access_token);
         }
+
         return $access_token;
     }
 
@@ -516,6 +513,16 @@ class NetatmoSecurityIO extends IPSModule
 
         $access_token = $this->GetApiAccessToken();
         if ($access_token == false) {
+            return;
+        }
+
+		$this->do_AddWebhook($access_token);
+	}
+
+	private function do_AddWebhook($access_token)
+	{
+        $register_webhook = $this->ReadPropertyBoolean('register_webhook');
+        if (!$register_webhook) {
             return;
         }
 

@@ -14,8 +14,11 @@ $varID = xxxx;
 
 /* Einstellungen ************************************/
 
-// max. Benachrichtigungen
+// max. Benachrichtigungen (vertikal)
 $max_lines = 20;
+
+// max. Anzahl der Vignetten (horizontal)
+$max_vignettes = 10; // 0=alle
 
 // Angabe zum Video-Player passen zu processStreamURL.php als 'webhook_script'!
 
@@ -124,13 +127,13 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
 
     $event_id = $item['id'];
     $tstamp = $item['tstamp'];
-
-    if (isset($item['push_type']) && isset($item['event_type'])) {
-        // 'Bewegung erkannt' aber ohne das ein Ereignis draus wird
-        if ($item['event_type'] == 'movement' && $event_id == '') {
-            continue;
-        }
-    }
+	
+	if (isset($item['push_type']) && isset($item['event_type'])) {
+		// 'Bewegung erkannt' aber ohne das ein Ereignis draus wird
+		if ($item['event_type'] == 'movement' && $event_id == '') {
+			continue;
+		}
+	}
 
     $dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));
     $ts = $dt->format('U');
@@ -157,8 +160,8 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     $message = isset($item['message']) ? $item['message'] : '';
     if (isset($item['push_type'])) {
         // Benachrichtigungen
-
-        $event_type = $item['event_type'];
+		
+		$event_type = $item['event_type'];
         $html .= '<td>';
         $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
         $event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
@@ -222,17 +225,20 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
                     $video_url .= '&height=' . $video_player_height;
                     $html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
                     if (isset($item['subevents'])) {
+						$n_vignette = 0;
                         $subevents = $item['subevents'];
                         foreach ($subevents as $subevent) {
                             $subevent_id = $subevent['id'];
                             $vignette_url = NetatmoSecurity_GetVignetteUrl4Subevent($instID, $subevent_id, false);
                             if ($vignette_url != false) {
-                                if (!$hasMsg) {
-                                    $html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
-                                }
+                            	$html .= '<img src=' . $vignette_url . ' width="' . $vignette_width . '" height="' . $vignette_height . '">';
                                 $html .= '&nbsp;&nbsp;';
                                 $hasMsg = true;
+								$n_vignette++;
                             }
+							if ($max_vignettes > 0 && $n_vignette >= $max_vignettes) {
+								break;
+							}
                         }
                     }
                     if (!$hasMsg && isset($item['snapshot'])) {
@@ -294,8 +300,8 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     }
 
     $html .= '</tr>' . PHP_EOL;
-
-    $n++;
+	
+	$n++;
 }
 $html .= '</table>' . PHP_EOL;
 

@@ -57,11 +57,11 @@ if (preg_match('/\.m3u8$/', $url)) {
         $html .= 'width="' . $width . '" ';
     }
     $html .= 'controls ';
-    if ($posterURL != '') {
-        $html .= 'poster="' . $posterURL . '" ';
-    }
     if ($autoplay) {
         $html .= 'autoplay ';
+    }
+    if ($posterURL != '') {
+        $html .= 'poster="' . $posterURL . '" ';
     }
     $html .= '>  ';
     $html .= '  <source type="application/x-mpegURL" src="' . $url . '">  ';
@@ -97,6 +97,10 @@ if (preg_match('/\.m3u8$/', $url)) {
         }
         if ($width != '') {
             $html .= 'width="' . $width . '" ';
+        }
+        $html .= 'controls ';
+        if ($autoplay) {
+            $html .= 'autoplay ';
         }
         $html .= '>  ';
         $html .= '<source src="' . $url . '" type="video/mp4">  ';

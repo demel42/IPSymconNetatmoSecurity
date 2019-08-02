@@ -501,7 +501,8 @@ GUIDs
 
 - 1.2 @ 01.08.2019 18:29<br>
   - AddWebHook() wird nun jedesmal gemacht, wenn der ApiToken abgelaufen ist.
-  - buildTimele.php + 'max_vignettes'
+  - buildTimele.php ergänzt (+ 'max_vignettes', 'autoload')
+  - processStreamURL.php ergänzt ('mp4' + controls, autoload)
 
 - 1.1 @ 30.07.2019 19:07<br>
   - Absicherung bei fehlerhafter _ImportCategoryID_

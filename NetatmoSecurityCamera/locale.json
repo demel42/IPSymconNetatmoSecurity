@@ -28,15 +28,16 @@
 			"last event from Netatmo": "letztes Ereignis von Netatmo",
 			"last notification from Netatmo": "letzte Benachrichtigung von Netatmo",
 
-			"Custom-script for adjustment of the returned HTML code":
-				"Benutzerdefiniertes Skript für den zurückgegebenen HTML-Code",
+			"Adjustment of the returned HTML code":
+				"Anpassung des zurückgegebenen HTML-Codes",
 
-			"IP-Symcon IP": "IP-Symcon IP-Adresse",
-			"IP-Symcon Port": "IP-Symcon Portnummer",
-			"external IP": "externe IP-Adresse",
-			"local CIDR's": "lokale CIDR's",
+			"Access to the IPS server": "Zugriff auf den IPS-Server",
+			"IP-Address": "IP-Adresse",
+			"Port-Number": "Portnummer",
 			"Check whether the retrieval is from the local network":
 				"Prüfung, ob der Abruf aus dem lokalen Netz erfolgt",
+			"external IP-Address": "externe IP-Adresse",
+			"local CIDR's": "lokale CIDR's",
 
 			"maximum age until deletion": "maximales Alter bis zum Löschen",
 			"days": "Tage",

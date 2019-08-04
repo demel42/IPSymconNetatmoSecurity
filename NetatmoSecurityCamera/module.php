@@ -422,15 +422,16 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'optional data'];
 
         $items = [];
-        $items[] = ['type' => 'ValidationTextBox', 'name' => 'hook', 'caption' => 'WebHook'];
-        $items[] = ['type' => 'SelectScript', 'name' => 'webhook_script', 'caption' => 'Custom-script for adjustment of the returned HTML code'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'hook', 'caption' => 'Webhook'];
+        $items[] = ['type' => 'SelectScript', 'name' => 'webhook_script', 'caption' => 'Adjustment of the returned HTML code'];
+        $items[] = ['type' => 'Label', 'caption' => 'Access to the IPS server'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'ipsIP', 'caption' => 'IP-Address'];
+        $items[] = ['type' => 'NumberSpinner', 'name' => 'ipsPort', 'caption' => 'Port-Number'];
         $items[] = ['type' => 'Label', 'caption' => 'Check whether the retrieval is from the local network'];
-        $items[] = ['type' => 'ValidationTextBox', 'name' => 'ipsIP', 'caption' => 'IP-Symcon IP'];
-        $items[] = ['type' => 'NumberSpinner', 'name' => 'ipsPort', 'caption' => 'IP-Symcon Port'];
-        $items[] = ['type' => 'ValidationTextBox', 'name' => 'externalIP', 'caption' => 'external IP'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'externalIP', 'caption' => 'external IP-Address'];
         $items[] = ['type' => 'ValidationTextBox', 'name' => 'localCIDRs', 'caption' => 'local CIDR\'s'];
         $items[] = ['type' => 'SelectScript', 'name' => 'url_changed_script', 'caption' => 'Call with changed VPN-URL'];
-        $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'WebHook'];
+        $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'Webhook'];
 
         $items = [];
         $items[] = ['type' => 'NumberSpinner', 'name' => 'event_max_age', 'caption' => 'maximum age until deletion', 'suffix' => 'days'];

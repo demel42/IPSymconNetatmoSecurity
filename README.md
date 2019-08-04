@@ -1,7 +1,7 @@
 # IPSymconNetatmoSecurity
 
 [![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.0+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-![Module-Version](https://img.shields.io/badge/Modul_Version-1.2-blue.svg)
+![Module-Version](https://img.shields.io/badge/Modul_Version-1.3-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![StyleCI](https://github.styleci.io/repos/192195342/shield?branch=master)](https://github.styleci.io/repos/192195342)
@@ -355,9 +355,11 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | letzte Benachrichtigung  | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
 |                          |                |              | |
 | Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
-|  ... Script              | integer        |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
+|  ... IP-Symcon IP        | string         |              | DynDNS-Name oder IP des IP-Symcon-Servers |
+|  ... IP-Symcon Port      | integer        | 3777         | Portnummer des IP-Symcon-Servers |
 |  ... externe IP          | string         |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
-|  ... local CIDR's        | string         |              | durch Semikolog getrennte Liste der lokalen CIDR's |
+|  ... local CIDR's        | string         |              | durch Semikolog getrennte Liste der lokalen CIDR's (Netzwerke) |
+|  ... Script              | integer        |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
 |                          |                |              | |
 | Ereignisse               |                |              | |
 |  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
@@ -388,7 +390,7 @@ Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das W
 - Warum gibt es die Möglichkeit die per FTP übertragenen Videos einzubinden? Der Zugriff ist schneller und die Darstellung besser, da die Daten nicht von der SD-Karte der Kamera geholt werden müssen.
 
 - Erklärung zu _CIDR_: das ist die Angabe der Adresse und der Maske eines Netzwerks. EIne typische lokalen Netwerk wäre _192.168.178.0/24_ oder _192.168.178.0/255.255.255.0_. Siehe auch https://de.m.wikipedia.org/wiki/Classless_Inter-Domain_Routing.<br>
-Die Angabe der externen IP und der lokalen CIDR's dienen zur Ermittlung, ob sich der Client im lokalen Netzwerk befindet und daher auf die lokalen Adresse der Kamera zugreifen kann oder über die VPN-URL's von Netatmo gehen muss. Ist nichts angegeben, wird angenommen, das der Aufruf über die _http.://xxx.ipmagic.de_ immer von extern kommt.
+Die Angabe der externen IP und der lokalen CIDR's dienen zur Ermittlung, ob sich der Client im lokalen Netzwerk befindet und daher auf die lokalen Adresse der Kamera zugreifen kann oder die VPN-URL's von Netatmo verwendet werden muss. Ist nichts angegeben, wird angenommen, das ein Aufruf über die _http.://xxx.ipmagic.de_ immer von extern kommt.
 
 - Script bei Benachrichtigungen: das Script wird aufgerufen, wenn eine Benachrichtigung eingetroffen ist und verarbeitet wurde.<br>
 Es dient dazu, bei einer Benachrichtigung direkt eine Meldung, z.B. ein _WFC_SendNotification()_ aufzurufen.
@@ -498,6 +500,9 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.3 @ 04.08.2019 15:40<br>
+  - IP-Symcon IP-Adresse und Portnummer als Konfigurationsfeld vorgesehen zur Unterstützung komplexer Netzwerke, z.B. Docker
 
 - 1.2 @ 01.08.2019 18:29<br>
   - AddWebHook() wird nun jedesmal gemacht, wenn der ApiToken abgelaufen ist.

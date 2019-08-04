@@ -31,7 +31,9 @@
 			"Custom-script for adjustment of the returned HTML code":
 				"Benutzerdefiniertes Skript für den zurückgegebenen HTML-Code",
 
-			"external IP": "externe IP",
+			"IP-Symcon IP": "IP-Symcon IP-Adresse",
+			"IP-Symcon Port": "IP-Symcon Portnummer",
+			"external IP": "externe IP-Adresse",
 			"local CIDR's": "lokale CIDR's",
 			"Check whether the retrieval is from the local network":
 				"Prüfung, ob der Abruf aus dem lokalen Netz erfolgt",

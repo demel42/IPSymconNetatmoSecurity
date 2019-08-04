@@ -24,6 +24,8 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyString('hook', '');
 
+        $this->RegisterPropertyString('ipsIP', '');
+        $this->RegisterPropertyInteger('ipsPort', 3777);
         $this->RegisterPropertyString('externalIP', '');
         $this->RegisterPropertyString('localCIDRs', '');
 
@@ -155,6 +157,15 @@ class NetatmoSecurityCamera extends IPSModule
             $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
             if ($timelapse_hour < -1 || $timelapse_hour > 23) {
                 $this->SendDebug(__FUNCTION__, 'invalid \'timelapse_hour\' "' . $timelapse_hour . '"', 0);
+                $this->SetStatus(IS_INVALIDCONFIG);
+                return;
+            }
+        }
+
+        $ipsIP = $this->ReadPropertyString('ipsIP');
+        if ($ipsIP != '') {
+            if ($this->deternmineIp($ipsIP) == false) {
+                $this->SendDebug(__FUNCTION__, 'invalid \'ipsIP\' "' . $ipsIP . '"', 0);
                 $this->SetStatus(IS_INVALIDCONFIG);
                 return;
             }
@@ -414,6 +425,8 @@ class NetatmoSecurityCamera extends IPSModule
         $items[] = ['type' => 'ValidationTextBox', 'name' => 'hook', 'caption' => 'WebHook'];
         $items[] = ['type' => 'SelectScript', 'name' => 'webhook_script', 'caption' => 'Custom-script for adjustment of the returned HTML code'];
         $items[] = ['type' => 'Label', 'caption' => 'Check whether the retrieval is from the local network'];
+        $items[] = ['type' => 'ValidationTextBox', 'name' => 'ipsIP', 'caption' => 'IP-Symcon IP'];
+        $items[] = ['type' => 'NumberSpinner', 'name' => 'ipsPort', 'caption' => 'IP-Symcon Port'];
         $items[] = ['type' => 'ValidationTextBox', 'name' => 'externalIP', 'caption' => 'external IP'];
         $items[] = ['type' => 'ValidationTextBox', 'name' => 'localCIDRs', 'caption' => 'local CIDR\'s'];
         $items[] = ['type' => 'SelectScript', 'name' => 'url_changed_script', 'caption' => 'Call with changed VPN-URL'];
@@ -2577,7 +2590,10 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetLocalServerUrl()
     {
-        $url = 'http://' . gethostbyname(gethostname()) . ':3777';
+        $ipsIP = $this->ReadPropertyString('ipsIP');
+        $ipsPort = $this->ReadPropertyInteger('ipsPort');
+
+        $url = 'http://' . ($ipsIP != '' ? $ipsIP : gethostbyname(gethostname())) . ':' . $ipsPort;
         return $url;
     }
 

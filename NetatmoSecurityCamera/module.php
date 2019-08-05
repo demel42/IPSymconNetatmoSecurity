@@ -217,18 +217,18 @@ class NetatmoSecurityCamera extends IPSModule
                     return;
                 }
                 $this->RegisterHook($hook);
-				$this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetServerUrl() . $hook, 0);
-				if ($this->GetServerUrl() != $this->GetLocalServerUrl()) {
-					$this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetLocalServerUrl() . $hook, 0);
-				}
+                $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetServerUrl() . $hook, 0);
+                if ($this->GetServerUrl() != $this->GetLocalServerUrl()) {
+                    $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetLocalServerUrl() . $hook, 0);
+                }
             }
         }
 
-		/*
-		$dataFilter = '.*id[^:]*:["]*' . $product_id . '.*';
+        /*
+        $dataFilter = '.*id[^:]*:["]*' . $product_id . '.*';
         $this->SendDebug(__FUNCTION__, 'set ReceiveDataFilter=' . $dataFilter, 0);
         $this->SetReceiveDataFilter($dataFilter);
-		*/
+        */
 
         $this->SetStatus(IS_ACTIVE);
 
@@ -247,10 +247,10 @@ class NetatmoSecurityCamera extends IPSModule
                     return;
                 }
                 $this->RegisterHook($hook);
-				$this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetServerUrl() . $hook, 0);
-				if ($this->GetServerUrl() != $this->GetLocalServerUrl()) {
-					$this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetLocalServerUrl() . $hook, 0);
-				}
+                $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetServerUrl() . $hook, 0);
+                if ($this->GetServerUrl() != $this->GetLocalServerUrl()) {
+                    $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetLocalServerUrl() . $hook, 0);
+                }
             }
         }
     }

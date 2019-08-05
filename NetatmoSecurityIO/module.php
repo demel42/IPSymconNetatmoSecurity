@@ -2,9 +2,6 @@
 
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
-require_once __DIR__ . '/../libs/test.php';    // Testdaten
-
-define('WELCOME_TEST', false);
 
 class NetatmoSecurityIO extends IPSModule
 {
@@ -441,19 +438,6 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->SendData($data, 'QUERY');
         $this->SetMultiBuffer('LastData', $data);
-
-        if (WELCOME_TEST) {
-            $xtra_data = $this->testData_Welcome_Query();
-            $this->SendData($xtra_data, 'QUERY');
-            /*
-            $xtra_data = $this->testData_Welcome_Notification_unknownPerson();
-            $this->SendData($xtra_data, 'EVENT');
-            $xtra_data = $this->testData_Welcome_Notification_knownPerson();
-            $this->SendData($xtra_data, 'EVENT');
-            $xtra_data = $this->testData_Welcome_Notification_Alarm();
-            $this->SendData($xtra_data, 'EVENT');
-            */
-        }
 
         $this->SetStatus(IS_ACTIVE);
 

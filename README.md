@@ -355,9 +355,9 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | letzte Benachrichtigung  | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
 |                          |                |              | |
 | Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
-|  ... IP-Symcon IP        | string         |              | DynDNS-Name oder IP des IP-Symcon-Servers |
-|  ... IP-Symcon Port      | integer        | 3777         | Portnummer des IP-Symcon-Servers |
-|  ... externe IP          | string         |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
+|  ... IPS IP-Adresse      | string         |              | DynDNS-Name oder IP des IPS-Servers |
+|  ... IPS Portnummer      | integer        | 3777         | Portnummer des IPS-Servers |
+|  ... externe IP-Adresse  | string         |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
 |  ... local CIDR's        | string         |              | durch Semikolog getrennte Liste der lokalen CIDR's (Netzwerke) |
 |  ... Script              | integer        |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
 |                          |                |              | |

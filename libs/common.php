@@ -107,22 +107,26 @@ trait NetatmoSecurityCommon
     // Inspired from module SymconTest/HookServe
     private function RegisterHook($WebHook)
     {
+		$this->SendDebug(__FUNCTION__, 'WebHook=' . $WebHook, 0);
         $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
             $found = false;
             foreach ($hooks as $index => $hook) {
+				$this->SendDebug(__FUNCTION__, ' ' . $index . ': Hook=' . print_r($hook, true), 0);
                 if ($hook['Hook'] == $WebHook) {
-                    if ($hook['TargetID'] == $this->InstanceID) {
-                        return;
+                    if ($hook['TargetID'] != $this->InstanceID) {
+						$hooks[$index]['TargetID'] = $this->InstanceID;
+						$this->SendDebug(__FUNCTION__, 'overwrite TargetID with =' . $this->InstanceID, 0);
                     }
-                    $hooks[$index]['TargetID'] = $this->InstanceID;
-                    $found = true;
+					$found = true;
+					break;
                 }
             }
             if (!$found) {
                 $hooks[] = ['Hook' => $WebHook, 'TargetID' => $this->InstanceID];
             }
+			$this->SendDebug(__FUNCTION__, 'found=' . $this->bool2str($found), 0);
             IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
             IPS_ApplyChanges($ids[0]);
         }
@@ -245,9 +249,11 @@ trait NetatmoSecurityCommon
 
     private function HookIsUsed($newHook)
     {
+		$this->SendDebug(__FUNCTION__, 'newHook=' . $newHook, 0);
         $used = false;
         $instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
         $hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
+		$this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
         foreach ($hooks as $hook) {
             if ($hook['Hook'] == $newHook) {
                 if ($hook['TargetID'] != $this->InstanceID) {
@@ -256,6 +262,7 @@ trait NetatmoSecurityCommon
                 break;
             }
         }
+		$this->SendDebug(__FUNCTION__, 'used=' . $this->bool2str($used), 0);
         return $used;
     }
 

@@ -1,7 +1,7 @@
 # IPSymconNetatmoSecurity
 
 [![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.0+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-![Module-Version](https://img.shields.io/badge/Modul_Version-1.3-blue.svg)
+![Module-Version](https://img.shields.io/badge/Modul_Version-1.4-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![StyleCI](https://github.styleci.io/repos/192195342/shield?branch=master)](https://github.styleci.io/repos/192195342)
@@ -500,6 +500,9 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.4 @ 04.08.2019 15:40<br>
+  - zusätzlicher Debug bei der Einrichtung des WebHook
 
 - 1.3 @ 04.08.2019 15:40<br>
   - IP-Symcon IP-Adresse und Portnummer als Konfigurationsfeld vorgesehen zur Unterstützung komplexer Netzwerke, z.B. Docker

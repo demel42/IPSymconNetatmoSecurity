@@ -143,7 +143,7 @@ Sucht einen Sub-Event in den gespeicherten Events
 
 `NetatmoSecurity_DeleteEvent(int $InstanzID, string $event_id)`<br>
 löscht den angegeben Event.
-Damit kann man z.B. unerwünscht Ereignisse automatisch löschen. Achtung: das geht leider **nicht* im _Script bei Benachrichtigungen_, da hier die Ereignisse bei netatmo noch nicht vorliegen.
+Damit kann man z.B. unerwünscht Ereignisse automatisch löschen. Achtung: das geht leider **nicht** im _Script bei Benachrichtigungen_, da hier die Ereignisse bei netatmo noch nicht vorliegen.
 Beispiel siehe [docs/processEventsCleanup.php](docs/processEventsCleanup.php).
 
 `NetatmoSecurity_GetVideoUrl4Event(int $InstanzID, string $event_id, string $resolution, bool $preferLocal)`<br>
@@ -224,7 +224,7 @@ stellt die Intensität das Lichtes ein (0..100%). <br>
 
 
 `NetatmoSecurity_LoadTimelapse(int $InstanzID)`<br>
-Herstellt und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h. Als Bezugszeitpunkt (für die Suche danach) gilt immer der Tag, ab dem die 24h beginnen. D.h. der AUfruf wird immer unter dem Datum des Vortags gespeichert.
+Herstellt und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h. Als Bezugszeitpunkt (für die Suche danach) gilt immer der Tag, ab dem die 24h beginnen. D.h. das Video wird immer unter dem Datum des Vortags gespeichert.
 
 `NetatmoSecurity_GetTimelapseFilenamel(int $InstanzID, int $refdate = 0)`<br>
 Ermittlung der Datei mit der Zeitrafferdarstellung des angegebenen Referenzdatums
@@ -289,7 +289,7 @@ Bei allen Kommandos kann Option _result_ angfügt werden
 Hinweis zu dem _custom_-Script:
 Dem Script wird übergeben:
 - die _InstanceID_
-- die ermittelte _url_ sowie bei dem Aruf des Live-Videos die URL des Live-Snapshots als _alternate_url_1
+- die ermittelte _url_ sowie bei dem Aruf des Live-Videos die URL des Live-Snapshots als _alternate_url_
 - *_SERVER* als json-kodierter String, benutzen mit
 ```
 $SERVER = json_decode($_IPS['_SERVER'], true);
@@ -307,7 +307,7 @@ Ein Muster eines solchen Scriptes finden sich in [docs/processStreamURL.php](doc
 
 Hinweis zu dem Video: die lokalen Kopien der Videos werden als MP4 von Netatmo geliefert. Das Abspielen von MP4-Dateien funktioniert nur bei IPS >= 5.2 oder mit dem Firefox-Browser und daher wird unter diesen Umständen die lokale Datei ignoriert.
 
-Dem Kommando vom Type _timelapse_ kann die Option _date=\<refdate\>_ angehängt werden; das Format ist gemäß (strtotime())[https://www.php.net/manual/de/function.strtotime.php]. Ohne diese Option wird gestrige Datum angenommen. Die Zeitrafferdarstellung wird als MP4 von Netatmo geliefert; die Einschränkungen der Darstellung gelten wie zuvor beschrieben.
+Dem Kommando vom Type _timelapse_ kann die Option _date=\<refdate\>_ angehängt werden; das Format ist gemäß [strtotime()](https://www.php.net/manual/de/function.strtotime.php). Ohne diese Option wird gestrige Datum angenommen. Die Zeitrafferdarstellung wird als MP4 von Netatmo geliefert; die Einschränkungen der Darstellung gelten wie zuvor beschrieben.
 
 
 ## 5. Konfiguration

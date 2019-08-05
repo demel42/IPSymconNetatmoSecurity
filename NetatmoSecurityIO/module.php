@@ -7,7 +7,6 @@ class NetatmoSecurityIO extends IPSModule
 {
     use NetatmoSecurityCommon;
     use NetatmoSecurityLibrary;
-    use NetatmoSecurityTest;
 
     public function Create()
     {

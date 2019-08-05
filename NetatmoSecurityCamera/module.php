@@ -1237,7 +1237,7 @@ class NetatmoSecurityCamera extends IPSModule
         return true;
     }
 
-    public function GetLightConfig()
+    private function GetLightConfig()
     {
         $product_type = $this->ReadPropertyString('product_type');
         if ($product_type != 'NOC') {
@@ -1260,16 +1260,9 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
 
-        /*
-         * komplettes Ergebnis:
-         *   {"intensity":100,"mode":"off","night":{"always":false,"person":false,"vehicle":false,"animal":false,"movement":false} }
-         */
-
         $jdata = json_decode($data, true);
         if ($jdata['status'] == 'ok') {
-            $data = $jdata['data'];
-
-            $jdata = json_decode($data, true);
+            $jdata = json_decode($jdata['data'], true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
             $intensity = $this->GetArrayElem($jdata, 'intensity', '');
@@ -1379,6 +1372,82 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         return $status == 'ok';
+    }
+
+    private function GetHomeStatus()
+    {
+        $home_id = $this->ReadPropertyString('home_id');
+        $product_id = $this->ReadPropertyString('product_id');
+
+		$url = 'https://app.netatmo.net/syncapi/v1/homestatus';
+
+        $postdata = [
+                'home_id'       => $home_id,
+                'gateway_types' => ['NACamera','NOC','NSD','NDB'],
+            ];
+        $pdata = json_encode($postdata);
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        if ($jdata['status'] == 'ok') {
+            $jdata = json_decode($jdata['data'], true);
+
+            $modules = $this->GetArrayElem($jdata, 'body.home.modules', '');
+			if ($modules != '') {
+				foreach ($modules as $module) {
+					if ($product_id != $module['id']) {
+						continue;
+					}
+					$this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
+
+                    $wifi_strength = $this->GetArrayElem($module, 'wifi_strength', '');
+					$this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
+				}
+			}
+		}
+    }
+
+    private function GetHomeData()
+    {
+        $home_id = $this->ReadPropertyString('home_id');
+        $product_id = $this->ReadPropertyString('product_id');
+
+		$url = 'https://app.netatmo.net/api/homesdata';
+
+        $postdata = [
+                'home_id'       => $home_id,
+                'gateway_types' => ['NACamera','NOC','NSD','NDB'],
+            ];
+        $pdata = json_encode($postdata);
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        if ($jdata['status'] == 'ok') {
+            $jdata = json_decode($jdata['data'], true);
+			$this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+
+			$homes = $this->GetArrayElem($jdata, 'body.homes', '');
+			$this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
+			if ($homes != '') {
+				foreach ($homes as $home) {
+					if ($home_id != $home['id']) {
+						continue;
+					}
+					$this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
+
+					$NOC = $this->GetArrayElem($home, 'NOC', '');
+					$this->SendDebug(__FUNCTION__, 'NOC=' . print_r($NOC, true), 0);
+				}
+			}
+		}
     }
 
     private function cmp_events($a, $b)

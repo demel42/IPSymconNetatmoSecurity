@@ -1,0 +1,147 @@
+* GetLightConfig()
+
+    [intensity] => 100
+    [mode] => off
+    [night] => Array
+        (
+            [always] => 
+            [person] => 1
+            [vehicle] => 
+            [animal] => 
+            [movement] => 
+        )
+
+
+* GetHomeStatus()
+
+    [status] => ok
+    [time_server] => 1564993875
+    [body] => Array
+        (
+            [home] => Array
+                (
+                    [modules] => Array
+                        (
+                            [0] => Array
+                                (
+                                    [id] => xx:xx:xx:xx:xx:xx
+                                    [type] => NOC
+                                    [monitoring] => on
+                                    [sd_status] => 4
+                                    [alim_status] => 2
+                                    [locked] => 
+                                    [vpn_url] => https://prodvpn-eu-2.netatmo.net/...
+                                    [is_local] => 1
+                                    [floodlight] => off
+                                    [firmware_revision] => 155
+                                    [homekit_status] => configured
+                                    [wifi_strength] => 65
+                                    [connection] => wifi
+                                    [timelapse_available] => 1
+                                )
+
+                        )
+
+                    [id] => xxxxxxxxxxxxxxxxxxxxxxxx
+                )
+
+        )
+
+
+* GetHomeData()
+
+    [body] => Array
+		(
+			[homes] => Array
+				(
+					[0] => Array
+						(
+							[id] => xxxxxxxxxxxxxxxxxxxxxxxx
+							[name] => Zuhause
+							[altitude] => 94
+							[coordinates] => Array
+								(
+									[0] => x,xxxxx
+									[1] => yy,yyyyy
+								)
+
+							[country] => DE
+							[timezone] => Europe/Berlin
+							[currency_code] => EUR
+							[invitation_code] => Array
+								(
+									[0] => xxxxxxxxxxxxxxxxxxxx
+								)
+
+							[nb_users] => 1
+							[therm_absence_notification] => 1
+							[therm_absence_autoaway] => 
+							[rooms] => Array
+								(
+									[0] => Array
+										(
+											[id] => 825984207
+											[name] => Vorplatz
+											[type] => custom
+											[module_ids] => Array
+												(
+													[0] => xx:xx:xx:xx:xx:xx
+												)
+
+											[modules] => Array
+												(
+													[0] => xx:xx:xx:xx:xx:xx
+												)
+
+										)
+
+								)
+
+							[modules] => Array
+								(
+									[0] => Array
+										(
+											[id] => xx:xx:xx:xx:xx:xx
+											[type] => NOC
+											[name] => Vorplatz
+											[setup_date] => 1559221047
+											[room_id] => 825984207
+											[reachable] => 1
+											[customer_id] => 1000020
+											[use_pincode] => 
+										)
+
+								)
+
+							[NOC] => Array
+								(
+									[record_movements] => never
+									[notify_movements] => never
+									[record_humans] => always
+									[notify_humans] => always
+									[record_animals] => always
+									[notify_animals] => never
+									[record_vehicles] => always
+									[notify_vehicles] => never
+									[notification_begin] => 0
+									[notification_end] => 86340
+									[enable_notification_range] => empty
+								)
+
+							[gone_after] => 14400
+							[share_info] => 1
+							[smart_notifs] => 1
+							[events_ttl] => one_month
+							[dropbox] => Array
+								(
+									[upload_enabled] => 
+									[upload_quality] => h
+									[upload_humans] => 1
+									[upload_vehicles] => 1
+									[upload_animals] => 1
+								)
+
+							[therm_mode] => schedule
+						)
+				)
+		)

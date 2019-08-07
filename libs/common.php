@@ -110,7 +110,7 @@ trait NetatmoSecurityCommon
         $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
-			$this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
+            $this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
             $found = false;
             foreach ($hooks as $index => $hook) {
                 if ($hook['Hook'] == $WebHook) {
@@ -119,13 +119,13 @@ trait NetatmoSecurityCommon
                         $hooks[$index]['TargetID'] = $this->InstanceID;
                     } else {
                         $this->SendDebug(__FUNCTION__, 'already exists', 0);
-					}
+                    }
                     $found = true;
                     break;
                 }
             }
             if (!$found) {
-				$this->SendDebug(__FUNCTION__, 'not found, inserted', 0);
+                $this->SendDebug(__FUNCTION__, 'not found, inserted', 0);
                 $hooks[] = ['Hook' => $WebHook, 'TargetID' => $this->InstanceID];
             }
             IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));

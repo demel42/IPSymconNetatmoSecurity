@@ -21,7 +21,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyBoolean('with_last_contact', false);
         $this->RegisterPropertyBoolean('with_last_event', false);
         $this->RegisterPropertyBoolean('with_last_notification', false);
-		$this->RegisterPropertyBoolean('with_wifi_strength', false);
+        $this->RegisterPropertyBoolean('with_wifi_strength', false);
 
         $this->RegisterPropertyString('hook', '');
 
@@ -157,7 +157,7 @@ class NetatmoSecurityCamera extends IPSModule
             $this->MaintainAction('LightIntensity', true);
         }
 
-		$this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
+        $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_info = $product_id . ' (' . $product_type . ')';
@@ -444,7 +444,7 @@ class NetatmoSecurityCamera extends IPSModule
         $items[] = ['type' => 'CheckBox', 'name' => 'with_last_contact', 'caption' => 'last communication with Netatmo'];
         $items[] = ['type' => 'CheckBox', 'name' => 'with_last_event', 'caption' => 'last event from Netatmo'];
         $items[] = ['type' => 'CheckBox', 'name' => 'with_last_notification', 'caption' => 'last notification from Netatmo'];
-		$items[] = ['type' => 'CheckBox', 'name' => 'with_wifi_strength', 'caption' => 'Strength of wifi-signal'];
+        $items[] = ['type' => 'CheckBox', 'name' => 'with_wifi_strength', 'caption' => 'Strength of wifi-signal'];
         $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'optional data'];
 
         $items = [];
@@ -886,12 +886,12 @@ class NetatmoSecurityCamera extends IPSModule
                         }
                     }
 
-					if ($with_light) {
-						$this->GetLightConfig();
-					}
-					if ($with_wifi_strength) {
-						$this->GetHomeStatus();
-					}
+                    if ($with_light) {
+                        $this->GetLightConfig();
+                    }
+                    if ($with_wifi_strength) {
+                        $this->GetHomeStatus();
+                    }
 
                     break;
                 case 'EVENT':
@@ -1416,7 +1416,7 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
-		$with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
+        $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
         $url = 'https://app.netatmo.net/syncapi/v1/homestatus';
 
@@ -1443,11 +1443,11 @@ class NetatmoSecurityCamera extends IPSModule
                     }
                     $this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
 
-					if ($with_wifi_strength) {
-						$wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
-						$this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
-						$this->SetValue('WifiStrength', $wifi_strength);
-					}
+                    if ($with_wifi_strength) {
+                        $wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
+                        $this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
+                        $this->SetValue('WifiStrength', $wifi_strength);
+                    }
                 }
             }
         }

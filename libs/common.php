@@ -104,35 +104,35 @@ trait NetatmoSecurityCommon
         IPS_SetMediaContent($mediaID, base64_encode($data));
     }
 
-    // Inspired from module SymconTest/HookServe
     private function RegisterHook($WebHook)
     {
         $this->SendDebug(__FUNCTION__, 'WebHook=' . $WebHook, 0);
         $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
+			$this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
             $found = false;
             foreach ($hooks as $index => $hook) {
-                $this->SendDebug(__FUNCTION__, ' ' . $index . ': Hook=' . print_r($hook, true), 0);
                 if ($hook['Hook'] == $WebHook) {
                     if ($hook['TargetID'] != $this->InstanceID) {
+                        $this->SendDebug(__FUNCTION__, 'already exists, but with TargetID ' . $hook['TargetID'] . ', overwrite with ' . $this->InstanceID, 0);
                         $hooks[$index]['TargetID'] = $this->InstanceID;
-                        $this->SendDebug(__FUNCTION__, 'overwrite TargetID with =' . $this->InstanceID, 0);
-                    }
+                    } else {
+                        $this->SendDebug(__FUNCTION__, 'already exists', 0);
+					}
                     $found = true;
                     break;
                 }
             }
             if (!$found) {
+				$this->SendDebug(__FUNCTION__, 'not found, inserted', 0);
                 $hooks[] = ['Hook' => $WebHook, 'TargetID' => $this->InstanceID];
             }
-            $this->SendDebug(__FUNCTION__, 'found=' . $this->bool2str($found), 0);
             IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
             IPS_ApplyChanges($ids[0]);
         }
     }
 
-    // Inspired from module SymconTest/HookServe
     private function GetMimeType($extension)
     {
         $lines = file(IPS_GetKernelDirEx() . 'mime.types');

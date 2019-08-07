@@ -1035,6 +1035,8 @@ class NetatmoSecurityCamera extends IPSModule
                                 $this->SendDebug(__FUNCTION__, 'cur_notification=' . print_r($cur_notification, true), 0);
                                 break;
                             case 'NACamera-alarm_started':
+                            case 'NACamera-connection':
+                            case 'NACamera-disconnection':
                             case 'NACamera-off':
                             case 'NACamera-on':
                             case 'NOC-connection':
@@ -1049,9 +1051,11 @@ class NetatmoSecurityCamera extends IPSModule
                                 $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                                 $message = $this->GetArrayElem($notification, 'message', '');
                                 switch ($push_type) {
+                                    case 'NACamera-connection':
                                     case 'NOC-connection':
                                         $message = $this->Translate('Camera connected');
                                         break;
+                                    case 'NACamera-disconnection':
                                     case 'NOC-disconnection':
                                         $message = $this->Translate('Camera disconnected');
                                         break;

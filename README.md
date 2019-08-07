@@ -503,6 +503,7 @@ GUIDs
 
 - 1.4 @ 04.08.2019 15:40<br>
   - zusätzlicher Debug bei der Einrichtung des WebHook
+  - NACamera-connected & NACamera-disconnected hinzugefügt
 
 - 1.3 @ 04.08.2019 15:40<br>
   - IP-Symcon IP-Adresse und Portnummer als Konfigurationsfeld vorgesehen zur Unterstützung komplexer Netzwerke, z.B. Docker

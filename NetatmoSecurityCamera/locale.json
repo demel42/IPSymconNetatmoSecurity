@@ -19,7 +19,7 @@
 			"Id": "Id",
 
 			"category for persons to be created:": "Kategorie für anzulegende Personen:",
-            "category": "Kategorie",
+			"category": "Kategorie",
 
 			"Module description": "Modulbeschreibung",
 
@@ -27,6 +27,7 @@
 			"last communication with Netatmo": "letzte Kommunikation mit Netatmo",
 			"last event from Netatmo": "letztes Ereignis von Netatmo",
 			"last notification from Netatmo": "letzte Benachrichtigung von Netatmo",
+			"Strength of wifi-signal": "Stärke des Wifi-Signals",
 
 			"Adjustment of the returned HTML code":
 				"Anpassung des zurückgegebenen HTML-Codes",
@@ -72,8 +73,8 @@
 			"SD-Card state": "SD-Karte",
 			"State": "Status",
 
-            "No": "Nein",
-            "Yes": "Ja",
+			"No": "Nein",
+			"Yes": "Ja",
 
 			"unknown": "unbekannt",
 			"off": "aus",
@@ -82,8 +83,10 @@
 			"auto": "automatisch",
 			"ready": "bereit",
 			"unusable": "unbrauchbar",
+			"bad": "schwach",
+			"average": "mittel",
 			"good": "gut",
-			"bad": "schlecht",
+			"high": "hoch",
 
 			"last seen": "zuletzt gesehen",
 			"presence": "Anwesenheit",

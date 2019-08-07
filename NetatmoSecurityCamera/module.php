@@ -21,6 +21,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyBoolean('with_last_contact', false);
         $this->RegisterPropertyBoolean('with_last_event', false);
         $this->RegisterPropertyBoolean('with_last_notification', false);
+		$this->RegisterPropertyBoolean('with_wifi_strength', false);
 
         $this->RegisterPropertyString('hook', '');
 
@@ -88,6 +89,13 @@ class NetatmoSecurityCamera extends IPSModule
         $associations[] = ['Wert' => POWER_STATUS_GOOD, 'Name' => $this->Translate('good'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.PowerStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
+        $associations = [];
+        $associations[] = ['Wert' => 0, 'Name' => $this->wifi_strength2text(0), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => 1, 'Name' => $this->wifi_strength2text(1), 'Farbe' => 0xFFFF00];
+        $associations[] = ['Wert' => 2, 'Name' => $this->wifi_strength2text(2), 'Farbe' => 0x32CD32];
+        $associations[] = ['Wert' => 3, 'Name' => $this->wifi_strength2text(3), 'Farbe' => 0x228B22];
+        $this->CreateVarProfile('NetatmoSecurity.WifiStrength', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, 'Intensity', $associations);
+
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
         $this->RegisterTimer('CleanupPath', 0, 'NetatmoSecurity_doCleanupPath(' . $this->InstanceID . ');');
@@ -109,6 +117,7 @@ class NetatmoSecurityCamera extends IPSModule
         $with_last_contact = $this->ReadPropertyBoolean('with_last_contact');
         $with_last_event = $this->ReadPropertyBoolean('with_last_event');
         $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
+        $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
         $product_type = $this->ReadPropertyString('product_type');
         switch ($product_type) {
@@ -147,6 +156,8 @@ class NetatmoSecurityCamera extends IPSModule
             $this->MaintainAction('LightAction', true);
             $this->MaintainAction('LightIntensity', true);
         }
+
+		$this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_info = $product_id . ' (' . $product_type . ')';
@@ -433,6 +444,7 @@ class NetatmoSecurityCamera extends IPSModule
         $items[] = ['type' => 'CheckBox', 'name' => 'with_last_contact', 'caption' => 'last communication with Netatmo'];
         $items[] = ['type' => 'CheckBox', 'name' => 'with_last_event', 'caption' => 'last event from Netatmo'];
         $items[] = ['type' => 'CheckBox', 'name' => 'with_last_notification', 'caption' => 'last notification from Netatmo'];
+		$items[] = ['type' => 'CheckBox', 'name' => 'with_wifi_strength', 'caption' => 'Strength of wifi-signal'];
         $formElements[] = ['type' => 'ExpansionPanel', 'items' => $items, 'caption' => 'optional data'];
 
         $items = [];
@@ -549,6 +561,7 @@ class NetatmoSecurityCamera extends IPSModule
                 $with_power = false;
                 break;
         }
+        $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
         $event_max_age = $this->ReadPropertyInteger('event_max_age');
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');
@@ -626,7 +639,6 @@ class NetatmoSecurityCamera extends IPSModule
                                             }
                                             $this->SetValue('LightAction', $v);
                                         }
-                                        $this->GetLightConfig();
                                     }
                                 }
                             }
@@ -873,6 +885,14 @@ class NetatmoSecurityCamera extends IPSModule
                             $this->SendDebug(__FUNCTION__, 'url_changed_script=' . IPS_GetName($url_changed_script) . ', ret=' . $r, 0);
                         }
                     }
+
+					if ($with_light) {
+						$this->GetLightConfig();
+					}
+					if ($with_wifi_strength) {
+						$this->GetHomeStatus();
+					}
+
                     break;
                 case 'EVENT':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
@@ -1396,6 +1416,7 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
+		$with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
         $url = 'https://app.netatmo.net/syncapi/v1/homestatus';
 
@@ -1422,8 +1443,11 @@ class NetatmoSecurityCamera extends IPSModule
                     }
                     $this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
 
-                    $wifi_strength = $this->GetArrayElem($module, 'wifi_strength', '');
-                    $this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
+					if ($with_wifi_strength) {
+						$wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
+						$this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
+						$this->SetValue('WifiStrength', $wifi_strength);
+					}
                 }
             }
         }
@@ -2692,5 +2716,74 @@ class NetatmoSecurityCamera extends IPSModule
             $url = $this->GetLocalServerUrl();
         }
         return $url;
+    }
+
+    // Wifi-Strength
+    private function map_wifi_strength($strength)
+    {
+        if ($strength <= 56) {
+            // "high"
+            $val = 3;
+        } elseif ($strength <= 71) {
+            // "good"
+            $val = 2;
+        } elseif ($strength <= 86) {
+            // "average"
+            $val = 1;
+        } else {
+            // "bad"
+            $val = 0;
+        }
+
+        return $val;
+    }
+
+    private function wifi_strength2text($strength)
+    {
+        $strength2txt = [
+            'bad',
+            'average',
+            'good',
+            'high'
+        ];
+
+        if ($strength >= 0 && $strength < count($strength2txt)) {
+            $txt = $this->Translate($strength2txt[$strength]);
+        } else {
+            $txt = '';
+        }
+        return $txt;
+    }
+
+    private function wifi_strength2icon($strength)
+    {
+        $strength2icon = [
+            'wifi_low.png',
+            'wifi_medium.png',
+            'wifi_high.png',
+            'wifi_full.png',
+        ];
+
+        if ($strength >= 0 && $strength < count($strength2icon)) {
+            $img = $strength2icon[$strength];
+        } else {
+            $img = '';
+        }
+        return $img;
+    }
+
+    public function WifiStrength2Icon(string $wifi_strength, bool $asPath)
+    {
+        $img = $this->wifi_strength2icon($wifi_strength);
+        if ($img != false) {
+            $hook = $this->ReadPropertyString('hook');
+            $img = $hook . '/imgs/' . $img;
+        }
+        return $img;
+    }
+
+    public function WifiStrength2Text(string $wifi_strength)
+    {
+        $txt = $this->wifi_strength2text($wifi_strength);
     }
 }

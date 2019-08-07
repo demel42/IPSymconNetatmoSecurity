@@ -194,6 +194,13 @@ Beispiel siehe [docs/buildTimeline.php](docs/buildTimeline.php).
 liefert den zu einem Ereignistyp passende Text.
 
 
+`NetatmoSecurity_WifiStrength2Icon(int $InstanzID, string $event_type, bool $asPath)`<br>
+liefert das Icon zur Wifi-Signalstärke
+
+`NetatmoSecurity_WifiStrength2Text(int $InstanzID, string $event_type)`<br>
+liefert den zur Wifi-Signalstärke passende Text.
+
+
 `NetatmoSecurity_GetTimeline(int $InstanzID, bool $withDeleted)`<br>
 Zusammenfassung aus den Ereignissen und Benachrichtigungen. Es umfasst alle Ereignisse, von den Benachrichtigungen aber nur die, die
 a) bіsher noch nicht zu einem Ereignis wurden
@@ -350,9 +357,10 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | Produkt-ID               | string         |              | ID des Produktes |
 | Heim-ID                  | string         |              | ID des "Heims" |
 |                          |                |              | |
-| letzte Kommunikation     | UNIX-Timestamp | Nein         | letzte Kommunikation mit dem Netatmo-Server |
-| letztes Ereignis         | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
-| letzte Benachrichtigung  | UNIX-Timestamp | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
+| letzte Kommunikation     | boolean        | Nein         | letzte Kommunikation mit dem Netatmo-Server |
+| letztes Ereignis         | boolean        | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
+| letzte Benachrichtigung  | boolean        | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
+| Stärke des Wifi-Signals  | boolean        | Nein         | Ausgabe des Signal in den Abstufungen: _schlecht_, _mittel_, _gut_, _hoch_|
 |                          |                |              | |
 | Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
 |  ... IPS IP-Adresse      | string         |              | DynDNS-Name oder IP des IPS-Servers |
@@ -431,7 +439,7 @@ NetatmoSecurity.PowerStatus
 | video_id          | string         | ja       | |
 | video_status      | string         | ja       | Ausprägungen: recording, available, deleted |
 | person_id         | string         | ja       | |
-| is_arrival        | boolen         | ja       | |
+| is_arrival        | boolean        | ja       | |
 | subevents         | Objekt-Liste   | ja       | Liste der Einzel-Ereignisse |
 |                   |                |          | |
 | event_type        | String-Array   | ja       | Zusammnefassung der _event_typ_ der Sub-Events (nur bei _GetTimeline()_) |
@@ -475,7 +483,7 @@ NetatmoSecurity.PowerStatus
 | Variable     | Datenty        | optional | Bedeutung |
 | :----------- | :------------- | :------- | :-------- |
 | person_id    | string         | nein     | ID der Person |
-| is_known     | boolen         | ja       | Person ist bekannt |
+| is_known     | boolean        | ja       | Person ist bekannt |
 | face_url     | string         | ja       | URL zu dem Abbild der Person |
 
 - _push_type_:
@@ -501,9 +509,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.4 @ 04.08.2019 15:40<br>
+- 1.4 @ 07.08.2019 19:25<br>
   - zusätzlicher Debug bei der Einrichtung des WebHook
   - NACamera-connected & NACamera-disconnected hinzugefügt
+  - opt. Ermittlung der Wifi-Signalstärke
 
 - 1.3 @ 04.08.2019 15:40<br>
   - IP-Symcon IP-Adresse und Portnummer als Konfigurationsfeld vorgesehen zur Unterstützung komplexer Netzwerke, z.B. Docker

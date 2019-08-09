@@ -296,40 +296,40 @@ trait NetatmoSecurityCommon
         return $formStatus;
     }
 
-	private function CheckStatus()
-	{
-		switch ($this->GetStatus()) {
-			case IS_ACTIVE:
-				$class = STATUS_VALID;
-				break;
-			case IS_NODATA:
-			case IS_UNAUTHORIZED:
-			case IS_FORBIDDEN:
-			case IS_SERVERERROR:
-			case IS_HTTPERROR:
-			case IS_INVALIDDATA:
-				$class = STATUS_RETRYABLE;
-				break;
-			default:
-				$class = STATUS_INVALID;
-				break;
-		}
+    private function CheckStatus()
+    {
+        switch ($this->GetStatus()) {
+            case IS_ACTIVE:
+                $class = STATUS_VALID;
+                break;
+            case IS_NODATA:
+            case IS_UNAUTHORIZED:
+            case IS_FORBIDDEN:
+            case IS_SERVERERROR:
+            case IS_HTTPERROR:
+            case IS_INVALIDDATA:
+                $class = STATUS_RETRYABLE;
+                break;
+            default:
+                $class = STATUS_INVALID;
+                break;
+        }
 
-		return $class;
-	}
+        return $class;
+    }
 
-	private function GetStatusText()
-	{
-		$txt = false;
-		$status = $this->GetStatus();
-		$formStatus = $this->GetFormStatus();
-		foreach ($formStatus as $item) {
-			if ($item['code'] == $status) {
-				$txt = $item['caption'];
-				break;
-			}
-		}
+    private function GetStatusText()
+    {
+        $txt = false;
+        $status = $this->GetStatus();
+        $formStatus = $this->GetFormStatus();
+        foreach ($formStatus as $item) {
+            if ($item['code'] == $status) {
+                $txt = $item['caption'];
+                break;
+            }
+        }
 
-		return $txt;
-	}
+        return $txt;
+    }
 }

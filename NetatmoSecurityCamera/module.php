@@ -1093,6 +1093,16 @@ class NetatmoSecurityCamera extends IPSModule
                                     case 'NOC-on':
                                         $message = $this->Translate('Monitoring enabled');
                                         break;
+                                    case 'NOC-ftp':
+                                        switch ($message) {
+                                            case 'ftp-0':
+                                                $message = $this->Translate('Upload successful (FTP)');
+                                                break;
+                                            case 'ftp-3':
+                                                $message = $this->Translate('Network error (FTP)');
+                                                break;
+                                        }
+                                        break;
                                     case 'NACamera-alarm_started':
                                         $message = $this->Translate('Alarm detected');
                                         break;

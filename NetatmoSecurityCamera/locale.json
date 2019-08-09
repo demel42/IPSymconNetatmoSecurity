@@ -105,9 +105,11 @@
 			"Monitoring enabled": "Überwachung aktiviert",
 			"Movement": "Bewegung",
 			"Movement detected": "Bewegung erkannt",
+			"Network error (FTP)": "Netzwerkfehler (FTP)",
 			"Person captured": "Person erfasst",
 			"Person has left the house": "Person hat das Haus verlassen",
 			"Person": "Person",
+			"Upload successful (FTP)": "Upload erfolgreich (FTP)",
 			"Vehicle captured": "Fahrzeug erfasst",
 			"Vehicle": "Fahrzeug",
 

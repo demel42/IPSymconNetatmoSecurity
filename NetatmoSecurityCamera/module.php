@@ -528,12 +528,8 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function ReceiveData($data)
     {
-        if ($this->GetStatus() == IS_INACTIVE) {
-            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
-            return;
-        }
-        if ($this->GetStatus() == IS_INVALIDCONFIG) {
-            $this->SendDebug(__FUNCTION__, 'instance has invalid config, skip', 0);
+        if ($this->CheckStatus() == STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return;
         }
 

@@ -11,6 +11,12 @@ if (!defined('MEDIATYPE_DOCUMENT')) {
     define('MEDIATYPE_DOCUMENT', 5);
 }
 
+if (!defined('STATUS_INVALID')) {
+    define('STATUS_INVALID', 0);
+    define('STATUS_VALID', 1);
+    define('STATUS_RETRYABLE', 2);
+}
+
 if (!defined('IS_NODATA')) {
     define('IS_NODATA', IS_EBASE + 1);
     define('IS_UNAUTHORIZED', IS_EBASE + 2);
@@ -115,18 +121,18 @@ trait NetatmoSecurityCommon
             foreach ($hooks as $index => $hook) {
                 if ($hook['Hook'] == $WebHook) {
                     if ($hook['TargetID'] != $this->InstanceID) {
-                        $this->SendDebug(__FUNCTION__, 'already exists, but with TargetID ' . $hook['TargetID'] . ', overwrite with ' . $this->InstanceID, 0);
+                        $this->SendDebug(__FUNCTION__, 'already exists with foreign TargetID ' . $hook['TargetID'] . ', overwrite with ' . $this->InstanceID, 0);
                         $hooks[$index]['TargetID'] = $this->InstanceID;
                     } else {
-                        $this->SendDebug(__FUNCTION__, 'already exists', 0);
+                        $this->SendDebug(__FUNCTION__, 'already exists with correct TargetID ' . $this->InstanceID, 0);
                     }
                     $found = true;
                     break;
                 }
             }
             if (!$found) {
-                $this->SendDebug(__FUNCTION__, 'not found, inserted', 0);
                 $hooks[] = ['Hook' => $WebHook, 'TargetID' => $this->InstanceID];
+                $this->SendDebug(__FUNCTION__, 'not found, create with TargetID ' . $this->InstanceID, 0);
             }
             IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
             IPS_ApplyChanges($ids[0]);
@@ -289,4 +295,41 @@ trait NetatmoSecurityCommon
 
         return $formStatus;
     }
+
+	private function CheckStatus()
+	{
+		switch ($this->GetStatus()) {
+			case IS_ACTIVE:
+				$class = STATUS_VALID;
+				break;
+			case IS_NODATA:
+			case IS_UNAUTHORIZED:
+			case IS_FORBIDDEN:
+			case IS_SERVERERROR:
+			case IS_HTTPERROR:
+			case IS_INVALIDDATA:
+				$class = STATUS_RETRYABLE;
+				break;
+			default:
+				$class = STATUS_INVALID;
+				break;
+		}
+
+		return $class;
+	}
+
+	private function GetStatusText()
+	{
+		$txt = false;
+		$status = $this->GetStatus();
+		$formStatus = $this->GetFormStatus();
+		foreach ($formStatus as $item) {
+			if ($item['code'] == $status) {
+				$txt = $item['caption'];
+				break;
+			}
+		}
+
+		return $txt;
+	}
 }

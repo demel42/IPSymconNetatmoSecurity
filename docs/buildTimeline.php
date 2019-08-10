@@ -133,6 +133,10 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
         if ($item['event_type'] == 'movement' && $event_id == '') {
             continue;
         }
+        // Abschalten der Kamera-Aktivität ist sowohl Notification als auch Event
+        if (in_array($item['push_type'], ['NOC-off', 'NACamera-off'])) {
+            continue;
+        }
     }
 
     $dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));

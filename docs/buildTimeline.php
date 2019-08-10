@@ -128,15 +128,14 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     $event_id = $item['id'];
     $tstamp = $item['tstamp'];
 
-    if (isset($item['push_type']) && isset($item['event_type'])) {
-        // 'Bewegung erkannt' aber ohne das ein Ereignis draus wird
-        if ($item['event_type'] == 'movement' && $event_id == '') {
-            continue;
-        }
-        // Abschalten der Kamera-Aktivität ist sowohl Notification als auch Event
-        if (in_array($item['push_type'], ['NOC-off', 'NACamera-off'])) {
-            continue;
-        }
+    // 'Bewegung erkannt' aber ohne das ein Ereignis draus wird
+    if (isset($item['event_type']) && $item['event_type'] == 'movement' && $event_id == '') {
+        continue;
+    }
+
+    // Abschalten der Kamera-Aktivität ist sowohl Notification als auch Event
+    if (isset($item['push_type']) && in_array($item['push_type'], ['NOC-off', 'NACamera-off'])) {
+        continue;
     }
 
     $dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));

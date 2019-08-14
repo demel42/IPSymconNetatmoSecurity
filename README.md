@@ -1,7 +1,7 @@
 # IPSymconNetatmoSecurity
 
 [![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.0+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-![Module-Version](https://img.shields.io/badge/Modul_Version-1.4-blue.svg)
+![Module-Version](https://img.shields.io/badge/Modul_Version-1.5-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![StyleCI](https://github.styleci.io/repos/192195342/shield?branch=master)](https://github.styleci.io/repos/192195342)
@@ -508,6 +508,10 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.5 @ 14.08.2019 12:56<br>
+  - push_type "alert" ignorieren
+  - Ermittlung der Variable "Status" bezieht nun Kamerさ-, SD-Karten- und Stromversorgungsstatus mit ein
 
 - 1.4 @ 09.08.2019 14:32<br>
   - zusätzlicher Debug bei der Einrichtung des WebHook

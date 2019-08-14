@@ -563,9 +563,9 @@ class NetatmoSecurityCamera extends IPSModule
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');
 
         $now = time();
-		$camera_ok = true;
-		$sd_ok = true;
-		$power_ok = true;
+        $camera_ok = true;
+        $sd_ok = true;
+        $power_ok = true;
 
         $this->SendDebug(__FUNCTION__, 'source=' . $source, 0);
 
@@ -606,9 +606,9 @@ class NetatmoSecurityCamera extends IPSModule
 
                                     $camera_status = $this->map_camera_status($this->GetArrayElem($camera, 'status', ''));
                                     if (is_int($camera_status)) {
-										if ($camera_status != CAMERA_STATUS_ON && $camera_status != CAMERA_STATUS_OFF) {
-											$camera_ok = false;
-										}
+                                        if ($camera_status != CAMERA_STATUS_ON && $camera_status != CAMERA_STATUS_OFF) {
+                                            $camera_ok = false;
+                                        }
                                         $this->SetValue('CameraStatus', $camera_status);
                                         if ($camera_status == CAMERA_STATUS_ON) {
                                             $v = CAMERA_STATUS_OFF;
@@ -620,18 +620,18 @@ class NetatmoSecurityCamera extends IPSModule
 
                                     $sd_status = $this->map_sd_status($this->GetArrayElem($camera, 'sd_status', ''));
                                     if (is_int($sd_status)) {
-										if ($sd_status != SDCARD_STATUS_READY) {
-											$sd_ok = false;
-										}
+                                        if ($sd_status != SDCARD_STATUS_READY) {
+                                            $sd_ok = false;
+                                        }
                                         $this->SetValue('SDCardStatus', $sd_status);
                                     }
 
                                     if ($with_power) {
                                         $power_status = $this->map_power_status($this->GetArrayElem($camera, 'alim_status', ''));
                                         if (is_int($power_status)) {
-											if ($power_status != POWER_STATUS_GOOD) {
-												$power_ok = false;
-											}
+                                            if ($power_status != POWER_STATUS_GOOD) {
+                                                $power_ok = false;
+                                            }
                                             $this->SetValue('PowerStatus', $power_status);
                                         }
                                     }
@@ -866,8 +866,8 @@ class NetatmoSecurityCamera extends IPSModule
                     }
 
                     $system_ok = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
-					$status  = $system_ok && $camera_ok && $sd_ok && $power_ok;
-					$this->SendDebug(__FUNCTION__, 'states: system=' . $this->bool2str($system_ok) . ', camera=' . $this->bool2str($camera_ok) . ', sd=' . $this->bool2str($sd_ok) . ', power=' . $this->bool2str($power_ok) . ' => ' . $this->bool2str($status), 0);
+                    $status = $system_ok && $camera_ok && $sd_ok && $power_ok;
+                    $this->SendDebug(__FUNCTION__, 'states: system=' . $this->bool2str($system_ok) . ', camera=' . $this->bool2str($camera_ok) . ', sd=' . $this->bool2str($sd_ok) . ', power=' . $this->bool2str($power_ok) . ' => ' . $this->bool2str($status), 0);
                     $this->SetValue('Status', $status);
 
                     $with_last_contact = $this->ReadPropertyBoolean('with_last_contact');

@@ -129,8 +129,10 @@ class NetatmoSecurityIO extends IPSModule
         $formActions = [];
         $formActions[] = ['type' => 'Button', 'label' => 'Update data', 'onClick' => 'NetatmoSecurity_UpdateData($id);'];
         $formActions[] = ['type' => 'Button', 'label' => 'Register Webhook', 'onClick' => 'NetatmoSecurity_AddWebhook($id);'];
-        $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
-        $formActions[] = ['type' => 'Button', 'label' => 'Module description', 'onClick' => 'echo \'https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md\';'];
+		if (IPS_GetKernelVersion() < 5.2) {
+			$formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
+			$formActions[] = ['type' => 'Button', 'label' => 'Module description', 'onClick' => 'echo \'https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md\';'];
+		}
 
         $formStatus = $this->GetFormStatus();
 

@@ -7,5 +7,6 @@
 	"parentRequirements": [],
 	"childRequirements": ["{5F947426-53FB-4DD9-A725-F95590CBD97C}"],
 	"implemented": ["{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}"],
-	"prefix": "NetatmoSecurity"
+	"prefix": "NetatmoSecurity",
+	"url": "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md"
 }

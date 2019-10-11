@@ -139,7 +139,7 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     }
 
     $dt = new DateTime(date('d.m.Y 00:00:00', $tstamp));
-    $ts = $dt->format('U');
+    $ts = (int) $dt->format('U');
     if ($cur_date != $ts) {
         if ($cur_date != 0) {
             $html .= '<tr>' . PHP_EOL;

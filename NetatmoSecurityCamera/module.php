@@ -273,7 +273,7 @@ class NetatmoSecurityCamera extends IPSModule
         if ($timelapse_path != '' && $timelapse_hour >= 0 && $timelapse_hour < 24) {
             $fmt = sprintf('d.m.Y 00:%02d:01', $timelapse_hour);
             $dt = new DateTime(date($fmt, time() + (24 * 60 * 60)));
-            $ts = $dt->format('U');
+            $ts = (int) $dt->format('U');
             $msec = ($ts - time()) * 1000;
             $this->SetTimerInterval('LoadTimelapse', $msec);
             $this->SendDebug(__FUNCTION__, 'LoadTimelapse=' . date('d.m.Y H:i:s', $ts) . ', msec=' . $msec, 0);
@@ -283,7 +283,7 @@ class NetatmoSecurityCamera extends IPSModule
         $timelapse_max_age = $this->ReadPropertyInteger('timelapse_max_age');
         if ($video_max_age > 0 || $timelapse_max_age > 0) {
             $dt = new DateTime(date('d.m.Y 00:30:00', time() + (24 * 60 * 60)));
-            $ts = $dt->format('U');
+            $ts = (int) $dt->format('U');
             $msec = ($ts - time()) * 1000;
             $this->SetTimerInterval('CleanupPath', $msec);
             $this->SendDebug(__FUNCTION__, 'CleanupPath=' . date('d.m.Y H:i:s', $ts) . ', msec=' . $msec, 0);
@@ -2586,7 +2586,7 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $dt = new DateTime(date('d.m.Y 00:00:00', time()));
-        $now = $dt->format('U');
+        $now = (int) $dt->format('U');
 
         if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
             $path = IPS_GetKernelDir() . $path;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 
 class NetatmoSecurityConfig extends IPSModule
@@ -53,26 +55,26 @@ class NetatmoSecurityConfig extends IPSModule
         }
 
         $create = [
-                    'moduleID'       => $guid,
-                    'location'       => $this->SetLocation(),
-                    'configuration'  => [
-                            'product_type' => $product_type,
-                            'product_id'   => $product_id,
-                            'home_id'      => $home_id,
-                        ]
-                    ];
+            'moduleID'       => $guid,
+            'location'       => $this->SetLocation(),
+            'configuration'  => [
+                'product_type' => $product_type,
+                'product_id'   => $product_id,
+                'home_id'      => $home_id,
+            ]
+        ];
         if (IPS_GetKernelVersion() >= 5.1) {
             $create['info'] = $home_name . '\\' . $product_name;
         }
 
         $entry = [
-                'category'   => $this->Translate($product_category),
-                'home'       => $home_name,
-                'name'       => $product_name,
-                'product_id' => $product_id,
-                'instanceID' => $instID,
-                'create'     => $create,
-            ];
+            'category'   => $this->Translate($product_category),
+            'home'       => $home_name,
+            'name'       => $product_name,
+            'product_id' => $product_id,
+            'instanceID' => $instID,
+            'create'     => $create,
+        ];
 
         return $entry;
     }
@@ -196,10 +198,10 @@ class NetatmoSecurityConfig extends IPSModule
         $formActions = [];
         if (IPS_GetKernelVersion() < 5.2) {
             $formActions[] = [
-                                'type'    => 'Button',
-                                'caption' => 'Module description',
-                                'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
-                            ];
+                'type'    => 'Button',
+                'caption' => 'Module description',
+                'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
+            ];
         }
 
         $formStatus = $this->GetFormStatus();

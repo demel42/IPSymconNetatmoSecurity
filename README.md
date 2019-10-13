@@ -4,7 +4,6 @@
 ![Module-Version](https://img.shields.io/badge/Modul_Version-1.6-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![StyleCI](https://github.styleci.io/repos/192195342/shield?branch=master)](https://github.styleci.io/repos/192195342)
 
 ## Dokumentation
 
@@ -509,10 +508,12 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.6 @ 29.09.2019 12:20<br>
+- 1.6 @ 13.10.2019 13:18<br>
   - Anpassungen an IPS 5.2
     - IPS_SetVariableProfileValues(), IPS_SetVariableProfileDigits() nur bei INTEGER, FLOAT
     - Dokumentation-URL in module.json
+  - Umstellung auf strict_types=1
+  - Umstellung von StyleCI auf php-cs-fixer
 
 - 1.5 @ 14.08.2019 12:56<br>
   - push_type "alert" ignorieren

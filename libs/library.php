@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 if (!defined('CAMERA_STATUS_UNDEFINED')) {
     define('CAMERA_STATUS_UNDEFINED', -1);
     define('CAMERA_STATUS_OFF', 0);

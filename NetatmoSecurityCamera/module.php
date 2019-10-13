@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
@@ -239,7 +241,7 @@ class NetatmoSecurityCamera extends IPSModule
         $dataFilter = '.*id[^:]*:["]*' . $product_id . '.*';
         $this->SendDebug(__FUNCTION__, 'set ReceiveDataFilter=' . $dataFilter, 0);
         $this->SetReceiveDataFilter($dataFilter);
-        */
+         */
 
         $this->SetStatus(IS_ACTIVE);
 
@@ -348,25 +350,25 @@ class NetatmoSecurityCamera extends IPSModule
                             }
 
                             $create = [
-                                        'moduleID'       => $guid,
-                                        'location'       => $this->SetLocation(),
-                                        'configuration'  => [
-                                                'pseudo'     => $pseudo,
-                                                'person_id'  => $person_id,
-                                                'home_id'    => $home_id,
-                                            ]
-                                        ];
+                                'moduleID'       => $guid,
+                                'location'       => $this->SetLocation(),
+                                'configuration'  => [
+                                    'pseudo'     => $pseudo,
+                                    'person_id'  => $person_id,
+                                    'home_id'    => $home_id,
+                                ]
+                            ];
                             if (IPS_GetKernelVersion() >= 5.1) {
                                 $create['info'] = $home_name . '\\' . $pseudo;
                             }
 
                             $entry = [
-                                    'home'       => $home_name,
-                                    'name'       => $pseudo,
-                                    'person_id'  => $person_id,
-                                    'instanceID' => $instID,
-                                    'create'     => $create,
-                                ];
+                                'home'       => $home_name,
+                                'name'       => $pseudo,
+                                'person_id'  => $person_id,
+                                'instanceID' => $instID,
+                                'create'     => $create,
+                            ];
                             $entries[] = $entry;
                         }
                     }
@@ -503,10 +505,10 @@ class NetatmoSecurityCamera extends IPSModule
         $formActions = [];
         if (IPS_GetKernelVersion() < 5.2) {
             $formActions[] = [
-                                'type'    => 'Button',
-                                'caption' => 'Module description',
-                                'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
-                            ];
+                'type'    => 'Button',
+                'caption' => 'Module description',
+                'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
+            ];
         }
 
         return $formActions;
@@ -599,7 +601,7 @@ class NetatmoSecurityCamera extends IPSModule
                                         $this->SetBuffer('local_url', '');
                                     }
 
-                                    $is_local = $this->GetArrayElem($camera, 'is_local', false);
+                                    $is_local = (bool) $this->GetArrayElem($camera, 'is_local', false);
                                     if ($is_local != $this->GetBuffer('is_local')) {
                                         $url_changed = true;
                                         $this->SetBuffer('is_local', $is_local);
@@ -680,9 +682,9 @@ class NetatmoSecurityCamera extends IPSModule
                             }
 
                             $new_event = [
-                                    'tstamp'      => $tstamp,
-                                    'id'          => $id,
-                                ];
+                                'tstamp'      => $tstamp,
+                                'id'          => $id,
+                            ];
 
                             $video_id = $this->GetArrayElem($event, 'video_id', '');
                             if ($video_id != '') {
@@ -754,11 +756,11 @@ class NetatmoSecurityCamera extends IPSModule
                                     $message = $this->GetArrayElem($subevent, 'message', '');
 
                                     $new_subevent = [
-                                            'id'         => $id,
-                                            'tstamp'     => $ts,
-                                            'event_type' => $type,
-                                            'message'    => $message,
-                                        ];
+                                        'id'         => $id,
+                                        'tstamp'     => $ts,
+                                        'event_type' => $type,
+                                        'message'    => $message,
+                                    ];
 
                                     $snapshot_id = $this->GetArrayElem($subevent, 'snapshot.id', '');
                                     $snapshot_key = $this->GetArrayElem($subevent, 'snapshot.key', '');
@@ -882,9 +884,9 @@ class NetatmoSecurityCamera extends IPSModule
                         $new_event_script = $this->ReadPropertyInteger('new_event_script');
                         if ($new_event_script > 0) {
                             $opts = [
-                                    'InstanceID'  => $this->InstanceID,
-                                    'new_events'  => json_encode($new_events)
-                                ];
+                                'InstanceID'  => $this->InstanceID,
+                                'new_events'  => json_encode($new_events)
+                            ];
                             $r = IPS_RunScriptWaitEx($new_event_script, $opts);
                             $this->SendDebug(__FUNCTION__, 'new_event_script=' . IPS_GetName($new_event_script) . ', ret=' . $r, 0);
                         }
@@ -957,13 +959,13 @@ class NetatmoSecurityCamera extends IPSModule
                                 $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
 
                                 $cur_notification = [
-                                        'tstamp'       => $now,
-                                        'id'           => $event_id,
-                                        'push_type'    => $push_type,
-                                        'event_type'   => $event_type,
-                                        'message'      => $message,
-                                        'subevent_id'  => $subevent_id,
-                                    ];
+                                    'tstamp'       => $now,
+                                    'id'           => $event_id,
+                                    'push_type'    => $push_type,
+                                    'event_type'   => $event_type,
+                                    'message'      => $message,
+                                    'subevent_id'  => $subevent_id,
+                                ];
 
                                 $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
@@ -1009,12 +1011,12 @@ class NetatmoSecurityCamera extends IPSModule
                                 $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
 
                                 $cur_notification = [
-                                        'tstamp'       => $now,
-                                        'id'           => $event_id,
-                                        'push_type'    => $push_type,
-                                        'event_type'   => $event_type,
-                                        'message'      => $message,
-                                    ];
+                                    'tstamp'       => $now,
+                                    'id'           => $event_id,
+                                    'push_type'    => $push_type,
+                                    'event_type'   => $event_type,
+                                    'message'      => $message,
+                                ];
 
                                 $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
@@ -1040,8 +1042,8 @@ class NetatmoSecurityCamera extends IPSModule
                                     foreach ($persons as $person) {
                                         $person_id = $this->GetArrayElem($person, 'id', '');
                                         $cur_person = [
-                                                'person_id' => $person_id,
-                                            ];
+                                            'person_id' => $person_id,
+                                        ];
 
                                         $is_known = $this->GetArrayElem($person, 'is_known', '');
                                         if ($is_known != '') {
@@ -1128,12 +1130,12 @@ class NetatmoSecurityCamera extends IPSModule
                                 $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
 
                                 $cur_notification = [
-                                        'tstamp'       => $now,
-                                        'id'           => $id,
-                                        'push_type'    => $push_type,
-                                        'event_type'   => $event_type,
-                                        'message'      => $message,
-                                    ];
+                                    'tstamp'       => $now,
+                                    'id'           => $id,
+                                    'push_type'    => $push_type,
+                                    'event_type'   => $event_type,
+                                    'message'      => $message,
+                                ];
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
 
@@ -1174,9 +1176,9 @@ class NetatmoSecurityCamera extends IPSModule
                         $notify_script = $this->ReadPropertyInteger('notify_script');
                         if ($notify_script > 0) {
                             $opts = [
-                                    'InstanceID'        => $this->InstanceID,
-                                    'new_notifications' => json_encode($new_notifications)
-                                ];
+                                'InstanceID'        => $this->InstanceID,
+                                'new_notifications' => json_encode($new_notifications)
+                            ];
                             $r = IPS_RunScriptWaitEx($notify_script, $opts);
                             $this->SendDebug(__FUNCTION__, 'notify_script=' . IPS_GetName($notify_script) . ', ret=' . $r, 0);
                         }
@@ -1280,7 +1282,7 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $intensity = intval($intensity);
-        if ($intensity > 100 or $intensity < 0) {
+        if ($intensity > 100 || $intensity < 0) {
             $err = 'linght-intensity range from 0 to 100';
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
@@ -1407,10 +1409,10 @@ class NetatmoSecurityCamera extends IPSModule
         $url = 'https://api.netatmo.com/api/deleteevent';
 
         $postdata = [
-                'home_id'   => $home_id,
-                'camera_id' => $product_id,
-                'event_id'  => $event_id,
-            ];
+            'home_id'   => $home_id,
+            'camera_id' => $product_id,
+            'event_id'  => $event_id,
+        ];
         $pdata = json_encode($postdata);
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
@@ -1444,9 +1446,9 @@ class NetatmoSecurityCamera extends IPSModule
         $url = 'https://app.netatmo.net/syncapi/v1/homestatus';
 
         $postdata = [
-                'home_id'       => $home_id,
-                'gateway_types' => ['NACamera', 'NOC', 'NSD', 'NDB'],
-            ];
+            'home_id'       => $home_id,
+            'gateway_types' => ['NACamera', 'NOC', 'NSD', 'NDB'],
+        ];
         $pdata = json_encode($postdata);
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
@@ -1484,9 +1486,9 @@ class NetatmoSecurityCamera extends IPSModule
         $url = 'https://app.netatmo.net/api/homesdata';
 
         $postdata = [
-                'home_id'       => $home_id,
-                'gateway_types' => ['NACamera', 'NOC', 'NSD', 'NDB'],
-            ];
+            'home_id'       => $home_id,
+            'gateway_types' => ['NACamera', 'NOC', 'NSD', 'NDB'],
+        ];
         $pdata = json_encode($postdata);
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
@@ -2157,12 +2159,12 @@ class NetatmoSecurityCamera extends IPSModule
 
         $mode = isset($_GET['result']) ? $_GET['result'] : 'html';
         $opts = [
-                'InstanceID'  => $this->InstanceID,
-                'command'     => $command,
-                'preferLocal' => $preferLocal,
-                '_SERVER'     => json_encode($_SERVER),
-                '_GET'        => json_encode($_GET),
-            ];
+            'InstanceID'  => $this->InstanceID,
+            'command'     => $command,
+            'preferLocal' => $preferLocal,
+            '_SERVER'     => json_encode($_SERVER),
+            '_GET'        => json_encode($_GET),
+        ];
 
         $url = false;
         $alternate_url = false;
@@ -2665,17 +2667,17 @@ class NetatmoSecurityCamera extends IPSModule
     private function event_type2icon($val)
     {
         $val2icon = [
-                'human'         => 'human.png',
-                'animal'        => 'animal.png',
-                'vehicle'       => 'car.png',
-                'movement'      => 'movements.png',
-                'person'        => 'human.png',
-                'on'            => 'on_icon.png',
-                'off'           => 'off_icon.png',
-                'alarm_started' => 'alarm_started.png',
-                'person_away'   => 'home_away.png',
-                'light_mode'    => 'light.png'
-            ];
+            'human'         => 'human.png',
+            'animal'        => 'animal.png',
+            'vehicle'       => 'car.png',
+            'movement'      => 'movements.png',
+            'person'        => 'human.png',
+            'on'            => 'on_icon.png',
+            'off'           => 'off_icon.png',
+            'alarm_started' => 'alarm_started.png',
+            'person_away'   => 'home_away.png',
+            'light_mode'    => 'light.png'
+        ];
 
         if (isset($val2icon[$val])) {
             $img = $val2icon[$val];
@@ -2688,17 +2690,17 @@ class NetatmoSecurityCamera extends IPSModule
     private function event_type2text($val)
     {
         $val2txt = [
-                'human'         => 'Human',
-                'animal'        => 'Animal',
-                'vehicle'       => 'Vehicle',
-                'movement'      => 'Movement',
-                'person'        => 'Person',
-                'on'            => 'Monitoring enabled',
-                'off'           => 'Monitoring disabled',
-                'alarm_started' => 'Alarm detected',
-                'person_away'   => 'Person has left the house',
-                'light_mode'    => 'Light'
-            ];
+            'human'         => 'Human',
+            'animal'        => 'Animal',
+            'vehicle'       => 'Vehicle',
+            'movement'      => 'Movement',
+            'person'        => 'Person',
+            'on'            => 'Monitoring enabled',
+            'off'           => 'Monitoring disabled',
+            'alarm_started' => 'Alarm detected',
+            'person_away'   => 'Person has left the house',
+            'light_mode'    => 'Light'
+        ];
 
         if (isset($val2txt[$val])) {
             $txt = $this->Translate($val2txt[$val]);

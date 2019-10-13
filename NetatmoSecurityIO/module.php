@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
 
@@ -219,20 +221,20 @@ class NetatmoSecurityIO extends IPSModule
             }
             if ($refresh_token == '') {
                 $postdata = [
-                        'grant_type'    => 'password',
-                        'client_id'     => $client,
-                        'client_secret' => $secret,
-                        'username'      => $user,
-                        'password'      => $password,
-                        'scope'         => 'read_presence write_presence access_presence read_camera write_camera access_camera read_smokedetector'
-                    ];
+                    'grant_type'    => 'password',
+                    'client_id'     => $client,
+                    'client_secret' => $secret,
+                    'username'      => $user,
+                    'password'      => $password,
+                    'scope'         => 'read_presence write_presence access_presence read_camera write_camera access_camera read_smokedetector'
+                ];
             } else {
                 $postdata = [
-                        'grant_type'    => 'refresh_token',
-                        'client_id'     => $client,
-                        'client_secret' => $secret,
-                        'refresh_token' => $refresh_token
-                    ];
+                    'grant_type'    => 'refresh_token',
+                    'client_id'     => $client,
+                    'client_secret' => $secret,
+                    'refresh_token' => $refresh_token
+                ];
             }
 
             $data = '';
@@ -260,9 +262,9 @@ class NetatmoSecurityIO extends IPSModule
             $expiration = time() + $expires_in - 60;
             $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
             $jtoken = [
-                    'access_token' => $access_token,
-                    'expiration'   => $expiration,
-                ];
+                'access_token' => $access_token,
+                'expiration'   => $expiration,
+            ];
             $this->SetBuffer('ApiToken', json_encode($jtoken));
 
             if (isset($params['refresh_token'])) {
@@ -272,8 +274,8 @@ class NetatmoSecurityIO extends IPSModule
                     $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
                 } else {
                     $jtoken = [
-                            'refresh_token' => $refresh_token,
-                        ];
+                        'refresh_token' => $refresh_token,
+                    ];
                     $this->SetBuffer('ApiRefreshToken', json_encode($jtoken));
                 }
             }
@@ -307,21 +309,21 @@ class NetatmoSecurityIO extends IPSModule
             }
             $auth = 'QXV0aG9yaXphdGlvbjogQmFzaWMgYm1GZlkyeHBaVzUwWDJsdmN6bzFObU5qTmpSaU56azBOak5oT1RrMU9HSTNOREF4TkRjeVpEbGxNREUxT0E9PQ==';
             $header = [
-                    base64_decode($auth)
-                ];
+                base64_decode($auth)
+            ];
             if ($refresh_token == '') {
                 $postdata = [
-                        'grant_type'     => 'password',
-                        'username'       => $user,
-                        'password'       => $password,
-                        'scope'          => 'write_camera read_camera access_camera read_presence write_presence access_presence read_station read_smokedetector',
-                        'app_identifier' => 'com.netatmo.camera',
-                    ];
+                    'grant_type'     => 'password',
+                    'username'       => $user,
+                    'password'       => $password,
+                    'scope'          => 'write_camera read_camera access_camera read_presence write_presence access_presence read_station read_smokedetector',
+                    'app_identifier' => 'com.netatmo.camera',
+                ];
             } else {
                 $postdata = [
-                        'grant_type'    => 'refresh_token',
-                        'refresh_token' => $refresh_token
-                    ];
+                    'grant_type'    => 'refresh_token',
+                    'refresh_token' => $refresh_token
+                ];
             }
 
             $data = '';
@@ -348,9 +350,9 @@ class NetatmoSecurityIO extends IPSModule
             $expiration = time() + $expires_in - 60;
             $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
             $jtoken = [
-                    'access_token'  => $access_token,
-                    'expiration'    => $expiration,
-                ];
+                'access_token'  => $access_token,
+                'expiration'    => $expiration,
+            ];
             $this->SetBuffer('AppToken', json_encode($jtoken));
 
             if (isset($params['refresh_token'])) {
@@ -360,8 +362,8 @@ class NetatmoSecurityIO extends IPSModule
                     $this->WriteAttributeString('AppRefreshToken', $refresh_token);
                 } else {
                     $jtoken = [
-                            'refresh_token' => $refresh_token,
-                        ];
+                        'refresh_token' => $refresh_token,
+                    ];
                     $this->SetBuffer('AppRefreshToken', json_encode($jtoken));
                 }
             }
@@ -629,11 +631,11 @@ class NetatmoSecurityIO extends IPSModule
         }
 
         $header = [
-                'Accept: application/json; charset=utf-8',
-                'Authorization: Bearer ' . $access_token,
-                'Content-Type: application/json;charset=utf-8',
-                'Content-Length: ' . strlen($postdata),
-            ];
+            'Accept: application/json; charset=utf-8',
+            'Authorization: Bearer ' . $access_token,
+            'Content-Type: application/json;charset=utf-8',
+            'Content-Length: ' . strlen($postdata),
+        ];
 
         $data = '';
         $err = '';

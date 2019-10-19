@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // String-Variable mit Profil "~HTML-Box"
 $varID = 1234;
 

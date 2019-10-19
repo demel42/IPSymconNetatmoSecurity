@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * Problem: bei Netatmo kann man nur für alle Kameras einstellen, wann benachrichtigt/aufgenommen werden soll.
  * Wenn man auf der Straßenseite ggfs. Fahrzeuge aufnehmen möchte, würde aber z.B. im Garten ein Rasenmährobotor

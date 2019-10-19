@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // Author:    Christopher Wansing
 // Created:   13.07.19
 // Modified:  21.07.19

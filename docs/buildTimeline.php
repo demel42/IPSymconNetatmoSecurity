@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // Einrichtung:
 // String-Variable mit Profil "~HTML-Box" anlegen, VariablenID weitern unter eintragen
 //
@@ -12,7 +14,7 @@
 // HTML-Box
 $varID = xxxx;
 
-/* Einstellungen ************************************/
+/* Einstellungen */
 
 // max. Benachrichtigungen (vertikal)
 $max_lines = 20;
@@ -41,7 +43,7 @@ $vignette_height = 60;
 $icon_width = 40;
 $icon_height = 40;
 
-/****************************************************/
+/**/
 
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
 IPS_LogMessage($scriptName, '_IPS=' . print_r($_IPS, true));
@@ -51,7 +53,7 @@ $instID = $_IPS['InstanceID'];
 $base_url = NetatmoSecurity_GetServerUrl($instID);
 IPS_LogMessage($scriptName, 'base_url=' . $base_url);
 
-/* Löschen unerwünschter Events *********************/
+/* Löschen unerwünschter Events */
 
 /*
 $events = json_decode($_IPS['new_events'], true);
@@ -74,9 +76,9 @@ foreach ($events as $event) {
         IPS_LogMessage($scriptName, 'delete event ' . $event_id . ' => ' . ($r ? 'ok' : 'fail'));
     }
 }
-*/
+ */
 
-/****************************************************/
+/**/
 
 // Auslesen der Timelines aller aktiven Kameras
 $timeline = '';
@@ -90,7 +92,7 @@ foreach ($instIDs as $instID) {
 }
 $timeline = json_decode($timeline, true);
 
-/****************************************************/
+/**/
 
 $html = '';
 

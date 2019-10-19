@@ -43,8 +43,6 @@ $vignette_height = 60;
 $icon_width = 40;
 $icon_height = 40;
 
-/**/
-
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
 IPS_LogMessage($scriptName, '_IPS=' . print_r($_IPS, true));
 
@@ -78,8 +76,6 @@ foreach ($events as $event) {
 }
  */
 
-/**/
-
 // Auslesen der Timelines aller aktiven Kameras
 $timeline = '';
 $instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}');
@@ -91,8 +87,6 @@ foreach ($instIDs as $instID) {
     $timeline = NetatmoSecurity_MergeTimeline($instID, $timeline, $data, $instID);
 }
 $timeline = json_decode($timeline, true);
-
-/**/
 
 $html = '';
 

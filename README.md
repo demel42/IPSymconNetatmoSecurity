@@ -517,7 +517,7 @@ GUIDs
 
 - 1.5 @ 14.08.2019 12:56<br>
   - push_type "alert" ignorieren
-  - Ermittlung der Variable "Status" bezieht nun Kamerさ-, SD-Karten- und Stromversorgungsstatus mit ein
+  - Ermittlung der Variable "Status" bezieht nun Kamera-, SD-Karten- und Stromversorgungsstatus mit ein
 
 - 1.4 @ 09.08.2019 14:32<br>
   - zusätzlicher Debug bei der Einrichtung des WebHook

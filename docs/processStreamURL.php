@@ -34,7 +34,7 @@ $GET = json_decode($_IPS['_GET'], true);
 // IPS_LogMessage($scriptName, 'GET=' . print_r($GET, true));
 
 // URL's ausleѕen
-$url = $_IPS['url'];
+$url = (string) $_IPS['url'];
 $posterURL = isset($_IPS['alternate_url']) ? $_IPS['alternate_url'] : '';
 
 // URL-GET-Parameter parsen

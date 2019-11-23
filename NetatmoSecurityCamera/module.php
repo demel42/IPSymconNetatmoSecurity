@@ -165,64 +165,64 @@ class NetatmoSecurityCamera extends IPSModule
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 
-        $timelapse_path = $this->ReadPropertyString('timelapse_path');
-        if ($timelapse_path != '') {
-            $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
-            if ($timelapse_hour < -1 || $timelapse_hour > 23) {
-                $this->SendDebug(__FUNCTION__, 'invalid \'timelapse_hour\' "' . $timelapse_hour . '"', 0);
-                $this->SetStatus(IS_INVALIDCONFIG);
-                return;
-            }
-        }
-
-        $ipsIP = $this->ReadPropertyString('ipsIP');
-        if ($ipsIP != '') {
-            if ($this->deternmineIp($ipsIP) == false) {
-                $this->SendDebug(__FUNCTION__, 'invalid \'ipsIP\' "' . $ipsIP . '"', 0);
-                $this->SetStatus(IS_INVALIDCONFIG);
-                return;
-            }
-        }
-
-        $externalIP = $this->ReadPropertyString('externalIP');
-        if ($externalIP != '') {
-            if ($this->deternmineIp($externalIP) == false) {
-                $this->SendDebug(__FUNCTION__, 'invalid \'externalIPˇ\' "' . $externalIP . '"', 0);
-                $this->SetStatus(IS_INVALIDCONFIG);
-                return;
-            }
-        }
-
-        $localCIDRs = $this->ReadPropertyString('localCIDRs');
-        if ($localCIDRs != '') {
-            $ok = true;
-            $cidrs = explode(';', $localCIDRs);
-            foreach ($cidrs as $cidr) {
-                list($net, $mask) = explode('/', $cidr);
-                if (ip2long($net) == false) {
-                    $ok = false;
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+            $timelapse_path = $this->ReadPropertyString('timelapse_path');
+            if ($timelapse_path != '') {
+                $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
+                if ($timelapse_hour < -1 || $timelapse_hour > 23) {
+                    $this->SendDebug(__FUNCTION__, 'invalid \'timelapse_hour\' "' . $timelapse_hour . '"', 0);
+                    $this->SetStatus(IS_INVALIDCONFIG);
+                    return;
                 }
-                if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $mask)) {
-                    if (ip2long($mask) == false) {
+            }
+
+            $ipsIP = $this->ReadPropertyString('ipsIP');
+            if ($ipsIP != '') {
+                if ($this->deternmineIp($ipsIP) == false) {
+                    $this->SendDebug(__FUNCTION__, 'invalid \'ipsIP\' "' . $ipsIP . '"', 0);
+                    $this->SetStatus(IS_INVALIDCONFIG);
+                    return;
+                }
+            }
+
+            $externalIP = $this->ReadPropertyString('externalIP');
+            if ($externalIP != '') {
+                if ($this->deternmineIp($externalIP) == false) {
+                    $this->SendDebug(__FUNCTION__, 'invalid \'externalIPˇ\' "' . $externalIP . '"', 0);
+                    $this->SetStatus(IS_INVALIDCONFIG);
+                    return;
+                }
+            }
+
+            $localCIDRs = $this->ReadPropertyString('localCIDRs');
+            if ($localCIDRs != '') {
+                $ok = true;
+                $cidrs = explode(';', $localCIDRs);
+                foreach ($cidrs as $cidr) {
+                    list($net, $mask) = explode('/', $cidr);
+                    if (ip2long($net) == false) {
                         $ok = false;
                     }
-                } else {
-                    if (!is_numeric($mask) || $mask < 1 || $mask > 31) {
-                        $ok = false;
+                    if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $mask)) {
+                        if (ip2long($mask) == false) {
+                            $ok = false;
+                        }
+                    } else {
+                        if (!is_numeric($mask) || $mask < 1 || $mask > 31) {
+                            $ok = false;
+                        }
+                    }
+                    if (!$ok) {
+                        break;
                     }
                 }
                 if (!$ok) {
-                    break;
+                    $this->SendDebug(__FUNCTION__, 'invalid \'localCIDRs\' "' . $localCIDRs . '"', 0);
+                    $this->SetStatus(IS_INVALIDCONFIG);
+                    return;
                 }
             }
-            if (!$ok) {
-                $this->SendDebug(__FUNCTION__, 'invalid \'localCIDRs\' "' . $localCIDRs . '"', 0);
-                $this->SetStatus(IS_INVALIDCONFIG);
-                return;
-            }
-        }
 
-        if (IPS_GetKernelRunlevel() == KR_READY) {
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
                 if ($this->HookIsUsed($hook)) {

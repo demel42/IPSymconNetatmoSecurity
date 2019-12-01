@@ -712,6 +712,10 @@ class NetatmoSecurityCamera extends IPSModule
                             }
 
                             $type = $this->GetArrayElem($event, 'type', '');
+                            if ($type == 'sd') {
+                                $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                $type = ($sub_type == 4) ? 'sd_ok' : 'sd_nok';
+                            }
                             if ($type != '') {
                                 $new_event['event_type'] = $type;
                             }
@@ -1111,9 +1115,14 @@ class NetatmoSecurityCamera extends IPSModule
                                         switch ($message) {
                                             case 'ftp-0':
                                                 $message = $this->Translate('Upload successful (FTP)');
+                                                $event_type = 'ftp-ok';
                                                 break;
                                             case 'ftp-3':
                                                 $message = $this->Translate('Network error (FTP)');
+                                                $event_type = 'ftp-nok';
+                                                break;
+                                            default:
+                                                $event_type = 'ftp-nok';
                                                 break;
                                         }
                                         break;
@@ -2676,7 +2685,14 @@ class NetatmoSecurityCamera extends IPSModule
             'off'           => 'off_icon.png',
             'alarm_started' => 'alarm_started.png',
             'person_away'   => 'home_away.png',
-            'light_mode'    => 'light.png'
+            'light_mode'    => 'light.png',
+            'boot'			       => 'boot_icon.png',
+            'connection'	   => 'connection_icon.png',
+            'disconnection'	=> 'disconnection_icon.png',
+            'sd_ok'			      => 'sd_ok_icon.png',
+            'sd_nok'		      => 'sd_nok_icon.png',
+            'ftp_ok'		      => 'ftp_ok_icon.png',
+            'ftp_nok'		     => 'ftp_nok_icon.png',
         ];
 
         if (isset($val2icon[$val])) {
@@ -2684,6 +2700,7 @@ class NetatmoSecurityCamera extends IPSModule
         } else {
             $img = false;
         }
+        $this->SendDebug(__FUNCTION__, 'val=' . $val . ', img=' . $img, 0);
         return $img;
     }
 
@@ -2699,7 +2716,14 @@ class NetatmoSecurityCamera extends IPSModule
             'off'           => 'Monitoring disabled',
             'alarm_started' => 'Alarm detected',
             'person_away'   => 'Person has left the house',
-            'light_mode'    => 'Light'
+            'light_mode'    => 'Light',
+            'boot'			       => 'Camera is booting',
+            'connection'	   => 'Camera connected',
+            'disconnection'	=> 'Camera disconnected',
+            'sd_ok'			      => 'SD-Card ok',
+            'sd_nok'		      => 'SD-Card not ok',
+            'ftp_ok'		      => 'FTP successful',
+            'ftp_nok'		     => 'FTP failed',
         ];
 
         if (isset($val2txt[$val])) {
@@ -2707,6 +2731,7 @@ class NetatmoSecurityCamera extends IPSModule
         } else {
             $txt = '';
         }
+        $this->SendDebug(__FUNCTION__, 'val=' . $val . ', txt=' . $txt, 0);
         return $txt;
     }
 

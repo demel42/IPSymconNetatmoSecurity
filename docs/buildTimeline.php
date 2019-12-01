@@ -32,6 +32,9 @@ $video_iframe_height = 360; // 720;
 $video_player_width = ''; // automatisch
 $video_player_height = ($video_iframe_height - 20);
 
+// automatische Abspielen des Videos?
+$autoplay = true;
+
 // Video-Player unter oder über der Liste?
 $video_bottom = false;
 
@@ -67,7 +70,7 @@ foreach ($events as $event) {
             }
         }
     }
-    $event_type = implode($event_types, '+');
+    $event_type = implode('+', $event_types);
     // Keine Fahrzeuge im Garten melden
     if ($event_type == 'vehicle' && $instID == xx) {
         $r = NetatmoSecurity_DeleteEvent($instID, $event_id);
@@ -124,7 +127,7 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     $event_id = $item['id'];
     $tstamp = $item['tstamp'];
 
-    // 'Bewegung erkannt' aber ohne das ein Ereignis draus wird
+    // 'Bewegung erkannt' aber ohne das ein Ereignis daraus wird
     if (isset($item['event_type']) && $item['event_type'] == 'movement' && $event_id == '') {
         continue;
     }
@@ -159,8 +162,8 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     $message = isset($item['message']) ? $item['message'] : '';
     if (isset($item['push_type'])) {
         // Benachrichtigungen
-
         $event_type = $item['event_type'];
+
         $html .= '<td>';
         $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
         $event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
@@ -222,6 +225,9 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
                     $video_url .= '&refresh=0';
                     $video_url .= '&width=' . $video_player_width;
                     $video_url .= '&height=' . $video_player_height;
+                    if ($autoplay) {
+                        $video_url .= '&autoplay';
+                    }
                     $html .= '<td onclick="set_video(\'' . $video_url . '\')">' . PHP_EOL;
                     if (isset($item['subevents'])) {
                         $n_vignette = 0;

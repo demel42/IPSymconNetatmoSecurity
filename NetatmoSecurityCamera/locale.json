@@ -117,6 +117,10 @@
 			"Upload successful (FTP)": "Upload erfolgreich (FTP)",
 			"Vehicle captured": "Fahrzeug erfasst",
 			"Vehicle": "Fahrzeug",
+            "Update downloading": "Update wird heruntergeladen",
+            "Update download failed": "Update wird heruntergeladen",
+            "Update startet": "Update wird durchgeführt",
+            "Update finished": "Update abgeschlossen",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

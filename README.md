@@ -1,7 +1,7 @@
 # IPSymconNetatmoSecurity
 
 [![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.0+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-![Module-Version](https://img.shields.io/badge/Modul_Version-1.9-blue.svg)
+![Module-Version](https://img.shields.io/badge/Modul_Version-1.10-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
@@ -508,44 +508,48 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.9 @ 09.12.2019 19:29<br>
+- 1.10 @ 19.12.2019 14:09
+  - Anpassungen an IPS 5.3
+    - Formular-Elemente: 'label' in 'caption' geändert
+
+- 1.9 @ 09.12.2019 19:29
   - Auswertung der Statis eines Firmware-Updates
 
-- 1.8 @ 01.12.2019 10:18<br>
+- 1.8 @ 01.12.2019 10:18
   - korrektes Erkennen des Status von SD-Karte
   - Bereitstellen der Icons von SD-Karte (ok, nicht ok), FTP (erfolgreich, fehlerhaft), Kamera (gestartet, verbunden, getrennt)
   - Beispiel-Script docs/buildTimeline.php mit optionalem Video-Autoplay
 
-- 1.7 @ 23.11.2019 11:31<br>
+- 1.7 @ 23.11.2019 11:31
   - beim Systemboot werden die Konfiguration eventuell als ungültig markiert.
 
-- 1.6 @ 13.10.2019 13:18<br>
+- 1.6 @ 13.10.2019 13:18
   - Anpassungen an IPS 5.2
     - IPS_SetVariableProfileValues(), IPS_SetVariableProfileDigits() nur bei INTEGER, FLOAT
     - Dokumentation-URL in module.json
   - Umstellung auf strict_types=1
   - Umstellung von StyleCI auf php-cs-fixer
 
-- 1.5 @ 14.08.2019 12:56<br>
+- 1.5 @ 14.08.2019 12:56
   - push_type "alert" ignorieren
   - Ermittlung der Variable "Status" bezieht nun Kamera-, SD-Karten- und Stromversorgungsstatus mit ein
 
-- 1.4 @ 09.08.2019 14:32<br>
+- 1.4 @ 09.08.2019 14:32
   - zusätzlicher Debug bei der Einrichtung des WebHook
   - NACamera-connected & NACamera-disconnected hinzugefügt
   - opt. Ermittlung der Wifi-Signalstärke
 
-- 1.3 @ 04.08.2019 15:40<br>
+- 1.3 @ 04.08.2019 15:40
   - IP-Symcon IP-Adresse und Portnummer als Konfigurationsfeld vorgesehen zur Unterstützung komplexer Netzwerke, z.B. Docker
 
-- 1.2 @ 01.08.2019 18:29<br>
+- 1.2 @ 01.08.2019 18:29
   - AddWebHook() wird nun jedesmal gemacht, wenn der ApiToken abgelaufen ist.
   - buildTimele.php ergänzt (+ 'max_vignettes', 'autoload')
   - processStreamURL.php ergänzt ('mp4' + controls, autoload)
 
-- 1.1 @ 30.07.2019 19:07<br>
+- 1.1 @ 30.07.2019 19:07
   - Absicherung bei fehlerhafter _ImportCategoryID_
   - Anlage ohne gesetzte Import-Kategorie erfolgt in der Kategorie IP-Symcon/IP-Symcon
 
-- 1.0 @ 25.07.2019 11:01<br>
-  Initiale Version
+- 1.0 @ 25.07.2019 11:01
+  - Initiale Version

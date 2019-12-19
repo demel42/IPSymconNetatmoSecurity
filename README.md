@@ -411,7 +411,7 @@ Dem Script wird neben der _InstanceID_ auch die neuen Benachrichtigungen als jso
 Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelln und in einer HTML-Box abzulegen.
 
 - Script bei geänderter VPN-URL: das Script wird aufgerufen, wenn die VPN-URL bei einem Datenabruf festgestellt wird, das sich die VPN-URL geändert hat (kann jederzeit erfolgen).
-Rumpscript siehe [docs/processUrlChanged.php](docs/processUrlChanged.php).
+Rumpfscript siehe [docs/processUrlChanged.php](docs/processUrlChanged.php).
 
 ### Variablenprofile
 

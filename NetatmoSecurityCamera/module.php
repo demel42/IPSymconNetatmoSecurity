@@ -662,7 +662,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $cur_events = [];
                     $new_events = [];
                     $s = $this->GetMediaData('Events');
-                    $prev_events = json_decode($s, true);
+                    $prev_events = json_decode((string) $s, true);
                     $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
@@ -919,7 +919,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $new_notifications = [];
                     $cur_notifications = [];
                     $s = $this->GetMediaData('Notifications');
-                    $prev_notifications = json_decode($s, true);
+                    $prev_notifications = json_decode((string) $s, true);
                     if ($prev_notifications != '') {
                         foreach ($prev_notifications as $prev_notification) {
                             if ($prev_notification['tstamp'] < $ref_ts) {
@@ -1824,7 +1824,7 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $notification = false;
         $data = $this->GetMediaData('Notifications');
-        $notifications = json_decode($data, true);
+        $notifications = json_decode((string) $data, true);
         foreach ($notifications as $n) {
             if ($n['id'] == $id) {
                 $notification = $n;
@@ -1873,7 +1873,7 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $event = false;
         $data = $this->GetMediaData('Events');
-        $events = json_decode($data, true);
+        $events = json_decode((string) $data, true);
         foreach ($events as $e) {
             if ($e['id'] == $event_id) {
                 $event = $e;
@@ -1888,7 +1888,7 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $subevent = false;
         $data = $this->GetMediaData('Events');
-        $events = json_decode($data, true);
+        $events = json_decode((string) $data, true);
         foreach ($events as $event) {
             if (!isset($event['subevents'])) {
                 continue;

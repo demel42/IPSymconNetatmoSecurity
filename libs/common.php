@@ -97,6 +97,8 @@ trait NetatmoSecurityCommon
 
     private function SetMediaData($Name, $data, $Cached)
     {
+        $n = strlen(base64_encode($data));
+        $this->SendDebug(__FUNCTION__, 'write ' . $n . ' bytes to media-object ' . $Name, 0);
         $mediaName = $this->Translate($Name);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
@@ -109,6 +111,7 @@ trait NetatmoSecurityCommon
             IPS_SetMediaFile($mediaID, $filename, false);
             IPS_SetName($mediaID, $mediaName);
             IPS_SetParent($mediaID, $this->InstanceID);
+            $this->SendDebug(__FUNCTION__, 'media-object ' . $Name . ' created, filename=' . $filename, 0);
         }
         IPS_SetMediaCached($mediaID, $Cached);
         IPS_SetMediaContent($mediaID, base64_encode($data));

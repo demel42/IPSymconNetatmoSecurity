@@ -508,8 +508,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.11 @ 21.12.2019 11:03
+- 1.11 @ 22.12.2019 17:39
   - fix wegen 'strict_types=1'
+  - Schreibfehler korrigiert
 
 - 1.10 @ 19.12.2019 14:09
   - Anpassungen an IPS 5.3

@@ -28,10 +28,8 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->RegisterPropertyInteger('sync_event_count', '30');
 
-        if (IPS_GetKernelVersion() >= 5.1) {
-            $this->RegisterAttributeString('ApiRefreshToken', '');
-            $this->RegisterAttributeString('AppRefreshToken', '');
-        }
+        $this->RegisterAttributeString('ApiRefreshToken', '');
+        $this->RegisterAttributeString('AppRefreshToken', '');
 
         $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurity_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
@@ -131,10 +129,6 @@ class NetatmoSecurityIO extends IPSModule
         $formActions = [];
         $formActions[] = ['type' => 'Button', 'caption' => 'Update data', 'onClick' => 'NetatmoSecurity_UpdateData($id);'];
         $formActions[] = ['type' => 'Button', 'caption' => 'Register Webhook', 'onClick' => 'NetatmoSecurity_AddWebhook($id);'];
-        if (IPS_GetKernelVersion() < 5.2) {
-            $formActions[] = ['type' => 'Label', 'caption' => '____________________________________________________________________________________________________'];
-            $formActions[] = ['type' => 'Button', 'caption' => 'Module description', 'onClick' => 'echo \'https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md\';'];
-        }
 
         $formStatus = $this->GetFormStatus();
 
@@ -213,12 +207,7 @@ class NetatmoSecurityIO extends IPSModule
         $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
 
         if ($expiration < time()) {
-            if (IPS_GetKernelVersion() >= 5.1) {
-                $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
-            } else {
-                $jtoken = json_decode($this->GetBuffer('ApiRefreshToken'), true);
-                $refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
-            }
+            $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
             if ($refresh_token == '') {
                 $postdata = [
                     'grant_type'    => 'password',
@@ -270,14 +259,7 @@ class NetatmoSecurityIO extends IPSModule
             if (isset($params['refresh_token'])) {
                 $refresh_token = $params['refresh_token'];
                 $this->SendDebug(__FUNCTION__, 'new refresh_token=' . $refresh_token, 0);
-                if (IPS_GetKernelVersion() >= 5.1) {
-                    $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
-                } else {
-                    $jtoken = [
-                        'refresh_token' => $refresh_token,
-                    ];
-                    $this->SetBuffer('ApiRefreshToken', json_encode($jtoken));
-                }
+                $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
             }
 
             $this->SetStatus(IS_ACTIVE);
@@ -301,12 +283,7 @@ class NetatmoSecurityIO extends IPSModule
         $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
 
         if ($expiration < time()) {
-            if (IPS_GetKernelVersion() >= 5.1) {
-                $refresh_token = $this->ReadAttributeString('AppRefreshToken');
-            } else {
-                $jtoken = json_decode($this->GetBuffer('AppRefreshToken'), true);
-                $refresh_token = isset($jtoken['refresh_token']) ? $jtoken['refresh_token'] : '';
-            }
+            $refresh_token = $this->ReadAttributeString('AppRefreshToken');
             $auth = 'QXV0aG9yaXphdGlvbjogQmFzaWMgYm1GZlkyeHBaVzUwWDJsdmN6bzFObU5qTmpSaU56azBOak5oT1RrMU9HSTNOREF4TkRjeVpEbGxNREUxT0E9PQ==';
             $header = [
                 base64_decode($auth)
@@ -358,14 +335,7 @@ class NetatmoSecurityIO extends IPSModule
             if (isset($params['refresh_token'])) {
                 $refresh_token = $params['refresh_token'];
                 $this->SendDebug(__FUNCTION__, 'new refresh_token=' . $refresh_token, 0);
-                if (IPS_GetKernelVersion() >= 5.1) {
-                    $this->WriteAttributeString('AppRefreshToken', $refresh_token);
-                } else {
-                    $jtoken = [
-                        'refresh_token' => $refresh_token,
-                    ];
-                    $this->SetBuffer('AppRefreshToken', json_encode($jtoken));
-                }
+                $this->WriteAttributeString('AppRefreshToken', $refresh_token);
             }
             $this->SetStatus(IS_ACTIVE);
         }

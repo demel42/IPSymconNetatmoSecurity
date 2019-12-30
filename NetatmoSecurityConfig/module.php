@@ -63,9 +63,7 @@ class NetatmoSecurityConfig extends IPSModule
                 'home_id'      => $home_id,
             ]
         ];
-        if (IPS_GetKernelVersion() >= 5.1) {
-            $create['info'] = $home_name . '\\' . $product_name;
-        }
+        $create['info'] = $home_name . '\\' . $product_name;
 
         $entry = [
             'category'   => $this->Translate($product_category),
@@ -196,13 +194,6 @@ class NetatmoSecurityConfig extends IPSModule
         $formElements[] = $configurator;
 
         $formActions = [];
-        if (IPS_GetKernelVersion() < 5.2) {
-            $formActions[] = [
-                'type'    => 'Button',
-                'caption' => 'Module description',
-                'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
-            ];
-        }
 
         $formStatus = $this->GetFormStatus();
 

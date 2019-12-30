@@ -1,6 +1,6 @@
 # IPSymconNetatmoSecurity
 
-[![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.0+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
+[![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.3+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 ![Module-Version](https://img.shields.io/badge/Modul_Version-1.11-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
@@ -37,7 +37,7 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
 
 ## 2. Voraussetzungen
 
- - IP-Symcon ab Version 5<br>
+ - IP-Symcon ab Version 5.3
  - ein Netatmo Security-Modul (also Kamera oder Rauchmelder)
  - den "normalen" Benutzer-Account, der bei der Anmeldung der Geräte bei Netatmo erzeugt wird (https://my.netatmo.com)
  - einen Account sowie eine "App" bei Netatmo Connect, um die Werte abrufen zu können (https://dev.netatmo.com)<br>
@@ -508,7 +508,7 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.11 @ 22.12.2019 17:39
+- 1.11 @ 30.12.2019 10:56
   - fix wegen 'strict_types=1'
   - Schreibfehler korrigiert
 

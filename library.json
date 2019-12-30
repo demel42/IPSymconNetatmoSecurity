@@ -4,9 +4,9 @@
 	"name": "NetatmoSecurity",
 	"url": "https://github.com/demel42/IPSymconNetatmoSecurity",
 	"compatibility": {
-		"version": "5.0"
+		"version": "5.3"
 	},
 	"version": "1.11",
 	"build": 0,
-	"date": 1577032791
+	"date": 1577699807
 }

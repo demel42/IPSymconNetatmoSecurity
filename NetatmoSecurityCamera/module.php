@@ -358,9 +358,7 @@ class NetatmoSecurityCamera extends IPSModule
                                     'home_id'    => $home_id,
                                 ]
                             ];
-                            if (IPS_GetKernelVersion() >= 5.1) {
-                                $create['info'] = $home_name . '\\' . $pseudo;
-                            }
+                            $create['info'] = $home_name . '\\' . $pseudo;
 
                             $entry = [
                                 'home'       => $home_name,
@@ -503,13 +501,6 @@ class NetatmoSecurityCamera extends IPSModule
     protected function GetFormActions()
     {
         $formActions = [];
-        if (IPS_GetKernelVersion() < 5.2) {
-            $formActions[] = [
-                'type'    => 'Button',
-                'caption' => 'Module description',
-                'onClick' => 'echo "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md";'
-            ];
-        }
 
         return $formActions;
     }
@@ -1922,10 +1913,6 @@ class NetatmoSecurityCamera extends IPSModule
                 if (!isset($_SERVER['HTTP_USER_AGENT']) || !isset($_SERVER['HTTP_HOST'])) {
                     $searchFile = false;
                 }
-                if ($searchFile && IPS_GetKernelVersion() < 5.2 && !preg_match('/firefox/i', $_SERVER['HTTP_USER_AGENT'])) {
-                    $this->SendDebug(__FUNCTION__, 'IPS < 5.2 and browser is not Firefox (' . $_SERVER['HTTP_USER_AGENT'] . ')', 0);
-                    $searchFile = false;
-                }
                 if ($searchFile) {
                     $filename = $this->GetVideoFilename($video_id, $tstamp);
                     $this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
@@ -2496,10 +2483,6 @@ class NetatmoSecurityCamera extends IPSModule
 
         if (!isset($_SERVER['HTTP_USER_AGENT']) || !isset($_SERVER['HTTP_HOST'])) {
             $this->SendDebug(__FUNCTION__, 'function can\'t be call without "_SERVER"-enviroment', 0);
-            return false;
-        }
-        if (IPS_GetKernelVersion() < 5.2 && !preg_match('/firefox/i', $_SERVER['HTTP_USER_AGENT'])) {
-            $this->SendDebug(__FUNCTION__, 'IPS < 5.2 and browser is not Firefox (' . $_SERVER['HTTP_USER_AGENT'] . ')', 0);
             return false;
         }
 

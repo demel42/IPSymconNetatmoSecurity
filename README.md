@@ -508,7 +508,7 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.11 @ 30.12.2019 10:56
+- 1.11 @ 01.01.2020 15:47
   - fix wegen 'strict_types=1'
   - Schreibfehler korrigiert
 

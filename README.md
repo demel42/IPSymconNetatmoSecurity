@@ -1,7 +1,7 @@
 # IPSymconNetatmoSecurity
 
 [![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.3+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-![Module-Version](https://img.shields.io/badge/Modul_Version-1.11-blue.svg)
+![Module-Version](https://img.shields.io/badge/Modul_Version-1.12-blue.svg)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
@@ -507,6 +507,10 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.12 @ 06.01.2020 11:17
+  - Nutzung von RegisterReference() für im Modul genutze Objekte (Scripte, Kategorien etc)
+  - SetTimerInterval() erst nach KR_READY
 
 - 1.11 @ 01.01.2020 15:47
   - fix wegen 'strict_types=1'

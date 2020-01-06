@@ -237,15 +237,29 @@ class NetatmoSecurityCamera extends IPSModule
             }
         }
 
+        $refs = $this->GetReferenceList();
+        foreach ($refs as $ref) {
+            $this->UnregisterReference($ref);
+        }
+        $propertyNames = ['ImportCategoryID', 'new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
+        foreach ($propertyNames as $name) {
+            $oid = $this->ReadPropertyInteger($name);
+            if ($oid > 0) {
+                $this->RegisterReference($oid);
+            }
+        }
+
         /*
         $dataFilter = '.*id[^:]*:["]*' . $product_id . '.*';
         $this->SendDebug(__FUNCTION__, 'set ReceiveDataFilter=' . $dataFilter, 0);
         $this->SetReceiveDataFilter($dataFilter);
          */
 
-        $this->SetStatus(IS_ACTIVE);
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+            $this->SetTimer();
+        }
 
-        $this->SetTimer();
+        $this->SetStatus(IS_ACTIVE);
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -265,6 +279,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetLocalServerUrl() . $hook, 0);
                 }
             }
+            $this->SetTimer();
         }
     }
 

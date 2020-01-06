@@ -21,6 +21,18 @@ class NetatmoSecurityConfig extends IPSModule
     {
         parent::ApplyChanges();
 
+        $refs = $this->GetReferenceList();
+        foreach ($refs as $ref) {
+            $this->UnregisterReference($ref);
+        }
+        $propertyNames = ['ImportCategoryID'];
+        foreach ($propertyNames as $name) {
+            $oid = $this->ReadPropertyInteger($name);
+            if ($oid > 0) {
+                $this->RegisterReference($oid);
+            }
+        }
+
         $this->SetStatus(IS_ACTIVE);
     }
 

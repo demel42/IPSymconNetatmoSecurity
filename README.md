@@ -507,6 +507,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.13 @ 01.02.2020 18:51
+  - Ergänzung um die Möglichkeit per OAuth anzumelden
+
 - 1.12 @ 06.01.2020 11:17
   - Nutzung von RegisterReference() für im Modul genutze Objekte (Scripte, Kategorien etc)
   - SetTimerInterval() erst nach KR_READY

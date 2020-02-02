@@ -87,10 +87,10 @@ class NetatmoSecurityIO extends IPSModule
                     return;
                 }
                 $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
-                if ($refresh_token != '') {
-                    $this->SetStatus(IS_ACTIVE);
-                } else {
+                if ($refresh_token == '') {
                     $this->SetStatus(IS_INVALIDCONFIG);
+                } else {
+                    $this->SetStatus(IS_ACTIVE);
                 }
                 break;
             default:
@@ -295,6 +295,9 @@ class NetatmoSecurityIO extends IPSModule
         $refresh_token = $this->FetchRefreshToken($_GET['code']);
         $this->SendDebug(__FUNCTION__, 'refresh_token=' . $refresh_token, 0);
         $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
+        if ($this->GetStatus() == IS_INVALIDCONFIG) {
+            $this->SetStatus(IS_ACTIVE);
+        }
     }
 
     public function GetConfigurationForm()

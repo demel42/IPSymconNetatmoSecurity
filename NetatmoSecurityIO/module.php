@@ -759,7 +759,7 @@ class NetatmoSecurityIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             $status = $jdata['status'];
             if ($status != 'ok') {
-                $err = "got status \"$status\"";
+                $err = 'got status "' . $status . '"';
                 $statuscode = IS_INVALIDDATA;
             } else {
                 $empty = true;
@@ -894,7 +894,7 @@ class NetatmoSecurityIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             $status = $jdata['status'];
             if ($status != 'ok') {
-                $err = "got status \"$status\"";
+                $err = 'got status "' . $status . '"';
                 $statuscode = IS_INVALIDDATA;
             }
         }
@@ -930,10 +930,21 @@ class NetatmoSecurityIO extends IPSModule
         if ($statuscode == 0) {
             $jdata = json_decode($data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
-            $status = $jdata['status'];
-            if ($status != 'ok') {
-                $err = "got status \"$status\"";
-                $statuscode = IS_INVALIDDATA;
+            if (isset($jdata['error']['code'])) {
+                $code = $jdata['error']['code'];
+                if ($code != 7) { // 7 = Nothing to drop
+                    $err = 'got error ' . $code;
+                    if (isset($jdata['error']['messages'])) {
+                        $err .= ' (' . $jdata['error']['messages'] . ')';
+                    }
+                    $statuscode = IS_INVALIDDATA;
+                }
+            } elseif (isset($jdata['status'])) {
+                $status = $jdata['status'];
+                if ($status != 'ok') {
+                    $err = 'got status "' . $status . '"';
+                    $statuscode = IS_INVALIDDATA;
+                }
             }
         }
         if ($statuscode) {
@@ -1082,6 +1093,13 @@ class NetatmoSecurityIO extends IPSModule
             } elseif ($httpcode == 403) {
                 $statuscode = IS_FORBIDDEN;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
+            } elseif ($httpcode == 406) {
+                if (preg_match('#^https://api.netatmo.net/api/dropwebhook#', $url)) {
+                    $data = $cdata;
+                } else {
+                    $statuscode = IS_HTTPERROR;
+                    $err = 'got http-code ' . $httpcode . ' (not acceptable)';
+                }
             } elseif ($httpcode == 409) {
                 $data = $cdata;
             } elseif ($httpcode >= 500 && $httpcode <= 599) {

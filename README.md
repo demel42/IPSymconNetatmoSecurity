@@ -507,8 +507,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.13 @ 01.02.2020 18:51
+- 1.13 @ 02.02.2020 15:31
   - Ergänzung um die Möglichkeit per OAuth anzumelden
+  - Abfangen von HTTP-Error 406, wenn kein WebHook registriert ist
 
 - 1.12 @ 06.01.2020 11:17
   - Nutzung von RegisterReference() für im Modul genutze Objekte (Scripte, Kategorien etc)

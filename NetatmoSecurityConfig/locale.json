@@ -15,12 +15,7 @@
 			"Id": "Id",
 
 			"category for products to be created:": "Kategorie für anzulegende Produkte:",
-            "category": "Kategorie",
-
-			"Module description": "Modulbeschreibung",
-
-			"selected product missing": "Ausgewähltes Produkt nicht gefunden",
-			"no product selected": "Kein Produkt ausgewählt",
+			"category": "Kategorie",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

@@ -89,7 +89,7 @@ class NetatmoSecurityConfig extends IPSModule
         return $entry;
     }
 
-    public function GetConfigurationForm()
+    protected function GetFormElements()
     {
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -205,8 +205,20 @@ class NetatmoSecurityConfig extends IPSModule
         $formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
         $formElements[] = $configurator;
 
+        return $formElements;
+    }
+
+    protected function GetFormActions()
+    {
         $formActions = [];
 
+        return $formActions;
+    }
+
+    public function GetConfigurationForm()
+    {
+        $formElements = $this->GetFormElements();
+        $formActions = $this->GetFormActions();
         $formStatus = $this->GetFormStatus();
 
         $form = json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);

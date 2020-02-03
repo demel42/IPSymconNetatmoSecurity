@@ -507,9 +507,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.13 @ 02.02.2020 15:31
+- 1.13 @ 03.02.2020 15:35
   - Ergänzung um die Möglichkeit per OAuth anzumelden
   - Abfangen von HTTP-Error 406, wenn kein WebHook registriert ist
+  - Bugfix: die setperson*-API-Aufrufe sind POST, nicht GET
 
 - 1.12 @ 06.01.2020 11:17
   - Nutzung von RegisterReference() für im Modul genutze Objekte (Scripte, Kategorien etc)

@@ -173,9 +173,10 @@ class NetatmoSecurityIO extends IPSModule
         $context = stream_context_create($options);
         $cdata = @file_get_contents($url, false, $context);
         $duration = round(microtime(true) - $time_start, 2);
-        if (preg_match('/HTTP\/[0-9\.]+\s+([0-9]*)/', $http_response_header[0], $r)) {
+		if (isset(http_response_header[0]) && preg_match('/HTTP\/[0-9\.]+\s+([0-9]*)/', $http_response_header[0], $r)) {
             $httpcode = $r[1];
         } else {
+			$this->LogMessage('missing http_response_header, cdata=' . $cdata, KL_WARNING);
             $this->SendDebug(__FUNCTION__, 'http_response_header=' . print_r($http_response_header, true), 0);
             $httpcode = 0;
         }

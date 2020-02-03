@@ -288,14 +288,14 @@ class NetatmoSecurityIO extends IPSModule
     {
         if (!isset($_GET['code'])) {
             $this->SendDebug(__FUNCTION__, 'code missing, _GET=' . print_r($_GET, true), 0);
-            $this->SetStatus(IS_INVALIDCONFIG);
+            $this->SetStatus(IS_NOLOGIN);
             $this->WriteAttributeString('ApiRefreshToken', '');
             return;
         }
         $refresh_token = $this->FetchRefreshToken($_GET['code']);
         $this->SendDebug(__FUNCTION__, 'refresh_token=' . $refresh_token, 0);
         $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
-        if ($this->GetStatus() == IS_INVALIDCONFIG) {
+        if ($this->GetStatus() == IS_NOLOGIN) {
             $this->SetStatus(IS_ACTIVE);
         }
     }

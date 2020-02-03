@@ -88,7 +88,7 @@ class NetatmoSecurityIO extends IPSModule
                 }
                 $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
                 if ($refresh_token == '') {
-                    $this->SetStatus(IS_INVALIDCONFIG);
+                    $this->SetStatus(IS_NOLOGIN);
                 } else {
                     $this->SetStatus(IS_ACTIVE);
                 }

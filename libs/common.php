@@ -27,6 +27,7 @@ if (!defined('IS_NODATA')) {
     define('IS_USEDWEBHOOK', IS_EBASE + 10);
     define('IS_INVALIDCONFIG', IS_EBASE + 11);
     define('IS_NOSYMCONCONNECT', IS_EBASE + 12);
+    define('IS_NOLOGIN', IS_EBASE + 13);
 }
 
 trait NetatmoSecurityCommon
@@ -282,6 +283,7 @@ trait NetatmoSecurityCommon
         $formStatus[] = ['code' => IS_USEDWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook already in use)'];
         $formStatus[] = ['code' => IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid config)'];
         $formStatus[] = ['code' => IS_NOSYMCONCONNECT, 'icon' => 'error', 'caption' => 'Instance is inactive (no Symcon-Connect)'];
+        $formStatus[] = ['code' => IS_NOLOGIN, 'icon' => 'error', 'caption' => 'Instance is inactive (not logged in)'];
 
         return $formStatus;
     }

@@ -79,11 +79,15 @@ In dem Konfigurationsformular nun den gewünschten Zugang wählen, entweder als 
 
 **Zugriff mit Netatmo-Benutzerdaten über IP-Symcon Connect**
 
-Hierzu auf _bei Netatmo anmelden_ drücken. Es öffnet sich ein Browserfenster mit der Anmeldeseite von Netatmo; hier bitte anmelden. Dann erscheint ein weiteres Fenster
+Hierzu _bei Netatmo anmelden_ auswählen. Es öffnet sich ein Browserfenster mit der Anmeldeseite von Netatmo; hier bitte anmelden. Dann erscheint ein weiteres Fenster
 
 ![OAUTH1](docs/netatmo_login_1.png?raw=true "oauth 1")
 
-Hier bitte Registieren auswählen.
+Hier bitte den Zugriff des _IP-Symcon Netatmo Connector_ akzeptieren; es erscheint 
+
+![OAUTH1](docs/netatmo_login_2.png?raw=true "oauth 2")
+
+Das Browserfenster schliessen.
 
 Anmerkung: auch wenn hier alle möglichen Netamo-Produkte aufgelistet sind, bezieht sich das Login nur auf die Produkte dieses Moduls.
 

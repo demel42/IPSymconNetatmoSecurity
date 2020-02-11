@@ -39,7 +39,6 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
  - IP-Symcon ab Version 5.3
  - ein Netatmo Security-Modul (also Kamera oder Rauchmelder)
  - den "normalen" Benutzer-Account, der bei der Anmeldung der Geräte bei Netatmo erzeugt wird (https://my.netatmo.com)
-<br>
  - IP-Symcon Connect<br>
    oder<br>
  - einen Account sowie eine "App" bei Netatmo Connect, um die Werte abrufen zu können (https://dev.netatmo.com)<br>
@@ -82,7 +81,7 @@ In dem Konfigurationsformular nun den gewünschten Zugang wählen, entweder als 
 
 Hierzu auf _bei Netatmo anmelden_ drücken. Es öffnet sich ein Browserfenster mit der Anmeldeseite von Netatmo; hier bitte anmelden. Dann erscheint ein weiteres Fenster
 
-![OAUTH1](docs/de/img/netatmo_login_1.png?raw=true "oauth 1")
+![OAUTH1](docs/netatmo_login_1.png?raw=true "oauth 1")
 
 Hier bitte Registieren auswählen.
 

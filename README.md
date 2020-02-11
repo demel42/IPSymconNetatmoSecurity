@@ -39,6 +39,9 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
  - IP-Symcon ab Version 5.3
  - ein Netatmo Security-Modul (also Kamera oder Rauchmelder)
  - den "normalen" Benutzer-Account, der bei der Anmeldung der Geräte bei Netatmo erzeugt wird (https://my.netatmo.com)
+<br>
+ - IP-Symcon Connect<br>
+   oder<br>
  - einen Account sowie eine "App" bei Netatmo Connect, um die Werte abrufen zu können (https://dev.netatmo.com)<br>
    Achtung: diese App ist nur für den Zugriff auf Netatmo-Security-Produkte gedacht; das Modul benutzt die Scopes _read_presence access_presence read_camera write_camera access_camera read_smokedetector_.<br>
    Eine gleichzeitige Benutzung der gleichen Netatmo-App für andere Bereiche (z.B. Weather) stört sich gegenseitig.<br>
@@ -47,6 +50,15 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
 ## 3. Installation
 
 ### a. Laden des Moduls
+
+**Installieren über den Module-Store**
+Die Webconsole von IP-Symcon mit http://<IP-Symcon IP>:3777/console/ öffnen.
+
+Anschließend oben rechts auf das Symbol für den Modulstore (IP-Symcon > 5.1) klicken
+
+Im Suchfeld nun NetatmoSecurity eingeben, das Modul auswählen und auf Installieren drücken.
+
+**Installieren über die Modules-Instanz**
 
 Die Konsole von IP-Symcon öffnen. Im Objektbaum unter Kerninstanzen die Instanz __*Modules*__ durch einen doppelten Mausklick öffnen.
 
@@ -64,13 +76,28 @@ Anschließend erscheint ein Eintrag für das Modul in der Liste der Instanz _Mod
 
 In IP-Symcon nun unterhalb von _I/O Instanzen_ die Funktion _Instanz hinzufügen_ (_CTRL+1_) auswählen, als Hersteller _Netatmo_ und als Gerät _NetatmoSecurity I/O_ auswählen.
 
+In dem Konfigurationsformular nun den gewünschten Zugang wählen, entweder als Nutzer über IP-Symcon Connect oder als Entwickler mit eigenem Entwicklerschlüssel.
+
+**Zugriff mit Netatmo-Benutzerdaten über IP-Symcon Connect**
+
+Hierzu auf _bei Netatmo anmelden_ drücken. Es öffnet sich ein Browserfenster mit der Anmeldeseite von Netatmo; hier bitte anmelden. Dann erscheint ein weiteres Fenster
+
+![OAUTH1](docs/de/img/netatmo_login_1.png?raw=true "oauth 1")
+
+Hier bitte Registieren auswählen.
+
+Anmerkung: auch wenn hier alle möglichen Netamo-Produkte aufgelistet sind, bezieht sich das Login nur auf die Produkte dieses Moduls.
+
+**Zugriff als Entwickler mit eigenem Entwicklerschlüssel**
+
 In dem Konfigurationsdialog die Netatmo-Zugangsdaten eintragen.
+
 
 Dann unter _Konfigurator Instanzen_ analog den Konfigurator _NetatmoSecurity Konfigurator_ hinzufügen.
 
 Hier werden alle Security-Produkte, die mit dem, in der I/O-Instanz angegebenen, Netatmo-Konto verknüpft sind, angeboten; aus denen wählt man ein Produkt aus.
 
-Mit den Schaltflächen _Erstellen_ bzw. _Alle erstellen_ werden das/die gewählne Produkt anlegt.
+Mit den Schaltflächen _Erstellen_ bzw. _Alle erstellen_ werden das/die gewählte Produkt anlegt.
 
 Zur Zeit werden die folgende Produkttypen unterstützt:
 
@@ -91,7 +118,7 @@ Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert we
 
 ### NetatmoSecurityIO
 
-`NetatmoSecurityIO_UpdateData(int $InstanzID)`
+`NetatmoSecurity_UpdateData(int $InstanzID)`
 ruft die Daten der Netatmo-Security-Produkte ab. Wird automatisch zyklisch durch die Instanz durchgeführt im Abstand wie in der Konfiguration angegeben.
 
 ### NetatmoSecurityCamera
@@ -229,7 +256,9 @@ stellt die Intensität das Lichtes ein (0..100%). <br>
 
 
 `NetatmoSecurity_LoadTimelapse(int $InstanzID)`<br>
-Herstellt und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h. Als Bezugszeitpunkt (für die Suche danach) gilt immer der Tag, ab dem die 24h beginnen. D.h. das Video wird immer unter dem Datum des Vortags gespeichert.
+Herstellt und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h.
+Als Bezugszeitpunkt (für die Suche danach) gilt immer der Tag, ab dem die 24h beginnen.
+D.h. das Video wird immer unter dem Datum des Vortags gespeichert.
 
 `NetatmoSecurity_GetTimelapseFilenamel(int $InstanzID, int $refdate = 0)`<br>
 Ermittlung der Datei mit der Zeitrafferdarstellung des angegebenen Referenzdatums
@@ -323,6 +352,8 @@ Dem Kommando vom Type _timelapse_ kann die Option _date=\<refdate\>_ angehängt 
 
 | Eigenschaft               | Typ      | Standardwert | Beschreibung |
 | :------------------------ | :------  | :----------- | :----------- |
+| Verbindungstyp            | integer  | 0            | _Netatmo über IP-Symcon Connect_ oder _Netatmo Entwickler-Schlüssel_ |
+|                           |          |              | |
 | Netatmo-Zugangsdaten      | string   |              | Benutzername und Passwort von https://my.netatmo.com sowie Client-ID und -Secret von https://dev.netatmo.com |
 |                           |          |              | |
 | Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
@@ -340,8 +371,18 @@ Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in d
 
 | Bezeichnung                  | Beschreibung |
 | :--------------------------- | :----------- |
+| bei Netatmo anmelden         | durch Anmeldung bei Netatmo via IP-Symcon Connect |
 | Aktualisiere Daten           | führt eine sofortige Aktualisierung durch |
 | Webhook registrieren         | registriert den WebHook erneut bei Netatmo |
+
+### NetatmoSecurityConfig
+
+#### Properties
+
+| Eigenschaft               | Typ      | Standardwert | Beschreibung |
+| :------------------------ | :------  | :----------- | :----------- |
+| Kategorie                 | integer  | 0            | Kategorie im Objektbaum, unter dem die Instanzen angelegt werden |
+| Produkte                  | list     |              | Liste der anlegbaren Produkte |
 
 ### NetatmoSecurityCamera
 
@@ -349,46 +390,49 @@ Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in d
 
 werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 
-| Eigenschaft              | Typ            | Standardwert | Beschreibung |
-| :----------------------- | :------------- | :----------- | :----------- |
-| Produkt-Typ              | string         |              | Identifikation, z.Zt _NACamera_, _NOC_ |
-| Produkt-ID               | string         |              | ID des Produktes |
-| Heim-ID                  | string         |              | ID des "Heims" |
-|                          |                |              | |
-| letzte Kommunikation     | boolean        | Nein         | letzte Kommunikation mit dem Netatmo-Server |
-| letztes Ereignis         | boolean        | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
-| letzte Benachrichtigung  | boolean        | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
-| Stärke des Wifi-Signals  | boolean        | Nein         | Ausgabe des Signal in den Abstufungen: _schlecht_, _mittel_, _gut_, _hoch_|
-|                          |                |              | |
-| Webhook                  | string         |              | Webhook, um Daten dieser Kamera abzufragen |
-|  ... IPS IP-Adresse      | string         |              | DynDNS-Name oder IP des IPS-Servers |
-|  ... IPS Portnummer      | integer        | 3777         | Portnummer des IPS-Servers |
-|  ... externe IP-Adresse  | string         |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
-|  ... local CIDR's        | string         |              | durch Semikolog getrennte Liste der lokalen CIDR's (Netzwerke) |
-|  ... Script              | integer        |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
-|                          |                |              | |
-| Ereignisse               |                |              | |
-|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
-| Benachrichtigung         |                |              | |
-|  ... max. Alter          | integer        | 2            | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
-|                          |                |              | |
-| FTP-Verzeichnis          |                |              | |
-|  ... Verzeichnis         | string         |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
-|  ... max. Alter          | integer        | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
-|                          |                |              | |
-| Zeitraffer-Darstellung   |                |              | |
-|  ... Verzeichnis         | string         |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
-|  ... Startzeit           | integer        | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
-|  ... max. Alter          | integer        | 7            | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
-|                          |                |              | |
-| Benachrichtigungen       |                |              | |
-|  ... Script              | integer        |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
-| neue Ereignisse          |                |              | |
-|  ... Script              | integer        |              | Script, das beim Emfang neuer Ereignisse aufgerufen wird |
-|                          |                |              | |
-| geänderte VPN-URL        |                |              | |
-|  ... Script              | integer        |              | Script, das bei Änderung der VPN-URL aufgerufen wird |
-|                          |                |              | |
+| Eigenschaft              | Typ      | Standardwert | Beschreibung |
+| :----------------------- | :--------| :----------- | :----------- |
+| Produkt-Typ              | string   |              | Identifikation, z.Zt _NACamera_, _NOC_ |
+| Produkt-ID               | string   |              | ID des Produktes |
+| Heim-ID                  | string   |              | ID des "Heims" |
+|                          |          |              | |
+| letzte Kommunikation     | boolean  | Nein         | letzte Kommunikation mit dem Netatmo-Server |
+| letztes Ereignis         | boolean  | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
+| letzte Benachrichtigung  | boolean  | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
+| Stärke des Wifi-Signals  | boolean  | Nein         | Ausgabe des Signal in den Abstufungen: _schlecht_, _mittel_, _gut_, _hoch_|
+|                          |          |              | |
+| Webhook                  | string   |              | Webhook, um Daten dieser Kamera abzufragen |
+|  ... IPS IP-Adresse      | string   |              | DynDNS-Name oder IP des IPS-Servers |
+|  ... IPS Portnummer      | integer  | 3777         | Portnummer des IPS-Servers |
+|  ... externe IP-Adresse  | string   |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
+|  ... local CIDR's        | string   |              | durch Semikolog getrennte Liste der lokalen CIDR's (Netzwerke) |
+|  ... Script              | integer  |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
+|                          |          |              | |
+| Ereignisse               |          |              | |
+|  ... max. Alter          | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
+| Benachrichtigung         |          |              | |
+|  ... max. Alter          | integer  | 2            | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
+|                          |          |              | |
+| FTP-Verzeichnis          |          |              | |
+|  ... Verzeichnis         | string   |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
+|  ... max. Alter          | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
+|                          |          |              | |
+| Zeitraffer-Darstellung   |          |              | **nur bei OutdoorCamera** |
+|  ... Verzeichnis         | string   |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
+|  ... Startzeit           | integer  | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
+|  ... max. Alter          | integer  | 7            | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
+|                          |          |              | |
+| Benachrichtigungen       |          |              | |
+|  ... Script              | integer  |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
+| neue Ereignisse          |          |              | |
+|  ... Script              | integer  |              | Script, das beim Emfang neuer Ereignisse aufgerufen wird |
+|                          |          |              | |
+| geänderte VPN-URL        |          |              | |
+|  ... Script              | integer  |              | Script, das bei Änderung der VPN-URL aufgerufen wird |
+|                          |          |              | |
+| Personen                 |          |              | **nur bei IndoorCamera** |
+| Kategorie                | integer  | 0            | Kategorie im Objektbaum, unter dem die Instanzen angelegt werden |
+| Personen                 | list     |              | Liste der anlegbaren Personen |
 
 - Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
@@ -411,6 +455,16 @@ Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelln und in einer HTML-Bo
 
 - Script bei geänderter VPN-URL: das Script wird aufgerufen, wenn die VPN-URL bei einem Datenabruf festgestellt wird, das sich die VPN-URL geändert hat (kann jederzeit erfolgen).
 Rumpfscript siehe [docs/processUrlChanged.php](docs/processUrlChanged.php).
+
+### NetatmoSecurityPersons
+
+#### Properties
+
+| Eigenschaft               | Typ      | Standardwert | Beschreibung |
+| :------------------------ | :------  | :----------- | :----------- |
+| Personen-ID               | string   |              | ID der Person |
+| Heim-ID                   | string   |              | ID des "Heims" |
+| Pseudonym                 | string   |              | |
 
 ### Variablenprofile
 

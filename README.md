@@ -74,6 +74,8 @@ Anschließend erscheint ein Eintrag für das Modul in der Liste der Instanz _Mod
 
 ### b. Einrichtung in IPS
 
+#### NetatmoSecurityIO
+
 In IP-Symcon nun unterhalb von _I/O Instanzen_ die Funktion _Instanz hinzufügen_ (_CTRL+1_) auswählen, als Hersteller _Netatmo_ und als Gerät _NetatmoSecurity I/O_ auswählen.
 
 In dem Konfigurationsformular nun den gewünschten Zugang wählen, entweder als Nutzer über IP-Symcon Connect oder als Entwickler mit eigenem Entwicklerschlüssel.
@@ -96,6 +98,7 @@ Anmerkung: auch wenn hier alle möglichen Netamo-Produkte aufgelistet sind, bezi
 
 In dem Konfigurationsdialog die Netatmo-Zugangsdaten eintragen.
 
+#### NetatmoSecurityConfig
 
 Dann unter _Konfigurator Instanzen_ analog den Konfigurator _NetatmoSecurity Konfigurator_ hinzufügen.
 

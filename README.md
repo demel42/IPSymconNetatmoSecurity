@@ -566,7 +566,7 @@ GUIDs
 
 - 1.13 @ 03.02.2020 15:35
   - Ergänzung um die Möglichkeit per OAuth anzumelden
-    Achtung: in der IO-Instanz den Verbindungstyp nach dem Update auf _Developer Key_ setzen!
+    Achtung: in der IO-Instanz den Verbindungstyp nach dem Update auf _Entwickler-Schlüssel_ setzen!
   - Abfangen von HTTP-Error 406, wenn kein WebHook registriert ist
   - Bugfix: die setperson*-API-Aufrufe sind POST, nicht GET
 

@@ -51,6 +51,7 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
 ### a. Laden des Moduls
 
 **Installieren über den Module-Store**
+
 Die Webconsole von IP-Symcon mit http://<IP-Symcon IP>:3777/console/ öffnen.
 
 Anschließend oben rechts auf das Symbol für den Modulstore (IP-Symcon > 5.1) klicken

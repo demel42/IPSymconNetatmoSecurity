@@ -389,7 +389,7 @@ Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in d
 | Eigenschaft               | Typ      | Standardwert | Beschreibung |
 | :------------------------ | :------  | :----------- | :----------- |
 | Kategorie                 | integer  | 0            | Kategorie im Objektbaum, unter dem die Instanzen angelegt werden |
-| Produkte                  | list     |              | Liste der anlegbaren Produkte |
+| Produkte                  | list     |              | Liste der verfügbaren Produkte |
 
 ### NetatmoSecurityCamera
 
@@ -439,7 +439,7 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |                          |          |              | |
 | Personen                 |          |              | **nur bei IndoorCamera** |
 | Kategorie                | integer  | 0            | Kategorie im Objektbaum, unter dem die Instanzen angelegt werden |
-| Personen                 | list     |              | Liste der anlegbaren Personen |
+| Personen                 | list     |              | Liste der verfügbaren Personen zu diesem Heim |
 
 - Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.

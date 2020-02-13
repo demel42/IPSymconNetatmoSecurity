@@ -647,15 +647,18 @@ class NetatmoSecurityCamera extends IPSModule
                                     }
 
                                     if ($with_light) {
-                                        $light_mode_status = $this->map_lightmode_status($this->GetArrayElem($camera, 'light_mode_status', ''));
-                                        if (is_int($light_mode_status)) {
-                                            $this->SetValue('LightmodeStatus', $light_mode_status);
-                                            if ($light_mode_status == LIGHT_STATUS_ON) {
-                                                $v = LIGHT_STATUS_OFF;
-                                            } else {
-                                                $v = LIGHT_STATUS_ON;
+                                        $s = $this->GetArrayElem($camera, 'light_mode_status', '');
+                                        if ($s != '') {
+                                            $light_mode_status = $this->map_lightmode_status($s);
+                                            if (is_int($light_mode_status)) {
+                                                $this->SetValue('LightmodeStatus', $light_mode_status);
+                                                if ($light_mode_status == LIGHT_STATUS_ON) {
+                                                    $v = LIGHT_STATUS_OFF;
+                                                } else {
+                                                    $v = LIGHT_STATUS_ON;
+                                                }
+                                                $this->SetValue('LightAction', $v);
                                             }
-                                            $this->SetValue('LightAction', $v);
                                         }
                                     }
                                 }

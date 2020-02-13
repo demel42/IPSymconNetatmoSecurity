@@ -15,12 +15,7 @@
 			"Id": "Id",
 
 			"category for products to be created:": "Kategorie für anzulegende Produkte:",
-            "category": "Kategorie",
-
-			"Module description": "Modulbeschreibung",
-
-			"selected product missing": "Ausgewähltes Produkt nicht gefunden",
-			"no product selected": "Kein Produkt ausgewählt",
+			"category": "Kategorie",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
@@ -38,7 +33,9 @@
 			"Instance is inactive (product missing)": "Instanz ist inaktiv (Produkt ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
 			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)",
-			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)"
+			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)",
+			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
+			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)"
 		}
 	}
 }

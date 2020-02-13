@@ -2,15 +2,10 @@
 
 declare(strict_types=1);
 
-if (!defined('VARIABLETYPE_BOOLEAN')) {
-    define('VARIABLETYPE_BOOLEAN', 0);
-    define('VARIABLETYPE_INTEGER', 1);
-    define('VARIABLETYPE_FLOAT', 2);
-    define('VARIABLETYPE_STRING', 3);
-}
-
-if (!defined('MEDIATYPE_DOCUMENT')) {
-    define('MEDIATYPE_DOCUMENT', 5);
+if (!defined('CONNECTION_UNDEFINED')) {
+    define('CONNECTION_UNDEFINED', 0);
+    define('CONNECTION_OAUTH', 1);
+    define('CONNECTION_DEVELOPER', 2);
 }
 
 if (!defined('STATUS_INVALID')) {
@@ -31,6 +26,8 @@ if (!defined('IS_NODATA')) {
     define('IS_NOWEBHOOK', IS_EBASE + 9);
     define('IS_USEDWEBHOOK', IS_EBASE + 10);
     define('IS_INVALIDCONFIG', IS_EBASE + 11);
+    define('IS_NOSYMCONCONNECT', IS_EBASE + 12);
+    define('IS_NOLOGIN', IS_EBASE + 13);
 }
 
 trait NetatmoSecurityCommon
@@ -285,6 +282,8 @@ trait NetatmoSecurityCommon
         $formStatus[] = ['code' => IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
         $formStatus[] = ['code' => IS_USEDWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook already in use)'];
         $formStatus[] = ['code' => IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid config)'];
+        $formStatus[] = ['code' => IS_NOSYMCONCONNECT, 'icon' => 'error', 'caption' => 'Instance is inactive (no Symcon-Connect)'];
+        $formStatus[] = ['code' => IS_NOLOGIN, 'icon' => 'error', 'caption' => 'Instance is inactive (not logged in)'];
 
         return $formStatus;
     }

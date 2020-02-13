@@ -183,13 +183,26 @@ class NetatmoSecurityPerson extends IPSModule
 
         switch ($mode) {
             case PRESENCE_ACTION_AWAY:
-                $url .= 'setpersonsaway?home_id=' . rawurlencode($home_id) . '&person_id=' . rawurlencode($person_id);
+                $url .= 'setpersonsaway';
+                $postdata = [
+                    'home_id'    => $home_id,
+                    'person_id'  => $person_id
+                ];
                 break;
             case PRESENCE_ACTION_HOME:
-                $url .= 'setpersonshome?home_id=' . rawurlencode($home_id) . '&person_ids=' . rawurlencode(json_encode([$person_id]));
+                $url .= 'setpersonshome';
+                $postdata = [
+                    'home_id'    => $home_id,
+                    'person_ids' => [
+                        $person_id
+                    ]
+                ];
                 break;
             case PRESENCE_ACTION_ALLAWAY:
-                $url .= 'setpersonsaway?home_id=' . rawurlencode($home_id);
+                $url .= 'setpersonsaway';
+                $postdata = [
+                    'home_id'   => $home_id
+                ];
                 break;
             default:
                 $err = 'unknown mode "' . $mode . '"';
@@ -198,7 +211,8 @@ class NetatmoSecurityPerson extends IPSModule
                 return false;
         }
 
-        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGetWithAuth', 'Url' => $url];
+        $pdata = json_encode($postdata);
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
         $data = $this->SendDataToParent(json_encode($SendData));
 
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);

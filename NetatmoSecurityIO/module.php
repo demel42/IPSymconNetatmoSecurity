@@ -258,7 +258,7 @@ class NetatmoSecurityIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'refresh_token=' . print_r($refresh_token, true), 0);
             if ($refresh_token == 'False') {
                 $this->SendDebug(__FUNCTION__, 'has no refresh_token', 0);
-                $this->SetBuffer('ApiRefreshToken', '');
+                $this->WriteAttributeString('ApiRefreshToken', '');
                 return false;
             }
             if ($refresh_token == '') {
@@ -501,13 +501,19 @@ class NetatmoSecurityIO extends IPSModule
 
         $formActions[] = [
             'type'    => 'Button',
-            'caption' => 'Update data',
-            'onClick' => 'NetatmoSecurity_UpdateData($id);'
+            'caption' => 'Register Webhook',
+            'onClick' => 'NetatmoSecurity_AddWebhook($id);'
         ];
         $formActions[] = [
             'type'    => 'Button',
-            'caption' => 'Register Webhook',
-            'onClick' => 'NetatmoSecurity_AddWebhook($id);'
+            'caption' => 'Clear Token',
+            'onClick' => 'NetatmoSecurity_ClearToken($id);'
+        ];
+
+        $formActions[] = [
+            'type'    => 'Button',
+            'caption' => 'Update data',
+            'onClick' => 'NetatmoSecurity_UpdateData($id);'
         ];
 
         return $formActions;
@@ -845,6 +851,17 @@ class NetatmoSecurityIO extends IPSModule
         readfile($path);
     }
 
+    public function ClearToken()
+    {
+        $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
+        $this->SendDebug(__FUNCTION__, 'clear refresh_token=' . $refresh_token, 0);
+        $this->WriteAttributeString('ApiRefreshToken', '');
+
+        $access_token = $this->GetApiAccessToken();
+        $this->SendDebug(__FUNCTION__, 'clear access_token=' . $access_token, 0);
+        $this->SetBuffer('ApiAccessToken', '');
+    }
+
     public function AddWebhook()
     {
         if ($this->CheckStatus() == STATUS_INVALID) {
@@ -1031,100 +1048,5 @@ class NetatmoSecurityIO extends IPSModule
         $ret = json_encode(['status' => $status, 'msg' => $msg, 'data' => $data]);
         $this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
         return $ret;
-    }
-
-    private function do_HttpRequest($url, $header, $postdata, $mode, &$data, &$err)
-    {
-        $this->SendDebug(__FUNCTION__, 'http-' . $mode . ': url=' . $url, 0);
-        $time_start = microtime(true);
-
-        if ($header != '') {
-            $this->SendDebug(__FUNCTION__, '    header=' . print_r($header, true), 0);
-        }
-        if ($postdata != '') {
-            $this->SendDebug(__FUNCTION__, '    postdata=' . print_r($postdata, true), 0);
-        }
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        if ($header) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        }
-        switch ($mode) {
-            case 'GET':
-                break;
-            case 'POST':
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-                break;
-            case 'PUT':
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
-                break;
-            case 'DELETE':
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
-                break;
-        }
-
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        $cdata = curl_exec($ch);
-        $cerrno = curl_errno($ch);
-        $cerror = $cerrno ? curl_error($ch) : '';
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        $duration = round(microtime(true) - $time_start, 2);
-        $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
-        $this->SendDebug(__FUNCTION__, '    cdata=' . $cdata, 0);
-
-        $statuscode = 0;
-        $err = '';
-        $data = '';
-
-        if ($cerrno) {
-            $statuscode = IS_SERVERERROR;
-            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        } elseif ($httpcode != 200) {
-            if ($httpcode == 401) {
-                $statuscode = IS_UNAUTHORIZED;
-                $err = 'got http-code ' . $httpcode . ' (unauthorized)';
-            } elseif ($httpcode == 403) {
-                $statuscode = IS_FORBIDDEN;
-                $err = 'got http-code ' . $httpcode . ' (forbidden)';
-            } elseif ($httpcode == 406) {
-                if (preg_match('#^https://api.netatmo.net/api/dropwebhook#', $url)) {
-                    $data = $cdata;
-                } else {
-                    $statuscode = IS_HTTPERROR;
-                    $err = 'got http-code ' . $httpcode . ' (not acceptable)';
-                }
-            } elseif ($httpcode == 409) {
-                $data = $cdata;
-            } elseif ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } else {
-                $statuscode = IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode;
-            }
-        } elseif ($cdata == '') {
-            $statuscode = IS_NODATA;
-            $err = 'no data';
-        } else {
-            $jdata = json_decode($cdata, true);
-            if ($jdata == '') {
-                $statuscode = IS_INVALIDDATA;
-                $err = 'malformed response';
-            } else {
-                $data = $cdata;
-            }
-        }
-
-        $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
-        $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
-        return $statuscode;
     }
 }

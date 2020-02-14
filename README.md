@@ -568,6 +568,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.14 @ 14.02.2020 11:37
+  - Bugfix zu 1.23: Zugriff auf Ligh funktionierte nicht mehr
+  - Funktion in der IO-Konfiguration, um die Token zu löschen
+
 - 1.13 @ 03.02.2020 15:35
   - Ergänzung um die Möglichkeit per OAuth anzumelden
     Achtung: in der IO-Instanz den Verbindungstyp nach dem Update auf _Entwickler-Schlüssel_ setzen!

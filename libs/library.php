@@ -119,26 +119,26 @@ trait NetatmoSecurityLibrary
     private function determineVpnUrl()
     {
         $vpn_url = $this->GetBuffer('vpn_url');
-		$this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
+        $this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
         return $vpn_url;
     }
 
     private function determineLocalUrl()
     {
         $is_local = $this->GetBuffer('is_local');
-		$this->SendDebug(__FUNCTION__, 'is_local=' . $is_local, 0);
+        $this->SendDebug(__FUNCTION__, 'is_local=' . $is_local, 0);
         if (!$is_local) {
             return false;
         }
 
         $local_url = $this->GetBuffer('local_url');
-		$this->SendDebug(__FUNCTION__, 'local_url=' . $local_url, 0);
+        $this->SendDebug(__FUNCTION__, 'local_url=' . $local_url, 0);
         if ($local_url != '') {
             return $local_url;
         }
 
         $vpn_url = $this->GetBuffer('vpn_url');
-		$this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
+        $this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
         if ($vpn_url == '') {
             return false;
         }

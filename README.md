@@ -569,7 +569,7 @@ GUIDs
 ## 7. Versions-Historie
 
 - 1.14 @ 14.02.2020 11:37
-  - Bugfix zu 1.23: Zugriff auf Ligh funktionierte nicht mehr
+  - Bugfix zu 1.23: Zugriff auf Licht funktionierte nicht mehr
   - Funktion in der IO-Konfiguration, um die Token zu löschen
 
 - 1.13 @ 03.02.2020 15:35

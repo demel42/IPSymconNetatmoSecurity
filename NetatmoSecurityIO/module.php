@@ -60,7 +60,7 @@ class NetatmoSecurityIO extends IPSModule
         if ($Message == IPS_KERNELSHUTDOWN) {
             $register_webhook = $this->ReadPropertyBoolean('register_webhook');
             if ($register_webhook && $this->GetBuffer('ApiAccessToken') != '') {
-                $this->LogMessage('drop webhook', KL_WARNING);
+                $this->LogMessage('drop webhook', KL_NOTIFY);
                 $this->DropWebhook();
             }
         }

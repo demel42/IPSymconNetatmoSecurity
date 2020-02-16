@@ -568,12 +568,16 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.15 @ 16.02.2020 15:40
+  - bei IPS_SHUTDOWN wird DropWebhook() aufgerufen; da das Modul die Events von Netatmo nicht mehr abarbeiten kann,
+    würde der WebHook ggfs. für 24h gesperrt werden.
+
 - 1.14 @ 14.02.2020 11:37
   - Bugfix zu 1.23: Zugriff auf Licht funktionierte nicht mehr
   - Funktion in der IO-Konfiguration, um die Token zu löschen
 
 - 1.13 @ 03.02.2020 15:35
-  - Ergänzung um die Möglichkeit per OAuth anzumelden
+  - Ergänzung um die Möglichkeit per OAuth anzumelden<br>
     Achtung: in der IO-Instanz den Verbindungstyp nach dem Update auf _Entwickler-Schlüssel_ setzen!
   - Abfangen von HTTP-Error 406, wenn kein WebHook registriert ist
   - Bugfix: die setperson*-API-Aufrufe sind POST, nicht GET

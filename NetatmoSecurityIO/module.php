@@ -37,6 +37,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->RegisterTimer('UpdateData', 0, 'NetatmoSecurity_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+        $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->RegisterHook('/hook/NetatmoSecurity');
@@ -53,7 +54,15 @@ class NetatmoSecurityIO extends IPSModule
                 $this->RegisterOAuth($this->oauthIdentifer);
             }
             $this->RegisterHook('/hook/NetatmoSecurity');
+            $this->AddWebhook();
             $this->UpdateData();
+        }
+        if ($Message == IPS_KERNELSHUTDOWN) {
+            $register_webhook = $this->ReadPropertyBoolean('register_webhook');
+            if ($register_webhook && $this->GetBuffer('ApiAccessToken') != '') {
+                $this->LogMessage('drop webhook', KL_WARNING);
+                $this->DropWebhook();
+            }
         }
     }
 

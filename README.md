@@ -568,6 +568,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.16 @ 05.03.2020 17:43
+  - Wechsel des Verbindungstyp wird nun automatisch erkannt
+
 - 1.15 @ 16.02.2020 15:40
   - bei IPS_SHUTDOWN wird DropWebhook() aufgerufen; da das Modul die Events von Netatmo nicht mehr abarbeiten kann,
     würde der WebHook ggfs. für 24h gesperrt werden.

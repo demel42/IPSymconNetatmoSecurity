@@ -182,12 +182,15 @@ class NetatmoSecurityIO extends IPSModule
         $context = stream_context_create($options);
         $cdata = @file_get_contents($url, false, $context);
         $duration = round(microtime(true) - $time_start, 2);
-        if (isset($http_response_header[0]) && preg_match('/HTTP\/[0-9\.]+\s+([0-9]*)/', $http_response_header[0], $r)) {
-            $httpcode = $r[1];
-        } else {
+        $httpcode = 0;
+        if ($cdata == false) {
+            $this->LogMessage('file_get_contents() failed: url=' . $url . ', context=' . print_r($context, true), KL_WARNING);
+            $this->SendDebug(__FUNCTION__, 'file_get_contents() failed: url=' . $url . ', context=' . print_r($context, true), 0);
+        } elseif (!isset($http_response_header[0]) && preg_match('/HTTP\/[0-9\.]+\s+([0-9]*)/', $http_response_header[0], $r)) {
             $this->LogMessage('missing http_response_header, cdata=' . $cdata, KL_WARNING);
-            $this->SendDebug(__FUNCTION__, 'http_response_header=' . print_r($http_response_header, true), 0);
-            $httpcode = 0;
+            $this->SendDebug(__FUNCTION__, 'missing http_response_header, cdata=' . $cdata, 0);
+        } else {
+            $httpcode = $r[1];
         }
         $this->SendDebug(__FUNCTION__, ' => httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
         $this->SendDebug(__FUNCTION__, '    cdata=' . $cdata, 0);
@@ -254,9 +257,12 @@ class NetatmoSecurityIO extends IPSModule
             $data = $this->GetBuffer('ApiAccessToken');
             if ($data != '') {
                 $jdata = json_decode($data, true);
-                if (time() < $jdata['expiration']) {
-                    $this->SendDebug(__FUNCTION__, 'access_token=' . $jdata['access_token'] . ', valid until ' . date('d.m.y H:i:s', $jdata['expiration']), 0);
-                    return $jdata['access_token'];
+                $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
+                $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
+                $type = isset($jtoken['type']) ? $jtoken['type'] : CONNECTION_UNDEFINED;
+                if ($type == CONNECTION_OAUTH && time() < $expiration) {
+                    $this->SendDebug(__FUNCTION__, 'access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
+                    return $access_token;
                 } else {
                     $this->SendDebug(__FUNCTION__, 'access_token expired', 0);
                 }
@@ -290,7 +296,13 @@ class NetatmoSecurityIO extends IPSModule
             }
         }
         $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
-        $this->SetBuffer('ApiAccessToken', json_encode(['access_token' => $access_token, 'expiration' => $expiration]));
+        $jtoken = [
+            'access_token' => $access_token,
+            'expiration'   => $expiration,
+            'type'         => CONNECTION_OAUTH
+        ];
+        $this->SetBuffer('ApiAccessToken', json_encode($jtoken));
+        $this->do_AddWebhook($access_token);
         return $access_token;
     }
 
@@ -605,8 +617,9 @@ class NetatmoSecurityIO extends IPSModule
                 $jtoken = json_decode($this->GetBuffer('ApiAccessToken'), true);
                 $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
                 $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
+                $type = isset($jtoken['type']) ? $jtoken['type'] : CONNECTION_UNDEFINED;
 
-                if ($expiration < time()) {
+                if ($type != CONNECTION_DEVELOPER || $expiration < time()) {
                     $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
                     if ($refresh_token == '') {
                         $postdata = [
@@ -639,7 +652,7 @@ class NetatmoSecurityIO extends IPSModule
                     }
 
                     if ($statuscode) {
-                        $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                        $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
                         $this->SendDebug(__FUNCTION__, $err, 0);
                         $this->SetStatus($statuscode);
                         $this->SetMultiBuffer('LastData', '');
@@ -653,6 +666,7 @@ class NetatmoSecurityIO extends IPSModule
                     $jtoken = [
                         'access_token' => $access_token,
                         'expiration'   => $expiration,
+                        'type'         => CONNECTION_DEVELOPER
                     ];
                     $this->SetBuffer('ApiAccessToken', json_encode($jtoken));
 
@@ -719,7 +733,7 @@ class NetatmoSecurityIO extends IPSModule
             }
 
             if ($statuscode) {
-                $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
                 $this->SendDebug(__FUNCTION__, $err, 0);
                 $this->SetStatus($statuscode);
                 $this->SetMultiBuffer('LastData', '');
@@ -807,7 +821,7 @@ class NetatmoSecurityIO extends IPSModule
         }
 
         if ($statuscode) {
-            $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+            $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->SetStatus($statuscode);
             $this->SetMultiBuffer('LastData', '');
@@ -926,7 +940,7 @@ class NetatmoSecurityIO extends IPSModule
             }
         }
         if ($statuscode) {
-            $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+            $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->SetStatus($statuscode);
             return;
@@ -975,7 +989,7 @@ class NetatmoSecurityIO extends IPSModule
             }
         }
         if ($statuscode) {
-            $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+            $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->SetStatus($statuscode);
             return;

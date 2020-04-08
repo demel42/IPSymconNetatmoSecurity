@@ -14,24 +14,22 @@ if (!defined('STATUS_INVALID')) {
     define('STATUS_RETRYABLE', 2);
 }
 
-if (!defined('IS_NODATA')) {
-    define('IS_NODATA', IS_EBASE + 1);
-    define('IS_UNAUTHORIZED', IS_EBASE + 2);
-    define('IS_FORBIDDEN', IS_EBASE + 3);
-    define('IS_SERVERERROR', IS_EBASE + 4);
-    define('IS_HTTPERROR', IS_EBASE + 5);
-    define('IS_INVALIDDATA', IS_EBASE + 6);
-    define('IS_NOPRODUCT', IS_EBASE + 7);
-    define('IS_PRODUCTMISSІNG', IS_EBASE + 8);
-    define('IS_NOWEBHOOK', IS_EBASE + 9);
-    define('IS_USEDWEBHOOK', IS_EBASE + 10);
-    define('IS_INVALIDCONFIG', IS_EBASE + 11);
-    define('IS_NOSYMCONCONNECT', IS_EBASE + 12);
-    define('IS_NOLOGIN', IS_EBASE + 13);
-}
-
 trait NetatmoSecurityCommon
 {
+    public static $IS_NODATA = IS_EBASE + 1;
+    public static $IS_UNAUTHORIZED = IS_EBASE + 2;
+    public static $IS_FORBIDDEN = IS_EBASE + 3;
+    public static $IS_SERVERERROR = IS_EBASE + 4;
+    public static $IS_HTTPERROR = IS_EBASE + 5;
+    public static $IS_INVALIDDATA = IS_EBASE + 6;
+    public static $IS_NOPRODUCT = IS_EBASE + 7;
+    public static $IS_PRODUCTMISSІNG = IS_EBASE + 8;
+    public static $IS_NOWEBHOOK = IS_EBASE + 9;
+    public static $IS_USEDWEBHOOK = IS_EBASE + 10;
+    public static $IS_INVALIDCONFIG = IS_EBASE + 11;
+    public static $IS_NOSYMCONCONNECT = IS_EBASE + 12;
+    public static $IS_NOLOGIN = IS_EBASE + 13;
+
     protected function SetValue($Ident, $Value)
     {
         @$varID = $this->GetIDForIdent($Ident);
@@ -271,19 +269,19 @@ trait NetatmoSecurityCommon
         $formStatus[] = ['code' => IS_INACTIVE, 'icon' => 'inactive', 'caption' => 'Instance is inactive'];
         $formStatus[] = ['code' => IS_NOTCREATED, 'icon' => 'inactive', 'caption' => 'Instance is not created'];
 
-        $formStatus[] = ['code' => IS_NODATA, 'icon' => 'error', 'caption' => 'Instance is inactive (no data)'];
-        $formStatus[] = ['code' => IS_UNAUTHORIZED, 'icon' => 'error', 'caption' => 'Instance is inactive (unauthorized)'];
-        $formStatus[] = ['code' => IS_FORBIDDEN, 'icon' => 'error', 'caption' => 'Instance is inactive (forbidden)'];
-        $formStatus[] = ['code' => IS_SERVERERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (server error)'];
-        $formStatus[] = ['code' => IS_HTTPERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (http error)'];
-        $formStatus[] = ['code' => IS_INVALIDDATA, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid data)'];
-        $formStatus[] = ['code' => IS_NOPRODUCT, 'icon' => 'error', 'caption' => 'Instance is inactive (no product)'];
-        $formStatus[] = ['code' => IS_PRODUCTMISSІNG, 'icon' => 'error', 'caption' => 'Instance is inactive (product missing)'];
-        $formStatus[] = ['code' => IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
-        $formStatus[] = ['code' => IS_USEDWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook already in use)'];
-        $formStatus[] = ['code' => IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid config)'];
-        $formStatus[] = ['code' => IS_NOSYMCONCONNECT, 'icon' => 'error', 'caption' => 'Instance is inactive (no Symcon-Connect)'];
-        $formStatus[] = ['code' => IS_NOLOGIN, 'icon' => 'error', 'caption' => 'Instance is inactive (not logged in)'];
+        $formStatus[] = ['code' => self::$IS_NODATA, 'icon' => 'error', 'caption' => 'Instance is inactive (no data)'];
+        $formStatus[] = ['code' => self::$IS_UNAUTHORIZED, 'icon' => 'error', 'caption' => 'Instance is inactive (unauthorized)'];
+        $formStatus[] = ['code' => self::$IS_FORBIDDEN, 'icon' => 'error', 'caption' => 'Instance is inactive (forbidden)'];
+        $formStatus[] = ['code' => self::$IS_SERVERERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (server error)'];
+        $formStatus[] = ['code' => self::$IS_HTTPERROR, 'icon' => 'error', 'caption' => 'Instance is inactive (http error)'];
+        $formStatus[] = ['code' => self::$IS_INVALIDDATA, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid data)'];
+        $formStatus[] = ['code' => self::$IS_NOPRODUCT, 'icon' => 'error', 'caption' => 'Instance is inactive (no product)'];
+        $formStatus[] = ['code' => self::$IS_PRODUCTMISSІNG, 'icon' => 'error', 'caption' => 'Instance is inactive (product missing)'];
+        $formStatus[] = ['code' => self::$IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
+        $formStatus[] = ['code' => self::$IS_USEDWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook already in use)'];
+        $formStatus[] = ['code' => self::$IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid config)'];
+        $formStatus[] = ['code' => self::$IS_NOSYMCONCONNECT, 'icon' => 'error', 'caption' => 'Instance is inactive (no Symcon-Connect)'];
+        $formStatus[] = ['code' => self::$IS_NOLOGIN, 'icon' => 'error', 'caption' => 'Instance is inactive (not logged in)'];
 
         return $formStatus;
     }
@@ -294,12 +292,12 @@ trait NetatmoSecurityCommon
             case IS_ACTIVE:
                 $class = STATUS_VALID;
                 break;
-            case IS_NODATA:
-            case IS_UNAUTHORIZED:
-            case IS_FORBIDDEN:
-            case IS_SERVERERROR:
-            case IS_HTTPERROR:
-            case IS_INVALIDDATA:
+            case self::$IS_NODATA:
+            case self::$IS_UNAUTHORIZED:
+            case self::$IS_FORBIDDEN:
+            case self::$IS_SERVERERROR:
+            case self::$IS_HTTPERROR:
+            case self::$IS_INVALIDDATA:
                 $class = STATUS_RETRYABLE;
                 break;
             default:

@@ -238,38 +238,38 @@ trait NetatmoSecurityLibrary
         $data = '';
 
         if ($cerrno) {
-            $statuscode = IS_SERVERERROR;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
         } elseif ($httpcode != 200) {
             if ($httpcode == 401) {
-                $statuscode = IS_UNAUTHORIZED;
+                $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
             } elseif ($httpcode == 403) {
-                $statuscode = IS_FORBIDDEN;
+                $statuscode = self::$IS_FORBIDDEN;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
             } elseif ($httpcode == 406) {
                 if (preg_match('#^https://api.netatmo.net/api/dropwebhook#', $url)) {
                     $data = $cdata;
                 } else {
-                    $statuscode = IS_HTTPERROR;
+                    $statuscode = self::$IS_HTTPERROR;
                     $err = 'got http-code ' . $httpcode . ' (not acceptable)';
                 }
             } elseif ($httpcode == 409) {
                 $data = $cdata;
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = IS_SERVERERROR;
+                $statuscode = self::$IS_SERVERERROR;
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } else {
-                $statuscode = IS_HTTPERROR;
+                $statuscode = self::$IS_HTTPERROR;
                 $err = 'got http-code ' . $httpcode;
             }
         } elseif ($cdata == '') {
-            $statuscode = IS_NODATA;
+            $statuscode = self::$IS_NODATA;
             $err = 'no data';
         } else {
             $jdata = json_decode($cdata, true);
             if ($jdata == '') {
-                $statuscode = IS_INVALIDDATA;
+                $statuscode = self::$IS_INVALIDDATA;
                 $err = 'malformed response';
             } else {
                 $data = $cdata;

@@ -171,7 +171,7 @@ class NetatmoSecurityCamera extends IPSModule
                 $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
                 if ($timelapse_hour < -1 || $timelapse_hour > 23) {
                     $this->SendDebug(__FUNCTION__, 'invalid \'timelapse_hour\' "' . $timelapse_hour . '"', 0);
-                    $this->SetStatus(IS_INVALIDCONFIG);
+                    $this->SetStatus(self::$IS_INVALIDCONFIG);
                     return;
                 }
             }
@@ -180,7 +180,7 @@ class NetatmoSecurityCamera extends IPSModule
             if ($ipsIP != '') {
                 if ($this->deternmineIp($ipsIP) == false) {
                     $this->SendDebug(__FUNCTION__, 'invalid \'ipsIP\' "' . $ipsIP . '"', 0);
-                    $this->SetStatus(IS_INVALIDCONFIG);
+                    $this->SetStatus(self::$IS_INVALIDCONFIG);
                     return;
                 }
             }
@@ -189,7 +189,7 @@ class NetatmoSecurityCamera extends IPSModule
             if ($externalIP != '') {
                 if ($this->deternmineIp($externalIP) == false) {
                     $this->SendDebug(__FUNCTION__, 'invalid \'externalIPˇ\' "' . $externalIP . '"', 0);
-                    $this->SetStatus(IS_INVALIDCONFIG);
+                    $this->SetStatus(self::$IS_INVALIDCONFIG);
                     return;
                 }
             }
@@ -218,7 +218,7 @@ class NetatmoSecurityCamera extends IPSModule
                 }
                 if (!$ok) {
                     $this->SendDebug(__FUNCTION__, 'invalid \'localCIDRs\' "' . $localCIDRs . '"', 0);
-                    $this->SetStatus(IS_INVALIDCONFIG);
+                    $this->SetStatus(self::$IS_INVALIDCONFIG);
                     return;
                 }
             }
@@ -226,7 +226,7 @@ class NetatmoSecurityCamera extends IPSModule
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
                 if ($this->HookIsUsed($hook)) {
-                    $this->SetStatus(IS_USEDWEBHOOK);
+                    $this->SetStatus(self::$IS_USEDWEBHOOK);
                     return;
                 }
                 $this->RegisterHook($hook);
@@ -270,7 +270,7 @@ class NetatmoSecurityCamera extends IPSModule
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
                 if ($this->HookIsUsed($hook)) {
-                    $this->SetStatus(IS_USEDWEBHOOK);
+                    $this->SetStatus(self::$IS_USEDWEBHOOK);
                     return;
                 }
                 $this->RegisterHook($hook);

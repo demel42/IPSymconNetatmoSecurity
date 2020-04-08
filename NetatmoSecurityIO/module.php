@@ -92,12 +92,12 @@ class NetatmoSecurityIO extends IPSModule
                 break;
             case CONNECTION_OAUTH:
                 if ($this->GetConnectUrl() == false) {
-                    $this->SetStatus(IS_NOSYMCONCONNECT);
+                    $this->SetStatus(self::$IS_NOSYMCONCONNECT);
                     return;
                 }
                 $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
                 if ($refresh_token == '') {
-                    $this->SetStatus(IS_NOLOGIN);
+                    $this->SetStatus(self::$IS_NOLOGIN);
                 } else {
                     $this->SetStatus(IS_ACTIVE);
                 }
@@ -116,12 +116,12 @@ class NetatmoSecurityIO extends IPSModule
                 if ($webhook_baseurl == '') {
                     $webhook_baseurl = $this->GetConnectUrl();
                     if ($webhook_baseurl == '') {
-                        $this->SetStatus(IS_NOWEBHOOK);
+                        $this->SetStatus(self::$IS_NOWEBHOOK);
                         return;
                     }
                 }
                 if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
-                    $this->SetStatus(IS_USEDWEBHOOK);
+                    $this->SetStatus(self::$IS_USEDWEBHOOK);
                     return;
                 }
             } else {
@@ -197,31 +197,31 @@ class NetatmoSecurityIO extends IPSModule
 
         if ($httpcode != 200) {
             if ($httpcode == 401) {
-                $statuscode = IS_UNAUTHORIZED;
+                $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
             } elseif ($httpcode == 403) {
-                $statuscode = IS_FORBIDDEN;
+                $statuscode = self::$IS_FORBIDDEN;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
             } elseif ($httpcode == 409) {
                 $data = $cdata;
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = IS_SERVERERROR;
+                $statuscode = self::$IS_SERVERERROR;
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } else {
-                $statuscode = IS_HTTPERROR;
+                $statuscode = self::$IS_HTTPERROR;
                 $err = 'got http-code ' . $httpcode;
             }
         } elseif ($cdata == '') {
-            $statuscode = IS_NODATA;
+            $statuscode = self::$IS_NODATA;
             $err = 'no data';
         } else {
             $jdata = json_decode($cdata, true);
             if ($jdata == '') {
-                $statuscode = IS_INVALIDDATA;
+                $statuscode = self::$IS_INVALIDDATA;
                 $err = 'malformed response';
             } else {
                 if (!isset($jdata['refresh_token'])) {
-                    $statuscode = IS_INVALIDDATA;
+                    $statuscode = self::$IS_INVALIDDATA;
                     $err = 'malformed response';
                 }
             }
@@ -282,7 +282,7 @@ class NetatmoSecurityIO extends IPSModule
                 $this->WriteAttributeString('ApiRefreshToken', '');
                 $this->SetBuffer('ApiAccessToken', '');
                 $this->SetTimerInterval('UpdateData', 0);
-                $this->SetStatus(IS_NOLOGIN);
+                $this->SetStatus(self::$IS_NOLOGIN);
                 return false;
             }
             $jdata = $this->Call4AccessToken(['refresh_token' => $refresh_token]);
@@ -317,13 +317,13 @@ class NetatmoSecurityIO extends IPSModule
             $this->WriteAttributeString('ApiRefreshToken', '');
             $this->SetBuffer('ApiAccessToken', '');
             $this->SetTimerInterval('UpdateData', 0);
-            $this->SetStatus(IS_NOLOGIN);
+            $this->SetStatus(self::$IS_NOLOGIN);
             return;
         }
         $refresh_token = $this->FetchRefreshToken($_GET['code']);
         $this->SendDebug(__FUNCTION__, 'refresh_token=' . $refresh_token, 0);
         $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
-        if ($this->GetStatus() == IS_NOLOGIN) {
+        if ($this->GetStatus() == self::$IS_NOLOGIN) {
             $this->SetTimerInterval('UpdateData', 1000);
             $this->SetStatus(IS_ACTIVE);
         }
@@ -660,7 +660,7 @@ class NetatmoSecurityIO extends IPSModule
                         $params = json_decode($data, true);
                         $this->SendDebug(__FUNCTION__, 'params=' . print_r($params, true), 0);
                         if ($params['access_token'] == '') {
-                            $statuscode = IS_INVALIDDATA;
+                            $statuscode = self::$IS_INVALIDDATA;
                             $err = "no 'access_token' in response";
                         }
                     }
@@ -741,7 +741,7 @@ class NetatmoSecurityIO extends IPSModule
             if ($statuscode == 0) {
                 $params = json_decode($data, true);
                 if ($params['access_token'] == '') {
-                    $statuscode = IS_INVALIDDATA;
+                    $statuscode = self::$IS_INVALIDDATA;
                     $err = "no 'access_token' in response";
                 }
             }
@@ -777,7 +777,7 @@ class NetatmoSecurityIO extends IPSModule
     public function UpdateData()
     {
         if ($this->CheckStatus() == STATUS_INVALID) {
-            if ($this->GetStatus() == IS_NOLOGIN) {
+            if ($this->GetStatus() == self::$IS_NOLOGIN) {
                 $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => pause', 0);
                 $this->SetTimerInterval('UpdateData', 0);
             } else {
@@ -789,7 +789,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->SendDebug(__FUNCTION__, '', 0);
         $access_token = $this->GetApiAccessToken();
         if ($access_token == false) {
-            if ($this->GetStatus() == IS_NOLOGIN) {
+            if ($this->GetStatus() == self::$IS_NOLOGIN) {
                 $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => pause', 0);
                 $this->SetTimerInterval('UpdateData', 0);
             } else {
@@ -814,7 +814,7 @@ class NetatmoSecurityIO extends IPSModule
             $status = $jdata['status'];
             if ($status != 'ok') {
                 $err = 'got status "' . $status . '"';
-                $statuscode = IS_INVALIDDATA;
+                $statuscode = self::$IS_INVALIDDATA;
             } else {
                 $empty = true;
                 if (isset($jdata['body']['homes'])) {
@@ -837,10 +837,10 @@ class NetatmoSecurityIO extends IPSModule
                 }
                 if ($empty) {
                     $err = 'data contains no cameras or smokedetectors';
-                    $statuscode = IS_NOPRODUCT;
+                    $statuscode = self::$IS_NOPRODUCT;
                 }
             }
-        } elseif ($statuscode == IS_FORBIDDEN) {
+        } elseif ($statuscode == self::$IS_FORBIDDEN) {
             $this->SetBuffer('ApiAccessToken', '');
         }
 
@@ -960,7 +960,7 @@ class NetatmoSecurityIO extends IPSModule
             $status = $jdata['status'];
             if ($status != 'ok') {
                 $err = 'got status "' . $status . '"';
-                $statuscode = IS_INVALIDDATA;
+                $statuscode = self::$IS_INVALIDDATA;
             }
         }
         if ($statuscode) {
@@ -1002,13 +1002,13 @@ class NetatmoSecurityIO extends IPSModule
                     if (isset($jdata['error']['messages'])) {
                         $err .= ' (' . $jdata['error']['messages'] . ')';
                     }
-                    $statuscode = IS_INVALIDDATA;
+                    $statuscode = self::$IS_INVALIDDATA;
                 }
             } elseif (isset($jdata['status'])) {
                 $status = $jdata['status'];
                 if ($status != 'ok') {
                     $err = 'got status "' . $status . '"';
-                    $statuscode = IS_INVALIDDATA;
+                    $statuscode = self::$IS_INVALIDDATA;
                 }
             }
         }

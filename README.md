@@ -417,8 +417,11 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |                          |          |              | |
 | Ereignisse               |          |              | |
 |  ... max. Alter          | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
+|  ... Script              | integer  |              | Script, das beim Empfang neuer Ereignisse aufgerufen wird |
+|                          |          |              | |
 | Benachrichtigung         |          |              | |
 |  ... max. Alter          | integer  | 2            | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
+|  ... Script              | integer  |              | Script, das beim Empfang einer Benachrichtigung aufgerufen wird |
 |                          |          |              | |
 | FTP-Verzeichnis          |          |              | |
 |  ... Verzeichnis         | string   |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
@@ -428,11 +431,6 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... Verzeichnis         | string   |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
 |  ... Startzeit           | integer  | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
 |  ... max. Alter          | integer  | 7            | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
-|                          |          |              | |
-| Benachrichtigungen       |          |              | |
-|  ... Script              | integer  |              | Script, das beim Emfang einer Benachrichtigung aufgerufen wird |
-| neue Ereignisse          |          |              | |
-|  ... Script              | integer  |              | Script, das beim Emfang neuer Ereignisse aufgerufen wird |
 |                          |          |              | |
 | geänderte VPN-URL        |          |              | |
 |  ... Script              | integer  |              | Script, das bei Änderung der VPN-URL aufgerufen wird |

@@ -28,7 +28,7 @@ Hinweis: für den Rauchmelder sowiet die Sensoren gibt es mangels eigener Testm�
 Je nach Produktyp umfasst das Modul folgende Funktionen:
 - Abruf des Status
 - Speicherung der Ereignisse für eine definierbaren Zeitraum
-- Empfang von Mitteilungen vua WebHook
+- Empfang von Mitteilungen via WebHook
 - Ermittlung der URL's zu Abruf von Videos und Snapshots (Live und historisch)
 - Einbindung der optional von Netatmo per _FTP_ übertragenen Videos
 - Steuerung (Kamera aus/ein, Licht ...)

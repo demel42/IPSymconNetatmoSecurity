@@ -566,6 +566,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.18 @ 17.06.2020 16:37
+  - fehlertolerantere Verarbeitung von Daten aus Netatmo im Konfigurator
+
 - 1.17 @ 08.04.2020 12:18
   - define's durch statische Klassen-Variablen ersetzt
 

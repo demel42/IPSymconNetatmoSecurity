@@ -94,15 +94,19 @@ class NetatmoSecurityConfig extends IPSModule
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
 
-        $this->SendDebug(__FUNCTION__, "data=$data", 0);
+        $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
 
         $entries = [];
         if ($data != '') {
             $jdata = json_decode($data, true);
             $homes = $jdata['body']['homes'];
             foreach ($homes as $home) {
-                $home_name = $home['name'];
+                $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
+                if (!isset($home['id'])) {
+                    continue;
+                }
                 $home_id = $home['id'];
+                $home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
                 if (isset($home['cameras'])) {
                     $cameras = $home['cameras'];
                     if ($cameras != '') {

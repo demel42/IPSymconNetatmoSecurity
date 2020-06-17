@@ -344,8 +344,12 @@ class NetatmoSecurityCamera extends IPSModule
 
             $homes = $jdata['body']['homes'];
             foreach ($homes as $home) {
-                $home_name = $home['name'];
+                $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
+                if (!isset($home['id'])) {
+                    continue;
+                }
                 $home_id = $home['id'];
+				$home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
                 if (isset($home['persons'])) {
                     $persons = $home['persons'];
                     if ($persons != '') {

@@ -349,7 +349,7 @@ class NetatmoSecurityCamera extends IPSModule
                     continue;
                 }
                 $home_id = $home['id'];
-				$home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
+                $home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
                 if (isset($home['persons'])) {
                     $persons = $home['persons'];
                     if ($persons != '') {

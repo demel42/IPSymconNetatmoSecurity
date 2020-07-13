@@ -566,6 +566,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.19 @ 13.07.2020 14:56
+  - LICENSE.md hinzugefügt
+
 - 1.18 @ 17.06.2020 18:52
   - fehlertolerantere Verarbeitung von Daten aus Netatmo im Konfigurator
 

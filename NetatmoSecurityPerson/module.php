@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
-require_once __DIR__ . '/../libs/library.php'; // modul-bezogene Funktionen
+require_once __DIR__ . '/../libs/local.php';   // lokale Funktionen
 
 if (!defined('PRESENCE_ACTION_AWAY')) {
     define('PRESENCE_ACTION_AWAY', 0);
@@ -14,7 +14,7 @@ if (!defined('PRESENCE_ACTION_AWAY')) {
 class NetatmoSecurityPerson extends IPSModule
 {
     use NetatmoSecurityCommon;
-    use NetatmoSecurityLibrary;
+    use NetatmoSecurityLocal;
 
     public function Create()
     {

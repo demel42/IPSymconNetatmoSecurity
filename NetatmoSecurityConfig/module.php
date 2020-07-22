@@ -66,37 +66,41 @@ class NetatmoSecurityConfig extends IPSModule
             }
         }
 
-        $create = [
-            'moduleID'       => $guid,
-            'location'       => $this->SetLocation(),
-            'configuration'  => [
-                'product_type' => $product_type,
-                'product_id'   => $product_id,
-                'home_id'      => $home_id,
-            ]
-        ];
-        $create['info'] = $home_name . '\\' . $product_name;
-
         $entry = [
             'category'   => $this->Translate($product_category),
             'home'       => $home_name,
             'name'       => $product_name,
             'product_id' => $product_id,
             'instanceID' => $instID,
-            'create'     => $create,
+            'create'     => [
+                'moduleID'       => $guid,
+                'location'       => $this->SetLocation(),
+                'info'           => $home_name . '\\' . $product_name,
+                'configuration'  => [
+                    'product_type' => $product_type,
+                    'product_id'   => $product_id,
+                    'home_id'      => $home_id,
+                ]
+            ]
         ];
 
         return $entry;
     }
 
-    protected function GetFormElements()
+    private function getConfiguratorValues()
     {
+        $entries = [];
+
+        if ($this->HasActiveParent() == false) {
+            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
+            $this->LogMessage('has no active parent instance', KL_WARNING);
+            return $entries;
+        }
+
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
-
         $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
 
-        $entries = [];
         if ($data != '') {
             $jdata = json_decode($data, true);
             $homes = $jdata['body']['homes'];
@@ -166,7 +170,32 @@ class NetatmoSecurityConfig extends IPSModule
             }
         }
 
-        $configurator = [
+        return $entries;
+    }
+
+    private function GetFormElements()
+    {
+        $formElements = [];
+
+        if ($this->HasActiveParent() == false) {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => 'Instance has no active parent instance',
+            ];
+        }
+
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => 'category for products to be created:'
+        ];
+        $formElements[] = [
+            'type'    => 'SelectCategory',
+            'name'    => 'ImportCategoryID',
+            'caption' => 'category'
+        ];
+
+        $entries = $this->getConfiguratorValues();
+        $formElements[] = [
             'type'    => 'Configurator',
             'name'    => 'products',
             'caption' => 'Products',
@@ -204,15 +233,10 @@ class NetatmoSecurityConfig extends IPSModule
             'values' => $entries,
         ];
 
-        $formElements = [];
-        $formElements[] = ['type' => 'Label', 'caption' => 'category for products to be created:'];
-        $formElements[] = ['name' => 'ImportCategoryID', 'type' => 'SelectCategory', 'caption' => 'category'];
-        $formElements[] = $configurator;
-
         return $formElements;
     }
 
-    protected function GetFormActions()
+    private function GetFormActions()
     {
         $formActions = [];
 

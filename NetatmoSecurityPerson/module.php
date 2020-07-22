@@ -76,24 +76,69 @@ class NetatmoSecurityPerson extends IPSModule
         }
     }
 
-    public function GetConfigurationForm()
+    private function GetFormElements()
     {
         $formElements = [];
 
-        $formElements[] = ['type' => 'CheckBox', 'name' => 'module_disable', 'caption' => 'Instance is disabled'];
+        if ($this->HasActiveParent() == false) {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => 'Instance has no active parent instance',
+            ];
+        }
 
-        $formElements[] = ['type' => 'Label', 'caption' => 'Netatmo Persons'];
+        $formElements[] = [
+            'type'    => 'CheckBox',
+            'name'    => 'module_disable',
+            'caption' => 'Instance is disabled'
+        ];
 
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'person_id', 'caption' => 'Person-ID'];
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'home_id', 'caption' => 'Home-ID'];
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => 'Netatmo Persons'
+        ];
 
-        $formElements[] = ['type' => 'ValidationTextBox', 'name' => 'pseudo', 'caption' => 'Pseudonym'];
+        $formElements[] = [
+            'type'    => 'ValidationTextBox',
+            'name'    => 'person_id',
+            'caption' => 'Person-ID'
+        ];
+        $formElements[] = [
+            'type'    => 'ValidationTextBox',
+            'name'    => 'home_id',
+            'caption' => 'Home-ID'
+        ];
 
+        $formElements[] = [
+            'type'    => 'ValidationTextBox',
+            'name'    => 'pseudo',
+            'caption' => 'Pseudonym'
+        ];
+
+        return $formElements;
+    }
+
+    private function GetFormActions()
+    {
         $formActions = [];
 
+        return $formActions;
+    }
+
+    public function GetConfigurationForm()
+    {
+        $formElements = $this->GetFormElements();
+        $formActions = $this->GetFormActions();
         $formStatus = $this->GetFormStatus();
 
-        return json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
+        $form = json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
+        if ($form == '') {
+            $this->SendDebug(__FUNCTION__, 'json_error=' . json_last_error_msg(), 0);
+            $this->SendDebug(__FUNCTION__, '=> formElements=' . print_r($formElements, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> formActions=' . print_r($formActions, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> formStatus=' . print_r($formStatus, true), 0);
+        }
+        return $form;
     }
 
     public function ReceiveData($data)

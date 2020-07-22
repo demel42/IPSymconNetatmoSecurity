@@ -13,8 +13,8 @@ if (!defined('PRESENCE_ACTION_AWAY')) {
 
 class NetatmoSecurityPerson extends IPSModule
 {
-    use NetatmoSecurityCommon;
-    use NetatmoSecurityLocal;
+    use NetatmoSecurityCommonLib;
+    use NetatmoSecurityLocalLib;
 
     public function Create()
     {

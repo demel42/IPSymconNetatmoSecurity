@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-trait NetatmoSecurityCommon
+trait NetatmoSecurityCommonLib
 {
     protected function SetValue($Ident, $Value)
     {

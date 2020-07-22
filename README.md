@@ -571,6 +571,7 @@ GUIDs
   - Nutzung von HasActiveParent(): Anzeige im Konfigurationsformular sowie entsprechende Absicherung von SendDataToParent()
   - interne Funktionen sind nun "private"
   - library.php in local.php umbenannt
+  - Traits des Moduls haben nun Postfix "Lib"
 
 - 1.18 @ 17.06.2020 18:52
   - fehlertolerantere Verarbeitung von Daten aus Netatmo im Konfigurator

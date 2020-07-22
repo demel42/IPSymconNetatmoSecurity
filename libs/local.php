@@ -40,7 +40,7 @@ if (!defined('POWER_STATUS_UNDEFINED')) {
     define('POWER_STATUS_GOOD', 1);
 }
 
-trait NetatmoSecurityLocal
+trait NetatmoSecurityLocalLib
 {
     public static $IS_NODATA = IS_EBASE + 1;
     public static $IS_UNAUTHORIZED = IS_EBASE + 2;

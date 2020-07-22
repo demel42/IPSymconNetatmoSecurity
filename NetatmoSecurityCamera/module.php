@@ -7,8 +7,8 @@ require_once __DIR__ . '/../libs/local.php';   // lokale Funktionen
 
 class NetatmoSecurityCamera extends IPSModule
 {
-    use NetatmoSecurityCommon;
-    use NetatmoSecurityLocal;
+    use NetatmoSecurityCommonLib;
+    use NetatmoSecurityLocalLib;
 
     public function Create()
     {

@@ -814,7 +814,7 @@ class NetatmoSecurityCamera extends IPSModule
                                         $this->SetBuffer('local_url', '');
                                     }
 
-                                    $is_local = (bool) $this->GetArrayElem($camera, 'is_local', false);
+                                    $is_local = (bool) $this->GetArrayElem($camera, 'is_local', true);
                                     if ($is_local != $this->GetBuffer('is_local')) {
                                         $url_changed = true;
                                         $this->SetBuffer('is_local', $is_local);
@@ -2788,6 +2788,7 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
+        $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID), KL_NOTIFY);
         $this->cleanupPath($path, $max_age, false);
     }
 
@@ -2801,6 +2802,7 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
+        $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID), KL_NOTIFY);
         $this->cleanupPath($path, $max_age, false);
     }
 
@@ -2809,11 +2811,13 @@ class NetatmoSecurityCamera extends IPSModule
         $semaphoreID = __CLASS__ . __FUNCTION__;
         $semaphoreTM = 5 * 60 * 1000; // der Abruf des 'Timelapse' dauert 1-2 min
 
+        $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID), KL_NOTIFY);
         if (IPS_SemaphoreEnter($semaphoreID, $semaphoreTM)) {
             $this->LoadTimelapse();
             IPS_SemaphoreLeave($semaphoreID);
         } else {
             $this->SendDebug(__FUNCTION__, 'sempahore ' . $semaphoreID . ' is not accessable', 0);
+            $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID) . ': sempahore ' . $semaphoreID . ' is not accessable', KL_WARNING);
         }
         $this->SetTimer();
     }
@@ -2823,11 +2827,13 @@ class NetatmoSecurityCamera extends IPSModule
         $semaphoreID = __CLASS__ . __FUNCTION__;
         $semaphoreTM = 500;
 
+        $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID), KL_NOTIFY);
         if (IPS_SemaphoreEnter($semaphoreID, $semaphoreTM)) {
             $this->CleanupVideoPath();
             IPS_SemaphoreLeave($semaphoreID);
         } else {
             $this->SendDebug(__FUNCTION__, 'sempahore ' . $semaphoreID . ' is not accessable', 0);
+            $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID) . ': sempahore ' . $semaphoreID . ' is not accessable', KL_WARNING);
         }
 
         if (IPS_SemaphoreEnter($semaphoreID, $semaphoreTM)) {
@@ -2835,6 +2841,7 @@ class NetatmoSecurityCamera extends IPSModule
             IPS_SemaphoreLeave($semaphoreID);
         } else {
             $this->SendDebug(__FUNCTION__, 'sempahore ' . $semaphoreID . ' is not accessable', 0);
+            $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID) . ': sempahore ' . $semaphoreID . ' is not accessable', KL_WARNING);
         }
         $this->SetTimer();
     }

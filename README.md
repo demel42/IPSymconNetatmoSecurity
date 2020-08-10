@@ -566,12 +566,13 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.19 @ 13.07.2020 14:56 (beta)
+- 1.19 @ 10.08.2020 14:20 (beta)
   - LICENSE.md hinzugefügt
   - Nutzung von HasActiveParent(): Anzeige im Konfigurationsformular sowie entsprechende Absicherung von SendDataToParent()
   - interne Funktionen sind nun "private"
   - library.php in local.php umbenannt
   - Traits des Moduls haben nun Postfix "Lib"
+  - Erkennung, ob es der Zugriff auf die Kameras lokal ist, verbessert
 
 - 1.18 @ 17.06.2020 18:52
   - fehlertolerantere Verarbeitung von Daten aus Netatmo im Konfigurator

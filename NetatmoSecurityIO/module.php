@@ -563,7 +563,7 @@ class NetatmoSecurityIO extends IPSModule
 
     public function ForwardData($data)
     {
-        if ($this->CheckStatus() == STATUS_INVALID) {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return;
         }
@@ -776,7 +776,7 @@ class NetatmoSecurityIO extends IPSModule
 
     public function UpdateData()
     {
-        if ($this->CheckStatus() == STATUS_INVALID) {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
             if ($this->GetStatus() == self::$IS_NOLOGIN) {
                 $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => pause', 0);
                 $this->SetTimerInterval('UpdateData', 0);
@@ -915,7 +915,7 @@ class NetatmoSecurityIO extends IPSModule
 
     public function AddWebhook()
     {
-        if ($this->CheckStatus() == STATUS_INVALID) {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return;
         }
@@ -979,7 +979,7 @@ class NetatmoSecurityIO extends IPSModule
 
     public function DropWebhook()
     {
-        if ($this->CheckStatus() == STATUS_INVALID) {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return;
         }

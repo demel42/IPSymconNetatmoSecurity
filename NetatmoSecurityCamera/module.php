@@ -745,7 +745,7 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function ReceiveData($data)
     {
-        if ($this->CheckStatus() == STATUS_INVALID) {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return;
         }

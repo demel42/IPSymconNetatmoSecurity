@@ -2,44 +2,6 @@
 
 declare(strict_types=1);
 
-if (!defined('CAMERA_STATUS_UNDEFINED')) {
-    define('CAMERA_STATUS_UNDEFINED', -1);
-    define('CAMERA_STATUS_OFF', 0);
-    define('CAMERA_STATUS_ON', 1);
-    define('CAMERA_STATUS_DISCONNECTED', 2);
-}
-
-if (!defined('LIGHT_STATUS_UNDEFINED')) {
-    define('LIGHT_STATUS_UNDEFINED', -1);
-    define('LIGHT_STATUS_OFF', 0);
-    define('LIGHT_STATUS_ON', 1);
-    define('LIGHT_STATUS_AUTO', 2);
-}
-
-if (!defined('CONNECTION_UNDEFINED')) {
-    define('CONNECTION_UNDEFINED', 0);
-    define('CONNECTION_OAUTH', 1);
-    define('CONNECTION_DEVELOPER', 2);
-}
-
-if (!defined('STATUS_INVALID')) {
-    define('STATUS_INVALID', 0);
-    define('STATUS_VALID', 1);
-    define('STATUS_RETRYABLE', 2);
-}
-
-if (!defined('SDCARD_STATUS_UNDEFINED')) {
-    define('SDCARD_STATUS_UNDEFINED', -1);
-    define('SDCARD_STATUS_UNUSABLE', 0);
-    define('SDCARD_STATUS_READY', 1);
-}
-
-if (!defined('POWER_STATUS_UNDEFINED')) {
-    define('POWER_STATUS_UNDEFINED', -1);
-    define('POWER_STATUS_BAD', 0);
-    define('POWER_STATUS_GOOD', 1);
-}
-
 trait NetatmoSecurityLocalLib
 {
     public static $IS_NODATA = IS_EBASE + 1;
@@ -55,6 +17,32 @@ trait NetatmoSecurityLocalLib
     public static $IS_INVALIDCONFIG = IS_EBASE + 11;
     public static $IS_NOSYMCONCONNECT = IS_EBASE + 12;
     public static $IS_NOLOGIN = IS_EBASE + 13;
+
+    public static $STATUS_VALID = 0;
+    public static $STATUS_VALID = 1;
+    public static $STATUS_RETRYABLE = 2;
+
+    public static $CONNECTION_UNDEFINED = 0;
+    public static $CONNECTION_OAUTH = 1;
+    public static $CONNECTION_DEVELOPER = 2;
+
+    public static $CAMERA_STATUS_UNDEFINED = -1;
+    public static $CAMERA_STATUS_OFF = 0;
+    public static $CAMERA_STATUS_ON = 1;
+    public static $CAMERA_STATUS_DISCONNECTED = 2;
+
+    public static $LIGHT_STATUS_UNDEFINED = -1;
+    public static $LIGHT_STATUS_OFF = 0;
+    public static $LIGHT_STATUS_ON = 1;
+    public static $LIGHT_STATUS_AUTO = 2;
+
+    public static $SDCARD_STATUS_UNDEFINED = -1;
+    public static $SDCARD_STATUS_UNUSABLE = 0;
+    public static $SDCARD_STATUS_READY = 1;
+
+    public static $POWER_STATUS_UNDEFINED = -1;
+    public static $POWER_STATUS_BAD = 0;
+    public static $POWER_STATUS_GOOD = 1;
 
     private function GetFormStatus()
     {
@@ -86,7 +74,7 @@ trait NetatmoSecurityLocalLib
     {
         switch ($this->GetStatus()) {
             case IS_ACTIVE:
-                $class = STATUS_VALID;
+                $class = self::$STATUS_VALID;
                 break;
             case self::$IS_NODATA:
             case self::$IS_UNAUTHORIZED:
@@ -94,10 +82,10 @@ trait NetatmoSecurityLocalLib
             case self::$IS_SERVERERROR:
             case self::$IS_HTTPERROR:
             case self::$IS_INVALIDDATA:
-                $class = STATUS_RETRYABLE;
+                $class = self::$STATUS_RETRYABLE;
                 break;
             default:
-                $class = STATUS_INVALID;
+                $class = self::$STATUS_INVALID;
                 break;
         }
 
@@ -108,19 +96,19 @@ trait NetatmoSecurityLocalLib
     {
         switch ($status) {
             case 'off':
-                $val = CAMERA_STATUS_OFF;
+                $val = self::$CAMERA_STATUS_OFF;
                 break;
             case 'on':
-                $val = CAMERA_STATUS_ON;
+                $val = self::$CAMERA_STATUS_ON;
                 break;
             case 'disconnected':
-                $val = CAMERA_STATUS_DISCONNECTED;
+                $val = self::$CAMERA_STATUS_DISCONNECTED;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = CAMERA_STATUS_UNDEFINED;
+                $val = self::$CAMERA_STATUS_UNDEFINED;
                 break;
         }
 
@@ -131,19 +119,19 @@ trait NetatmoSecurityLocalLib
     {
         switch ($status) {
             case 'off':
-                $val = LIGHT_STATUS_OFF;
+                $val = self::$LIGHT_STATUS_OFF;
                 break;
             case 'on':
-                $val = LIGHT_STATUS_ON;
+                $val = self::$LIGHT_STATUS_ON;
                 break;
             case 'auto':
-                $val = LIGHT_STATUS_AUTO;
+                $val = self::$LIGHT_STATUS_AUTO;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = LIGHT_STATUS_UNDEFINED;
+                $val = self::$LIGHT_STATUS_UNDEFINED;
                 break;
         }
 
@@ -154,16 +142,16 @@ trait NetatmoSecurityLocalLib
     {
         switch ($status) {
             case 'off':
-                $val = SDCARD_STATUS_UNUSABLE;
+                $val = self::$SDCARD_STATUS_UNUSABLE;
                 break;
             case 'on':
-                $val = SDCARD_STATUS_READY;
+                $val = self::$SDCARD_STATUS_READY;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = SDCARD_STATUS_UNDEFINED;
+                $val = self::$SDCARD_STATUS_UNDEFINED;
                 break;
         }
 
@@ -174,16 +162,16 @@ trait NetatmoSecurityLocalLib
     {
         switch ($status) {
             case 'off':
-                $val = POWER_STATUS_BAD;
+                $val = self::$POWER_STATUS_BAD;
                 break;
             case 'on':
-                $val = POWER_STATUS_GOOD;
+                $val = self::$POWER_STATUS_GOOD;
                 break;
             default:
                 $e = 'unknown state "' . $status . '"';
                 $this->SendDebug(__FUNCTION__, $e, 0);
                 $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = POWER_STATUS_UNDEFINED;
+                $val = self::$POWER_STATUS_UNDEFINED;
                 break;
         }
 

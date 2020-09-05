@@ -53,42 +53,42 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
         $associations = [];
-        $associations[] = ['Wert' => CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $associations[] = ['Wert' => CAMERA_STATUS_DISCONNECTED, 'Name' => $this->Translate('disconnected'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$CAMERA_STATUS_DISCONNECTED, 'Name' => $this->Translate('disconnected'), 'Farbe' => 0xEE0000];
         $this->CreateVarProfile('NetatmoSecurity.CameraStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.CameraAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => LIGHT_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
-        $associations[] = ['Wert' => LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $associations[] = ['Wert' => LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$LIGHT_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.LightModeStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
-        $associations[] = ['Wert' => LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $associations[] = ['Wert' => LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.LightAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $this->CreateVarProfile('NetatmoSecurity.LightIntensity', VARIABLETYPE_INTEGER, ' %', 0, 100, 1, 0, '');
 
         $associations = [];
-        $associations[] = ['Wert' => SDCARD_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => SDCARD_STATUS_UNUSABLE, 'Name' => $this->Translate('unusable'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => SDCARD_STATUS_READY, 'Name' => $this->Translate('ready'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$SDCARD_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$SDCARD_STATUS_UNUSABLE, 'Name' => $this->Translate('unusable'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$SDCARD_STATUS_READY, 'Name' => $this->Translate('ready'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.SDCardStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => POWER_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => POWER_STATUS_BAD, 'Name' => $this->Translate('bad'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => POWER_STATUS_GOOD, 'Name' => $this->Translate('good'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$POWER_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$POWER_STATUS_BAD, 'Name' => $this->Translate('bad'), 'Farbe' => 0xEE0000];
+        $associations[] = ['Wert' => self::$POWER_STATUS_GOOD, 'Name' => $this->Translate('good'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.PowerStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
@@ -823,21 +823,21 @@ class NetatmoSecurityCamera extends IPSModule
 
                                     $camera_status = $this->map_camera_status($this->GetArrayElem($camera, 'status', ''));
                                     if (is_int($camera_status)) {
-                                        if ($camera_status != CAMERA_STATUS_ON && $camera_status != CAMERA_STATUS_OFF) {
+                                        if ($camera_status != self::$CAMERA_STATUS_ON && $camera_status != self::$CAMERA_STATUS_OFF) {
                                             $camera_ok = false;
                                         }
                                         $this->SetValue('CameraStatus', $camera_status);
-                                        if ($camera_status == CAMERA_STATUS_ON) {
-                                            $v = CAMERA_STATUS_OFF;
+                                        if ($camera_status == self::$CAMERA_STATUS_ON) {
+                                            $v = self::$CAMERA_STATUS_OFF;
                                         } else {
-                                            $v = CAMERA_STATUS_ON;
+                                            $v = self::$CAMERA_STATUS_ON;
                                         }
                                         $this->SetValue('CameraAction', $v);
                                     }
 
                                     $sd_status = $this->map_sd_status($this->GetArrayElem($camera, 'sd_status', ''));
                                     if (is_int($sd_status)) {
-                                        if ($sd_status != SDCARD_STATUS_READY) {
+                                        if ($sd_status != self::$SDCARD_STATUS_READY) {
                                             $sd_ok = false;
                                         }
                                         $this->SetValue('SDCardStatus', $sd_status);
@@ -846,7 +846,7 @@ class NetatmoSecurityCamera extends IPSModule
                                     if ($with_power) {
                                         $power_status = $this->map_power_status($this->GetArrayElem($camera, 'alim_status', ''));
                                         if (is_int($power_status)) {
-                                            if ($power_status != POWER_STATUS_GOOD) {
+                                            if ($power_status != self::$POWER_STATUS_GOOD) {
                                                 $power_ok = false;
                                             }
                                             $this->SetValue('PowerStatus', $power_status);
@@ -859,10 +859,10 @@ class NetatmoSecurityCamera extends IPSModule
                                             $light_mode_status = $this->map_lightmode_status($s);
                                             if (is_int($light_mode_status)) {
                                                 $this->SetValue('LightmodeStatus', $light_mode_status);
-                                                if ($light_mode_status == LIGHT_STATUS_ON) {
-                                                    $v = LIGHT_STATUS_OFF;
+                                                if ($light_mode_status == self::$LIGHT_STATUS_ON) {
+                                                    $v = self::$LIGHT_STATUS_OFF;
                                                 } else {
-                                                    $v = LIGHT_STATUS_ON;
+                                                    $v = self::$LIGHT_STATUS_ON;
                                                 }
                                                 $this->SetValue('LightAction', $v);
                                             }
@@ -1470,13 +1470,13 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         switch ($mode) {
-            case LIGHT_STATUS_OFF:
+            case self::$LIGHT_STATUS_OFF:
                 $value = 'off';
                 break;
-            case LIGHT_STATUS_ON:
+            case self::$LIGHT_STATUS_ON:
                 $value = 'on';
                 break;
-            case LIGHT_STATUS_AUTO:
+            case self::$LIGHT_STATUS_AUTO:
                 $value = 'auto';
                 break;
             default:
@@ -1578,10 +1578,10 @@ class NetatmoSecurityCamera extends IPSModule
             $light_mode_status = $this->map_lightmode_status($this->GetArrayElem($jdata, 'mode', ''));
             if (is_int($light_mode_status)) {
                 $this->SetValue('LightmodeStatus', $light_mode_status);
-                if ($light_mode_status == LIGHT_STATUS_ON) {
-                    $v = LIGHT_STATUS_OFF;
+                if ($light_mode_status == self::$LIGHT_STATUS_ON) {
+                    $v = self::$LIGHT_STATUS_OFF;
                 } else {
-                    $v = LIGHT_STATUS_ON;
+                    $v = self::$LIGHT_STATUS_ON;
                 }
                 $this->SetValue('LightAction', $v);
             }
@@ -1607,10 +1607,10 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         switch ($mode) {
-            case CAMERA_STATUS_OFF:
+            case self::$CAMERA_STATUS_OFF:
                 $value = 'off';
                 break;
-            case CAMERA_STATUS_ON:
+            case self::$CAMERA_STATUS_ON:
                 $value = 'on';
                 break;
             default:

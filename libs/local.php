@@ -44,6 +44,10 @@ trait NetatmoSecurityLocalLib
     public static $POWER_STATUS_BAD = 0;
     public static $POWER_STATUS_GOOD = 1;
 
+    public static $PRESENCE_ACTION_AWAY = 0;
+    public static $PRESENCE_ACTION_HOME = 1;
+    public static $PRESENCE_ACTION_ALLAWAY = 2;
+
     private function GetFormStatus()
     {
         $formStatus = [];

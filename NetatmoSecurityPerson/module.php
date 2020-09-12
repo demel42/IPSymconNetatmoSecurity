@@ -5,12 +5,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
 require_once __DIR__ . '/../libs/local.php';   // lokale Funktionen
 
-if (!defined('PRESENCE_ACTION_AWAY')) {
-    define('PRESENCE_ACTION_AWAY', 0);
-    define('PRESENCE_ACTION_HOME', 1);
-    define('PRESENCE_ACTION_ALLAWAY', 2);
-}
-
 class NetatmoSecurityPerson extends IPSModule
 {
     use NetatmoSecurityCommonLib;
@@ -32,9 +26,9 @@ class NetatmoSecurityPerson extends IPSModule
         $this->CreateVarProfile('NetatmoSecurity.Presence', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 1, '', $associations);
 
         $associations = [];
-        $associations[] = ['Wert' => PRESENCE_ACTION_AWAY, 'Name' => $this->Translate('away'), 'Farbe' => -1];
-        $associations[] = ['Wert' => PRESENCE_ACTION_HOME, 'Name' => $this->Translate('home'), 'Farbe' => -1];
-        $associations[] = ['Wert' => PRESENCE_ACTION_ALLAWAY, 'Name' => $this->Translate('all away'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$PRESENCE_ACTION_AWAY, 'Name' => $this->Translate('away'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$PRESENCE_ACTION_HOME, 'Name' => $this->Translate('home'), 'Farbe' => -1];
+        $associations[] = ['Wert' => self::$PRESENCE_ACTION_ALLAWAY, 'Name' => $this->Translate('all away'), 'Farbe' => -1];
         $this->CreateVarProfile('NetatmoSecurity.PresenceAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
@@ -184,7 +178,7 @@ class NetatmoSecurityPerson extends IPSModule
 
                                     $out_of_sight = (bool) $this->GetArrayElem($person, 'out_of_sight', false);
                                     $this->SetValue('Presence', !$out_of_sight);
-                                    $this->SetValue('PresenceAction', $out_of_sight ? PRESENCE_ACTION_HOME : PRESENCE_ACTION_AWAY);
+                                    $this->SetValue('PresenceAction', $out_of_sight ? self::$PRESENCE_ACTION_HOME : self::$PRESENCE_ACTION_AWAY);
 
                                     $face = $this->GetArrayElem($person, 'face', '');
                                     $this->SetBuffer('face', json_encode($face));
@@ -227,14 +221,14 @@ class NetatmoSecurityPerson extends IPSModule
         $url = 'https://api.netatmo.com/api/';
 
         switch ($mode) {
-            case PRESENCE_ACTION_AWAY:
+            case self::$PRESENCE_ACTION_AWAY:
                 $url .= 'setpersonsaway';
                 $postdata = [
                     'home_id'    => $home_id,
                     'person_id'  => $person_id
                 ];
                 break;
-            case PRESENCE_ACTION_HOME:
+            case self::$PRESENCE_ACTION_HOME:
                 $url .= 'setpersonshome';
                 $postdata = [
                     'home_id'    => $home_id,
@@ -243,7 +237,7 @@ class NetatmoSecurityPerson extends IPSModule
                     ]
                 ];
                 break;
-            case PRESENCE_ACTION_ALLAWAY:
+            case self::$PRESENCE_ACTION_ALLAWAY:
                 $url .= 'setpersonsaway';
                 $postdata = [
                     'home_id'   => $home_id
@@ -268,17 +262,17 @@ class NetatmoSecurityPerson extends IPSModule
 
     public function SetPersonHome()
     {
-        return $this->SwitchPresence(PRESENCE_ACTION_HOME);
+        return $this->SwitchPresence(self::$PRESENCE_ACTION_HOME);
     }
 
     public function SetPersonAway()
     {
-        return $this->SwitchPresence(PRESENCE_ACTION_AWAY);
+        return $this->SwitchPresence(self::$PRESENCE_ACTION_AWAY);
     }
 
     public function SetPersonAllAway()
     {
-        return $this->SwitchPresence(PRESENCE_ACTION_ALLAWAY);
+        return $this->SwitchPresence(self::$PRESENCE_ACTION_ALLAWAY);
     }
 
     public function GetPersonFaceData()

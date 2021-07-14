@@ -87,7 +87,7 @@ foreach ($instIDs as $instID) {
         continue;
     }
     $data = NetatmoSecurity_GetTimeline($instID, false);
-    $timeline = NetatmoSecurity_MergeTimeline($instID, $timeline, $data, $instID);
+    $timeline = NetatmoSecurity_MergeTimeline($instID, $timeline, $data, (string) $instID);
 }
 $timeline = json_decode($timeline, true);
 

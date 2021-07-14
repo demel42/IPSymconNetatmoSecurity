@@ -3,7 +3,7 @@
 		"de": {
 			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
 
-			"Instance is disabled": "Instanz ist deaktiviert",
+			"Disable instance": "Instanz deaktivieren",
 
 			"Netatmo camera": "Netatmo Kamera",
 			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",

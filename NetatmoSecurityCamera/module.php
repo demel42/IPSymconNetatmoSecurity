@@ -457,7 +457,7 @@ class NetatmoSecurityCamera extends IPSModule
         $formElements[] = [
             'type'    => 'CheckBox',
             'name'    => 'module_disable',
-            'caption' => 'Instance is disabled'
+            'caption' => 'Disable instance'
         ];
 
         $product_type = $this->ReadPropertyString('product_type');

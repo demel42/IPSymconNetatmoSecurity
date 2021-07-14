@@ -566,8 +566,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.20 @ 18.12.2020 14:57 (beta)
+- 1.20 @ 14.07.2021 17:24 (beta)
   - PHP_CS_FIXER_IGNORE_ENV=1 in github/workflows/style.yml eingefügt
+  - docs/buildTimeline.php: korrekte Typ-Konversion
 
 - 1.19 @ 12.09.2020 11:48
   - LICENSE.md hinzugefügt

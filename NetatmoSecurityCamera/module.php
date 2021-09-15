@@ -296,9 +296,9 @@ class NetatmoSecurityCamera extends IPSModule
             $this->SendDebug(__FUNCTION__, 'LoadTimelapse=' . date('d.m.Y H:i:s', $ts) . ', msec=' . $msec, 0);
         }
 
-        $video_max_age = $this->ReadPropertyInteger('timelapse_max_age');
+        $ftp_max_age = $this->ReadPropertyInteger('ftp_max_age');
         $timelapse_max_age = $this->ReadPropertyInteger('timelapse_max_age');
-        if ($video_max_age > 0 || $timelapse_max_age > 0) {
+        if ($ftp_max_age > 0 || $timelapse_max_age > 0) {
             $dt = new DateTime(date('d.m.Y 00:30:00', time() + (24 * 60 * 60)));
             $ts = (int) $dt->format('U');
             $msec = ($ts - time()) * 1000;

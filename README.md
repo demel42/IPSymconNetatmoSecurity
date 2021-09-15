@@ -566,6 +566,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.21 @ 14.09.2021 16:48
+  - Fix: Aufräumen des FTP-Verzeichnisses funktionierte nicht (mehr)
+
 - 1.20 @ 14.07.2021 17:24
   - PHP_CS_FIXER_IGNORE_ENV=1 in github/workflows/style.yml eingefügt
   - docs/buildTimeline.php: korrekte Typ-Konversion

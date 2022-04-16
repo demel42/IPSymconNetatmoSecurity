@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
-require_once __DIR__ . '/../libs/local.php';   // lokale Funktionen
+require_once __DIR__ . '/../libs/common.php';
+require_once __DIR__ . '/../libs/local.php';
 
 class NetatmoSecurityConfig extends IPSModule
 {
-    use NetatmoSecurityCommonLib;
+    use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
     public function Create()
@@ -17,6 +17,21 @@ class NetatmoSecurityConfig extends IPSModule
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
+    }
+
+    private function CheckConfiguration()
+    {
+        $s = '';
+        $r = [];
+
+        if ($r != []) {
+            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
+            foreach ($r as $p) {
+                $s .= '- ' . $p . PHP_EOL;
+            }
+        }
+
+        return $s;
     }
 
     public function ApplyChanges()
@@ -30,9 +45,14 @@ class NetatmoSecurityConfig extends IPSModule
         $propertyNames = ['ImportCategoryID'];
         foreach ($propertyNames as $name) {
             $oid = $this->ReadPropertyInteger($name);
-            if ($oid > 0) {
+            if ($oid >= 10000) {
                 $this->RegisterReference($oid);
             }
+        }
+
+        if ($this->CheckConfiguration() != false) {
+            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            return;
         }
 
         $this->SetStatus(IS_ACTIVE);
@@ -40,19 +60,20 @@ class NetatmoSecurityConfig extends IPSModule
 
     private function SetLocation()
     {
-        $category = $this->ReadPropertyInteger('ImportCategoryID');
+        $catID = $this->ReadPropertyInteger('ImportCategoryID');
         $tree_position = [];
-        if ($category > 0 && IPS_ObjectExists($category)) {
-            $tree_position[] = IPS_GetName($category);
-            $parent = IPS_GetObject($category)['ParentID'];
-            while ($parent > 0) {
-                if ($parent > 0) {
-                    $tree_position[] = IPS_GetName($parent);
+        if ($catID >= 10000 && IPS_ObjectExists($catID)) {
+            $tree_position[] = IPS_GetName($catID);
+            $parID = IPS_GetObject($catID)['ParentID'];
+            while ($parID > 0) {
+                if ($parID > 0) {
+                    $tree_position[] = IPS_GetName($parID);
                 }
-                $parent = IPS_GetObject($parent)['ParentID'];
+                $parID = IPS_GetObject($parID)['ParentID'];
             }
             $tree_position = array_reverse($tree_position);
         }
+        $this->SendDebug(__FUNCTION__, 'tree_position=' . print_r($tree_position, true), 0);
         return $tree_position;
     }
 
@@ -69,11 +90,11 @@ class NetatmoSecurityConfig extends IPSModule
         }
 
         $entry = [
+            'instanceID' => $instID,
             'category'   => $this->Translate($product_category),
             'home'       => $home_name,
             'name'       => $product_name,
             'product_id' => $product_id,
-            'instanceID' => $instID,
             'create'     => [
                 'moduleID'       => $guid,
                 'location'       => $this->SetLocation(),
@@ -93,18 +114,23 @@ class NetatmoSecurityConfig extends IPSModule
     {
         $entries = [];
 
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
+            return $entries;
+        }
+
         if ($this->HasActiveParent() == false) {
             $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
-            $this->LogMessage('has no active parent instance', KL_WARNING);
             return $entries;
         }
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
-        $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
+        $jdata = json_decode($data, true);
 
-        if ($data != '') {
-            $jdata = json_decode($data, true);
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+
+        if (is_array($jdata)) {
             $homes = $jdata['body']['homes'];
             foreach ($homes as $home) {
                 $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
@@ -115,7 +141,7 @@ class NetatmoSecurityConfig extends IPSModule
                 $home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
                 if (isset($home['cameras'])) {
                     $cameras = $home['cameras'];
-                    if ($cameras != '') {
+                    if (is_array($cameras)) {
                         foreach ($cameras as $camera) {
                             $product_id = $camera['id'];
                             $product_name = $camera['name'];
@@ -172,12 +198,77 @@ class NetatmoSecurityConfig extends IPSModule
             }
         }
 
+        $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
+        $instIDs = IPS_GetInstanceListByModuleID($guid);
+        foreach ($instIDs as $instID) {
+            $fnd = false;
+            foreach ($entries as $entry) {
+                if ($entry['instanceID'] == $instID) {
+                    $fnd = true;
+                    break;
+                }
+            }
+            if ($fnd) {
+                continue;
+            }
+
+            $category = $this->Translate('Indoor camera');
+            $product_name = IPS_GetName($instID);
+            $$home_name = '';
+            $product_id = IPS_GetProperty($instID, 'product_id');
+
+            $entry = [
+                'instanceID' => $instID,
+                'category'   => $category,
+                'home'       => $home_name,
+                'name'       => $product_name,
+                'product_id' => $product_id,
+            ];
+            $entries[] = $entry;
+            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
+        }
+
+        $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
+        $instIDs = IPS_GetInstanceListByModuleID($guid);
+        foreach ($instIDs as $instID) {
+            $fnd = false;
+            foreach ($entries as $entry) {
+                if ($entry['instanceID'] == $instID) {
+                    $fnd = true;
+                    break;
+                }
+            }
+            if ($fnd) {
+                continue;
+            }
+
+            $category = $this->Translate('Outdoor camera');
+            $product_name = IPS_GetName($instID);
+            $$home_name = '';
+            $product_id = IPS_GetProperty($instID, 'product_id');
+
+            $entry = [
+                'instanceID' => $instID,
+                'category'   => $category,
+                'home'       => $home_name,
+                'name'       => $product_name,
+                'product_id' => $product_id,
+            ];
+            $entries[] = $entry;
+            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
+        }
+
         return $entries;
     }
 
     private function GetFormElements()
     {
         $formElements = [];
+
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => 'Netatmo Security Configurator',
+        ];
 
         if ($this->HasActiveParent() == false) {
             $formElements[] = [
@@ -186,14 +277,21 @@ class NetatmoSecurityConfig extends IPSModule
             ];
         }
 
-        $formElements[] = [
-            'type'    => 'Label',
-            'caption' => 'category for products to be created:'
-        ];
+        @$s = $this->CheckConfiguration();
+        if ($s != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $s,
+            ];
+            $formElements[] = [
+                'type'    => 'Label',
+            ];
+        }
+
         $formElements[] = [
             'type'    => 'SelectCategory',
             'name'    => 'ImportCategoryID',
-            'caption' => 'category'
+            'caption' => 'category for products to be created'
         ];
 
         $entries = $this->getConfiguratorValues();
@@ -242,6 +340,21 @@ class NetatmoSecurityConfig extends IPSModule
     {
         $formActions = [];
 
+        $formActions[] = $this->GetInformationForm();
+        $formActions[] = $this->GetReferencesForm();
+
         return $formActions;
+    }
+
+    public function RequestAction($ident, $value)
+    {
+        if ($this->CommonRequestAction($ident, $value)) {
+            return;
+        }
+        switch ($ident) {
+            default:
+                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
+                break;
+        }
     }
 }

@@ -1,7 +1,12 @@
 {
 	"translations": {
 		"de": {
+			"Netatmo Security Configurator": "Netatmo Security Konfigurator",
+
 			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
+
+			"The following points of the configuration are incorrect":
+				"Die folgenden Punkte der Konfiguration sind fehlerhaft",
 
 			"Product": "Produkt",
 			"Products": "Produkte",
@@ -16,8 +21,41 @@
 			"Name": "Name",
 			"Id": "Id",
 
-			"category for products to be created:": "Kategorie für anzulegende Produkte:",
-			"category": "Kategorie",
+			"category for products to be created": "Kategorie für anzulegende Produkte",
+
+			"Test area": "Test-Bereich",
+
+			"Expert area": "Experten-Bereich",
+			"Re-install variable-profiles": "Variablenprofile erneut einrichten",
+
+			"Information": "Information",
+
+			"Category": "Kategorie",
+			"Instance": "Instanz",
+			"Variable": "Variable",
+			"Script": "Skript",
+			"Event": "Ereignis",
+			"Medium": "Medium",
+			"Link": "Verknüpfung",
+			"PHP script": "PHP-Skript",
+			"Flow plan": "Ablaufplan",
+			"Triggered event": "Ausgelöstes Ereignis",
+			"Cyclic event": "Zyklisches Ereignis",
+			"Scheduled event": "Geplantes Ereignis",
+			"References": "Referenzen",
+			"by instance used objects": "durch die Instanz verwendete Objekte",
+			"Objects using the instance": "Objekte, die die Instanz verwenden",
+			"Referenced statusvariables": "referenzierte Statusvariablen",
+			"Ident": "Ident",
+			"Object": "Objekt",
+			"Area": "Bereich",
+			"Name": "Bezeichnung",
+			"Open object": "Objekt öffnen",
+			"Timer": "Timer",
+			"Interval": "Intervall",
+			"Next run": "nächste Ausführung",
+			"Last run": "letzte Ausführung",
+			"Timer information": "Timer-Information",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
@@ -34,7 +72,6 @@
 			"Instance is inactive (no product)": "Instanz ist inaktiv (kein Produkt)",
 			"Instance is inactive (product missing)": "Instanz ist inaktiv (Produkt ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
-			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)",
 			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)",
 			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)"

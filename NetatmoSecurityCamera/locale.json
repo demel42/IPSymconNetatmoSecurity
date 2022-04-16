@@ -1,13 +1,24 @@
 {
 	"translations": {
 		"de": {
-			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
-
-			"Disable instance": "Instanz deaktivieren",
-
 			"Netatmo camera": "Netatmo Kamera",
 			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",
 			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
+
+			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
+
+			"The following points of the configuration are incorrect":
+				"Die folgenden Punkte der Konfiguration sind fehlerhaft",
+			"Product-Type must be specified": "Produkt-Typ muss angegeben sein",
+			"Product-ID must be specified": "Produkt-ID muss angegeben sein",
+			"Home-ID must be specified": "Heim-ID muss angegeben sein",
+			"\"hour of day\" is invalid": "\"Stunde des Tages\" ist ungültig",
+			"IP-Address is invalid": "IP-Adresse ist ungültig",
+			"external IP-Address is invalid": "externe IP-Adresse ist ungültig",
+			"local CIDR's are invalid": "lokale CIDR's sind ungültig",
+			"Webhook is already in use": "Webhook wird bereits verwendet",
+
+			"Disable instance": "Instanz deaktivieren",
 
 			"Basic configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
 
@@ -20,8 +31,7 @@
 			"Pseudonym": "Pseudonym",
 			"Id": "Id",
 
-			"category for persons to be created:": "Kategorie für anzulegende Personen:",
-			"category": "Kategorie",
+			"category for persons to be created": "Kategorie für anzulegende Personen",
 
 			"optional data": "optionale Daten",
 			"last communication with Netatmo": "letzte Kommunikation mit Netatmo",
@@ -114,13 +124,49 @@
 			"Person": "Person",
 			"SD-Card not ok": "SD-Karte nicht verfügbar",
 			"SD-Card ok": "SD-Karte bereit",
+			"Siren off": "Sirene ist aus",
+			"Siren on": "Sirene ist an",
+			"Update download failed": "Update wird heruntergeladen",
+			"Update downloading": "Update wird heruntergeladen",
+			"Update finished": "Update abgeschlossen",
+			"Update startet": "Update wird durchgeführt",
 			"Upload successful (FTP)": "Upload erfolgreich (FTP)",
 			"Vehicle captured": "Fahrzeug erfasst",
 			"Vehicle": "Fahrzeug",
-            "Update downloading": "Update wird heruntergeladen",
-            "Update download failed": "Update wird heruntergeladen",
-            "Update startet": "Update wird durchgeführt",
-            "Update finished": "Update abgeschlossen",
+
+			"Test area": "Test-Bereich",
+
+			"Expert area": "Experten-Bereich",
+			"Re-install variable-profiles": "Variablenprofile erneut einrichten",
+
+			"Information": "Information",
+
+			"Category": "Kategorie",
+			"Instance": "Instanz",
+			"Variable": "Variable",
+			"Script": "Skript",
+			"Event": "Ereignis",
+			"Medium": "Medium",
+			"Link": "Verknüpfung",
+			"PHP script": "PHP-Skript",
+			"Flow plan": "Ablaufplan",
+			"Triggered event": "Ausgelöstes Ereignis",
+			"Cyclic event": "Zyklisches Ereignis",
+			"Scheduled event": "Geplantes Ereignis",
+			"References": "Referenzen",
+			"by instance used objects": "durch die Instanz verwendete Objekte",
+			"Objects using the instance": "Objekte, die die Instanz verwenden",
+			"Referenced statusvariables": "referenzierte Statusvariablen",
+			"Ident": "Ident",
+			"Object": "Objekt",
+			"Area": "Bereich",
+			"Name": "Bezeichnung",
+			"Open object": "Objekt öffnen",
+			"Timer": "Timer",
+			"Interval": "Intervall",
+			"Next run": "nächste Ausführung",
+			"Last run": "letzte Ausführung",
+			"Timer information": "Timer-Information",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
@@ -137,7 +183,6 @@
 			"Instance is inactive (no product)": "Instanz ist inaktiv (kein Produkt)",
 			"Instance is inactive (product missing)": "Instanz ist inaktiv (Produkt ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
-			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)",
 			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)",
 			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)"

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
-require_once __DIR__ . '/../libs/local.php';   // lokale Funktionen
+require_once __DIR__ . '/../libs/common.php';
+require_once __DIR__ . '/../libs/local.php';
 
 class NetatmoSecurityIO extends IPSModule
 {
-    use NetatmoSecurityCommonLib;
+    use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
     private $oauthIdentifer = 'netatmo';
@@ -22,6 +22,8 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterPropertyString('Netatmo_Password', '');
         $this->RegisterPropertyString('Netatmo_Client', '');
         $this->RegisterPropertyString('Netatmo_Secret', '');
+
+        $this->RegisterPropertyString('hook', '/hook/NetatmoSecurity');
 
         $this->RegisterPropertyInteger('UpdateDataInterval', '5');
 
@@ -40,8 +42,44 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
-            $this->RegisterHook('/hook/NetatmoSecurity');
+            $hook = $this->ReadPropertyString('hook');
+            if ($hook != '') {
+                $this->RegisterHook($hook);
+            }
         }
+    }
+
+    private function CheckConfiguration()
+    {
+        $s = '';
+        $r = [];
+
+        $hook = $this->ReadPropertyString('hook');
+        if ($hook != '' && $this->HookIsUsed($hook)) {
+            $this->SendDebug(__FUNCTION__, '"hook" is already used', 0);
+            $r[] = $this->Translate('Webhook is already in use');
+        }
+
+            $register_webhook = $this->ReadPropertyBoolean('register_webhook');
+            if ($register_webhook) {
+                $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
+                if ($webhook_baseurl == '') {
+                    $webhook_baseurl = $this->GetConnectUrl();
+                    if ($webhook_baseurl == '') {
+						$this->SendDebug(__FUNCTION__, '"webhook_baseurl" is not given', 0);
+						$r[] = $this->Translate('Neither the base URL is specified nor an active connect service is available');
+					}
+				}
+			}
+
+        if ($r != []) {
+            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
+            foreach ($r as $p) {
+                $s .= '- ' . $p . PHP_EOL;
+            }
+        }
+
+        return $s;
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -53,8 +91,11 @@ class NetatmoSecurityIO extends IPSModule
             if ($oauth_type == self::$CONNECTION_OAUTH) {
                 $this->RegisterOAuth($this->oauthIdentifer);
             }
-            $this->RegisterHook('/hook/NetatmoSecurity');
-            $this->AddWebhook();
+            $hook = $this->ReadPropertyString('hook');
+            if ($hook != '') {
+                $this->RegisterHook($hook);
+                $this->AddWebhook();
+            }
             $this->UpdateData();
         }
         if ($Message == IPS_KERNELSHUTDOWN) {
@@ -69,13 +110,6 @@ class NetatmoSecurityIO extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        $module_disable = $this->ReadPropertyBoolean('module_disable');
-        if ($module_disable) {
-            $this->SetTimerInterval('UpdateData', 0);
-            $this->SetStatus(IS_INACTIVE);
-            return;
-        }
 
         $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
         switch ($oauth_type) {
@@ -106,6 +140,30 @@ class NetatmoSecurityIO extends IPSModule
                 break;
         }
 
+        $refs = $this->GetReferenceList();
+        foreach ($refs as $ref) {
+            $this->UnregisterReference($ref);
+        }
+        $propertyNames = [];
+        foreach ($propertyNames as $name) {
+            $oid = $this->ReadPropertyInteger($name);
+            if ($oid >= 10000) {
+                $this->RegisterReference($oid);
+            }
+        }
+
+        $module_disable = $this->ReadPropertyBoolean('module_disable');
+        if ($module_disable) {
+            $this->MaintainTimer('UpdateData', 0);
+            $this->SetStatus(IS_INACTIVE);
+            return;
+        }
+
+        if ($this->CheckConfiguration() != false) {
+            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            return;
+        }
+
         if (IPS_GetKernelRunlevel() == KR_READY) {
             if ($oauth_type == self::$CONNECTION_OAUTH) {
                 $this->RegisterOAuth($this->oauthIdentifer);
@@ -120,14 +178,10 @@ class NetatmoSecurityIO extends IPSModule
                         return;
                     }
                 }
-                if ($this->HookIsUsed('/hook/NetatmoSecurity')) {
-                    $this->SetStatus(self::$IS_USEDWEBHOOK);
-                    return;
-                }
             } else {
                 $this->DropWebhook();
             }
-            $this->SetTimerInterval('UpdateData', 1000);
+            $this->MaintainTimer('UpdateData', 1000);
         }
     }
 
@@ -281,7 +335,7 @@ class NetatmoSecurityIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'has no refresh_token', 0);
                 $this->WriteAttributeString('ApiRefreshToken', '');
                 $this->SetBuffer('ApiAccessToken', '');
-                $this->SetTimerInterval('UpdateData', 0);
+                $this->MaintainTimer('UpdateData', 0);
                 $this->SetStatus(self::$IS_NOLOGIN);
                 return false;
             }
@@ -316,7 +370,7 @@ class NetatmoSecurityIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'code missing, _GET=' . print_r($_GET, true), 0);
             $this->WriteAttributeString('ApiRefreshToken', '');
             $this->SetBuffer('ApiAccessToken', '');
-            $this->SetTimerInterval('UpdateData', 0);
+            $this->MaintainTimer('UpdateData', 0);
             $this->SetStatus(self::$IS_NOLOGIN);
             return;
         }
@@ -324,34 +378,44 @@ class NetatmoSecurityIO extends IPSModule
         $this->SendDebug(__FUNCTION__, 'refresh_token=' . $refresh_token, 0);
         $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
         if ($this->GetStatus() == self::$IS_NOLOGIN) {
-            $this->SetTimerInterval('UpdateData', 1000);
+            $this->MaintainTimer('UpdateData', 1000);
             $this->SetStatus(IS_ACTIVE);
         }
     }
 
     private function GetFormElements()
     {
-        $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
-
         $formElements = [];
+
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => 'Netatmo Security I/O',
+        ];
+
+        @$s = $this->CheckConfiguration();
+        if ($s != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $s
+            ];
+            $formElements[] = [
+                'type'    => 'Label',
+            ];
+        }
+
+        $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
+        if ($oauth_type == self::$CONNECTION_OAUTH) {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $this->GetConnectStatusText(),
+            ];
+        }
+
         $formElements[] = [
             'type'    => 'CheckBox',
             'name'    => 'module_disable',
             'caption' => 'Disable instance'
         ];
-
-        if ($oauth_type == self::$CONNECTION_OAUTH) {
-            $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-            if (IPS_GetInstance($instID)['InstanceStatus'] != IS_ACTIVE) {
-                $msg = 'Error: Symcon Connect is not active!';
-            } else {
-                $msg = 'Status: Symcon Connect is OK!';
-            }
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => $msg
-            ];
-        }
 
         $formElements[] = [
             'type'    => 'Select',
@@ -375,62 +439,62 @@ class NetatmoSecurityIO extends IPSModule
 
         switch ($oauth_type) {
             case self::$CONNECTION_OAUTH:
-                $items = [];
-                $items[] = [
-                    'type'    => 'Label',
-                    'caption' => 'Push "Login at Netatmo" in the action part of this configuration form.'
-                ];
-                $items[] = [
-                    'type'    => 'Label',
-                    'caption' => 'At the webpage from Netatmo log in with your Netatmo username and password.'
-                ];
-                $items[] = [
-                    'type'    => 'Label',
-                    'caption' => 'If the connection to IP-Symcon was successfull you get the message: "Netatmo successfully connected!". Close the browser window.'
-                ];
-                $items[] = [
-                    'type'    => 'Label',
-                    'caption' => 'Return to this configuration form.'
-                ];
                 $formElements[] = [
                     'type'    => 'ExpansionPanel',
-                    'items'   => $items,
+                    'items'   => [
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'Push "Login at Netatmo" in the action part of this configuration form.'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'At the webpage from Netatmo log in with your Netatmo username and password.'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'If the connection to IP-Symcon was successfull you get the message: "Netatmo successfully connected!". Close the browser window.'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'Return to this configuration form.'
+                        ],
+                    ],
                     'caption' => 'Netatmo Login'
                 ];
                 break;
             case self::$CONNECTION_DEVELOPER:
-                $items = [];
-                $items[] = [
-                    'type'    => 'Label',
-                    'caption' => 'Netatmo-Account from https://my.netatmo.com'
-                ];
-                $items[] = [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'Netatmo_User',
-                    'caption' => 'Username'
-                ];
-                $items[] = [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'Netatmo_Password',
-                    'caption' => 'Password'
-                ];
-                $items[] = [
-                    'type'    => 'Label',
-                    'caption' => 'Netatmo-Connect from https://dev.netatmo.com'
-                ];
-                $items[] = [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'Netatmo_Client',
-                    'caption' => 'Client ID'
-                ];
-                $items[] = [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'Netatmo_Secret',
-                    'caption' => 'Client Secret'
-                ];
                 $formElements[] = [
                     'type'    => 'ExpansionPanel',
-                    'items'   => $items,
+                    'items'   => [
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'Netatmo-Account from https://my.netatmo.com'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'Netatmo_User',
+                            'caption' => 'Username'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'Netatmo_Password',
+                            'caption' => 'Password'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'Netatmo-Connect from https://dev.netatmo.com'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'Netatmo_Client',
+                            'caption' => 'Client ID'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'Netatmo_Secret',
+                            'caption' => 'Client Secret'
+                        ],
+                    ],
                     'caption' => 'Netatmo Access-Details'
                 ];
                 break;
@@ -438,49 +502,51 @@ class NetatmoSecurityIO extends IPSModule
                 break;
         }
 
-        $items = [];
-        $items[] = [
-            'type'    => 'Label',
-            'caption' => 'Number of events retrieved during an update'
-        ];
-        $items[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'sync_event_count',
-            'caption' => 'Count'
-        ];
-        $items[] = [
-            'type'    => 'Label',
-            'caption' => 'Update data every X minutes'
-        ];
-        $items[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'UpdateDataInterval',
-            'caption' => 'Minutes'
-        ];
         $formElements[] = [
             'type'    => 'ExpansionPanel',
-            'items'   => $items,
+            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Number of events retrieved during an update'
+                ],
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'sync_event_count',
+                    'minimum' => 0,
+                    'caption' => 'Count'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Update data every X minutes'
+                ],
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'UpdateDataInterval',
+                    'caption' => 'Minutes'
+                ],
+            ],
             'caption' => 'Call settings'
         ];
 
-        $items = [];
-        $items[] = [
-            'type'    => 'Label',
-            'caption' => 'Webhook for receive notifications from Netatmo (must be reachable from internet)'
-        ];
-        $items[] = [
-            'type'    => 'CheckBox',
-            'name'    => 'register_webhook',
-            'caption' => 'Register Webhook'
-        ];
-        $items[] = [
-            'type'    => 'Label',
-            'caption' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'
-        ];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'webhook_baseurl',
-            'caption' => 'Base-URL'
+        $items = [
+            [
+                'type'    => 'Label',
+                'caption' => 'Webhook for receive notifications from Netatmo (must be reachable from internet)'
+            ],
+            [
+                'type'    => 'CheckBox',
+                'name'    => 'register_webhook',
+                'caption' => 'Register Webhook'
+            ],
+            [
+                'type'    => 'Label',
+                'caption' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'
+            ],
+            [
+                'type'    => 'ValidationTextBox',
+                'name'    => 'webhook_baseurl',
+                'caption' => 'Base-URL'
+            ],
         ];
         if ($this->GetConnectUrl() != false) {
             $items[] = [
@@ -528,15 +594,29 @@ class NetatmoSecurityIO extends IPSModule
             'onClick' => 'NetatmoSecurity_UpdateData($id);'
         ];
 
+        $formActions[] = $this->GetInformationForm();
+        $formActions[] = $this->GetReferencesForm();
+
         return $formActions;
+    }
+
+    public function RequestAction($ident, $value)
+    {
+        if ($this->CommonRequestAction($ident, $value)) {
+            return;
+        }
+        switch ($ident) {
+            default:
+                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
+                break;
+        }
     }
 
     protected function SetUpdateInterval()
     {
         $min = $this->ReadPropertyInteger('UpdateDataInterval');
         $msec = $min > 0 ? $min * 1000 * 60 : 0;
-        $this->SetTimerInterval('UpdateData', $msec);
-        $this->SendDebug(__FUNCTION__, 'min=' . $min . ', msec=' . $msec, 0);
+        $this->MaintainTimer('UpdateData', $msec);
     }
 
     protected function SendData($data, $source)
@@ -564,19 +644,19 @@ class NetatmoSecurityIO extends IPSModule
                 case 'CmdUrlGet':
                     $url = $jdata['Url'];
                     $ret = $this->SendCommand($url);
-                    $this->SetTimerInterval('UpdateData', 1000);
+                    $this->MaintainTimer('UpdateData', 1000);
                     break;
                 case 'CmdUrlGetWithAuth':
                     $url = $jdata['Url'];
                     $url .= '&access_token=' . $this->GetApiAccessToken();
                     $ret = $this->SendCommand($url);
-                    $this->SetTimerInterval('UpdateData', 1000);
+                    $this->MaintainTimer('UpdateData', 1000);
                     break;
                 case 'CmdUrlPostWithAuth':
                     $url = $jdata['Url'];
                     $postdata = $jdata['PostData'];
                     $ret = $this->SendCommandWithAuth($url, $postdata);
-                    $this->SetTimerInterval('UpdateData', 1000);
+                    $this->MaintainTimer('UpdateData', 1000);
                     break;
                 default:
                     $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
@@ -763,7 +843,7 @@ class NetatmoSecurityIO extends IPSModule
         if ($this->CheckStatus() == self::$STATUS_INVALID) {
             if ($this->GetStatus() == self::$IS_NOLOGIN) {
                 $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => pause', 0);
-                $this->SetTimerInterval('UpdateData', 0);
+                $this->MaintainTimer('UpdateData', 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             }
@@ -775,7 +855,7 @@ class NetatmoSecurityIO extends IPSModule
         if ($access_token == false) {
             if ($this->GetStatus() == self::$IS_NOLOGIN) {
                 $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => pause', 0);
-                $this->SetTimerInterval('UpdateData', 0);
+                $this->MaintainTimer('UpdateData', 0);
             } else {
                 $this->SetUpdateInterval();
             }
@@ -829,7 +909,7 @@ class NetatmoSecurityIO extends IPSModule
         if ($statuscode) {
             if ($statuscode == self::$IS_FORBIDDEN) {
                 $err .= ' => 15min pause';
-                $this->SetTimerInterval('UpdateData', 15 * 60 * 1000);
+                $this->MaintainTimer('UpdateData', 15 * 60 * 1000);
                 $this->SetBuffer('ApiAccessToken', '');
             }
 
@@ -870,7 +950,7 @@ class NetatmoSecurityIO extends IPSModule
             }
             http_response_code(200);
             $this->SendData($data, 'EVENT');
-            $this->SetTimerInterval('UpdateData', 5000);
+            $this->MaintainTimer('UpdateData', 5000);
             return;
         }
         $path = realpath($root . '/' . $basename);

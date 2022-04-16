@@ -13,10 +13,9 @@ trait NetatmoSecurityLocalLib
     public static $IS_NOPRODUCT = IS_EBASE + 7;
     public static $IS_PRODUCTMISSІNG = IS_EBASE + 8;
     public static $IS_NOWEBHOOK = IS_EBASE + 9;
-    public static $IS_USEDWEBHOOK = IS_EBASE + 10;
-    public static $IS_INVALIDCONFIG = IS_EBASE + 11;
-    public static $IS_NOSYMCONCONNECT = IS_EBASE + 12;
-    public static $IS_NOLOGIN = IS_EBASE + 13;
+    public static $IS_INVALIDCONFIG = IS_EBASE + 10;
+    public static $IS_NOSYMCONCONNECT = IS_EBASE + 11;
+    public static $IS_NOLOGIN = IS_EBASE + 12;
 
     public static $STATUS_INVALID = 0;
     public static $STATUS_VALID = 1;
@@ -66,7 +65,6 @@ trait NetatmoSecurityLocalLib
         $formStatus[] = ['code' => self::$IS_NOPRODUCT, 'icon' => 'error', 'caption' => 'Instance is inactive (no product)'];
         $formStatus[] = ['code' => self::$IS_PRODUCTMISSІNG, 'icon' => 'error', 'caption' => 'Instance is inactive (product missing)'];
         $formStatus[] = ['code' => self::$IS_NOWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook not given)'];
-        $formStatus[] = ['code' => self::$IS_USEDWEBHOOK, 'icon' => 'error', 'caption' => 'Instance is inactive (webhook already in use)'];
         $formStatus[] = ['code' => self::$IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid config)'];
         $formStatus[] = ['code' => self::$IS_NOSYMCONCONNECT, 'icon' => 'error', 'caption' => 'Instance is inactive (no Symcon-Connect)'];
         $formStatus[] = ['code' => self::$IS_NOLOGIN, 'icon' => 'error', 'caption' => 'Instance is inactive (not logged in)'];
@@ -94,6 +92,79 @@ trait NetatmoSecurityLocalLib
         }
 
         return $class;
+    }
+
+    public function InstallVarProfiles(bool $reInstall = false)
+    {
+        if ($reInstall) {
+            $this->SendDebug(__FUNCTION__, 'reInstall=' . $this->bool2str($reInstall), 0);
+        }
+
+        $associations = [
+            ['Wert' => self::$CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1],
+            ['Wert' => self::$CAMERA_STATUS_DISCONNECTED, 'Name' => $this->Translate('disconnected'), 'Farbe' => 0xEE0000],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.CameraStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.CameraAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$LIGHT_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1],
+            ['Wert' => self::$LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1],
+            ['Wert' => self::$LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.LightModeStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1],
+            ['Wert' => self::$LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1],
+            ['Wert' => self::$LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.LightAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $this->CreateVarProfile('NetatmoSecurity.LightIntensity', VARIABLETYPE_INTEGER, ' %', 0, 100, 1, 0, '', [], $reInstall);
+
+        $associations = [
+            ['Wert' => self::$SDCARD_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$SDCARD_STATUS_UNUSABLE, 'Name' => $this->Translate('unusable'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$SDCARD_STATUS_READY, 'Name' => $this->Translate('ready'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.SDCardStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$POWER_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$POWER_STATUS_BAD, 'Name' => $this->Translate('bad'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$POWER_STATUS_GOOD, 'Name' => $this->Translate('good'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.PowerStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => 0, 'Name' => $this->wifi_strength2text(0), 'Farbe' => 0xEE0000],
+            ['Wert' => 1, 'Name' => $this->wifi_strength2text(1), 'Farbe' => 0xFFFF00],
+            ['Wert' => 2, 'Name' => $this->wifi_strength2text(2), 'Farbe' => 0x32CD32],
+            ['Wert' => 3, 'Name' => $this->wifi_strength2text(3), 'Farbe' => 0x228B22],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.WifiStrength', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, 'Intensity', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => false, 'Name' => $this->Translate('absent'), 'Farbe' => 0xEE0000],
+            ['Wert' => true, 'Name' => $this->Translate('present'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.Presence', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$PRESENCE_ACTION_AWAY, 'Name' => $this->Translate('away'), 'Farbe' => -1],
+            ['Wert' => self::$PRESENCE_ACTION_HOME, 'Name' => $this->Translate('home'), 'Farbe' => -1],
+            ['Wert' => self::$PRESENCE_ACTION_ALLAWAY, 'Name' => $this->Translate('all away'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.PresenceAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
     }
 
     private function map_camera_status($status)
@@ -345,5 +416,59 @@ trait NetatmoSecurityLocalLib
         $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
         $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
         return $statuscode;
+    }
+
+    // Wifi-Strength
+    private function map_wifi_strength($strength)
+    {
+        if ($strength <= 56) {
+            // "high"
+            $val = 3;
+        } elseif ($strength <= 71) {
+            // "good"
+            $val = 2;
+        } elseif ($strength <= 86) {
+            // "average"
+            $val = 1;
+        } else {
+            // "bad"
+            $val = 0;
+        }
+
+        return $val;
+    }
+
+    private function wifi_strength2text($strength)
+    {
+        $strength2txt = [
+            'bad',
+            'average',
+            'good',
+            'high'
+        ];
+
+        if ($strength >= 0 && $strength < count($strength2txt)) {
+            $txt = $this->Translate($strength2txt[$strength]);
+        } else {
+            $txt = '';
+        }
+        return $txt;
+    }
+
+    private function wifi_strength2icon($strength)
+    {
+        $strength2icon = [
+            'wifi_low.png',
+            'wifi_medium.png',
+            'wifi_high.png',
+            'wifi_full.png',
+        ];
+
+        if ($strength >= 0 && $strength < count($strength2icon)) {
+            $img = $strength2icon[$strength];
+        } else {
+            $img = '';
+        }
+        return $img;
     }
 }

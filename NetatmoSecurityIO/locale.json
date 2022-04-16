@@ -1,7 +1,15 @@
 {
 	"translations": {
 		"de": {
+			"Netatmo Security I/O": "Netatmo Security I/O",
+
 			"Disable instance": "Instanz deaktivieren",
+
+			"The following points of the configuration are incorrect":
+				"Die folgenden Punkte der Konfiguration sind fehlerhaft",
+			"Webhook is already in use": "Webhook wird bereits verwendet",
+			"Neither the base URL is specified nor an active connect service is available":
+				"Es ist weder die Base-URL angegeben noch ein aktiver Connect-Dienst vorhanden",
 
 			"Status: Symcon Connect is OK!": "Status: Symcon Connect ist OK!",
 			"Error: Symcon Connect is not active!": "Fehler: Symcon Connect ist nicht aktiv!",
@@ -57,6 +65,40 @@
 
 			"data contains no cameras or smokedetectors": "Daten entalten keine Kamera/Rauchmelder",
 
+			"Test area": "Test-Bereich",
+
+			"Expert area": "Experten-Bereich",
+			"Re-install variable-profiles": "Variablenprofile erneut einrichten",
+
+			"Information": "Information",
+
+			"Category": "Kategorie",
+			"Instance": "Instanz",
+			"Variable": "Variable",
+			"Script": "Skript",
+			"Event": "Ereignis",
+			"Medium": "Medium",
+			"Link": "Verknüpfung",
+			"PHP script": "PHP-Skript",
+			"Flow plan": "Ablaufplan",
+			"Triggered event": "Ausgelöstes Ereignis",
+			"Cyclic event": "Zyklisches Ereignis",
+			"Scheduled event": "Geplantes Ereignis",
+			"References": "Referenzen",
+			"by instance used objects": "durch die Instanz verwendete Objekte",
+			"Objects using the instance": "Objekte, die die Instanz verwenden",
+			"Referenced statusvariables": "referenzierte Statusvariablen",
+			"Ident": "Ident",
+			"Object": "Objekt",
+			"Area": "Bereich",
+			"Name": "Bezeichnung",
+			"Open object": "Objekt öffnen",
+			"Timer": "Timer",
+			"Interval": "Intervall",
+			"Next run": "nächste Ausführung",
+			"Last run": "letzte Ausführung",
+			"Timer information": "Timer-Information",
+
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
 			"Instance is deleted": "Instanz wird gelöscht",
@@ -72,7 +114,6 @@
 			"Instance is inactive (no module)": "Instanz ist inaktiv (kein Modul)",
 			"Instance is inactive (module missing)": "Instanz ist inaktiv (Modul ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
-			"Instance is inactive (webhook already in use)": "Instanz ist inaktiv (Webhook wird bereits verwendet)",
 			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)",
 			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)"

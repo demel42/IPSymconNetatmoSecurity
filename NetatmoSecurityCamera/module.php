@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
-require_once __DIR__ . '/../libs/local.php';   // lokale Funktionen
+require_once __DIR__ . '/../libs/common.php';
+require_once __DIR__ . '/../libs/local.php';
 
 class NetatmoSecurityCamera extends IPSModule
 {
-    use NetatmoSecurityCommonLib;
+    use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
     public function Create()
@@ -43,60 +43,13 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyInteger('timelapse_max_age', '7');
 
         $this->RegisterPropertyInteger('new_event_script', 0);
-
         $this->RegisterPropertyInteger('notify_script', 0);
-
         $this->RegisterPropertyInteger('webhook_script', 0);
-
         $this->RegisterPropertyInteger('url_changed_script', 0);
 
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
-        $associations = [];
-        $associations[] = ['Wert' => self::$CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $associations[] = ['Wert' => self::$CAMERA_STATUS_DISCONNECTED, 'Name' => $this->Translate('disconnected'), 'Farbe' => 0xEE0000];
-        $this->CreateVarProfile('NetatmoSecurity.CameraStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
-
-        $associations = [];
-        $associations[] = ['Wert' => self::$CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.CameraAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
-
-        $associations = [];
-        $associations[] = ['Wert' => self::$LIGHT_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
-        $associations[] = ['Wert' => self::$LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $associations[] = ['Wert' => self::$LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.LightModeStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
-
-        $associations = [];
-        $associations[] = ['Wert' => self::$LIGHT_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1];
-        $associations[] = ['Wert' => self::$LIGHT_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1];
-        $associations[] = ['Wert' => self::$LIGHT_STATUS_AUTO, 'Name' => $this->Translate('auto'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.LightAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
-
-        $this->CreateVarProfile('NetatmoSecurity.LightIntensity', VARIABLETYPE_INTEGER, ' %', 0, 100, 1, 0, '');
-
-        $associations = [];
-        $associations[] = ['Wert' => self::$SDCARD_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$SDCARD_STATUS_UNUSABLE, 'Name' => $this->Translate('unusable'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$SDCARD_STATUS_READY, 'Name' => $this->Translate('ready'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.SDCardStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
-
-        $associations = [];
-        $associations[] = ['Wert' => self::$POWER_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$POWER_STATUS_BAD, 'Name' => $this->Translate('bad'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => self::$POWER_STATUS_GOOD, 'Name' => $this->Translate('good'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.PowerStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
-
-        $associations = [];
-        $associations[] = ['Wert' => 0, 'Name' => $this->wifi_strength2text(0), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => 1, 'Name' => $this->wifi_strength2text(1), 'Farbe' => 0xFFFF00];
-        $associations[] = ['Wert' => 2, 'Name' => $this->wifi_strength2text(2), 'Farbe' => 0x32CD32];
-        $associations[] = ['Wert' => 3, 'Name' => $this->wifi_strength2text(3), 'Farbe' => 0x228B22];
-        $this->CreateVarProfile('NetatmoSecurity.WifiStrength', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, 'Intensity', $associations);
+        $this->InstallVarProfiles(false);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
@@ -106,15 +59,101 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
 
+    private function CheckConfiguration()
+    {
+        $s = '';
+        $r = [];
+
+        $product_type = $this->ReadPropertyString('product_type');
+        if ($product_type == '') {
+            $this->SendDebug(__FUNCTION__, '"product_type" is empty', 0);
+            $r[] = $this->Translate('Product-Type must be specified');
+        }
+
+        $product_id = $this->ReadPropertyString('product_id');
+        if ($product_id == '') {
+            $this->SendDebug(__FUNCTION__, '"product_id" is empty', 0);
+            $r[] = $this->Translate('Product-ID must be specified');
+        }
+
+        $home_id = $this->ReadPropertyString('home_id');
+        if ($home_id == '') {
+            $this->SendDebug(__FUNCTION__, '"home_id" is empty', 0);
+            $r[] = $this->Translate('Home-ID must be specified');
+        }
+
+        $timelapse_path = $this->ReadPropertyString('timelapse_path');
+        if ($timelapse_path != '') {
+            $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
+            if ($timelapse_hour < -1 || $timelapse_hour > 23) {
+                $this->SendDebug(__FUNCTION__, '"timelapse_hour" is invalid', 0);
+                $r[] = $this->Translate('"hour of day" is invalid');
+            }
+        }
+
+        $ipsIP = $this->ReadPropertyString('ipsIP');
+        if ($ipsIP != '') {
+            if ($this->deternmineIp($ipsIP) == false) {
+                $this->SendDebug(__FUNCTION__, '"ipsIP" is invalid', 0);
+                $r[] = $this->Translate('IP-Address is invalid');
+            }
+        }
+
+        $externalIP = $this->ReadPropertyString('externalIP');
+        if ($externalIP != '') {
+            if ($this->deternmineIp($externalIP) == false) {
+                $this->SendDebug(__FUNCTION__, '"externalIP" is invalid', 0);
+                $r[] = $this->Translate('external IP-Address is invalid');
+            }
+        }
+
+        $localCIDRs = $this->ReadPropertyString('localCIDRs');
+        if ($localCIDRs != '') {
+            $ok = true;
+            $cidrs = explode(';', $localCIDRs);
+            foreach ($cidrs as $cidr) {
+                list($net, $mask) = explode('/', $cidr);
+                if (ip2long($net) == false) {
+                    $ok = false;
+                }
+                if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $mask)) {
+                    if (ip2long($mask) == false) {
+                        $ok = false;
+                    }
+                } else {
+                    if (!is_numeric($mask) || $mask < 1 || $mask > 31) {
+                        $ok = false;
+                    }
+                }
+                if (!$ok) {
+                    break;
+                }
+            }
+            if (!$ok) {
+                $this->SendDebug(__FUNCTION__, '"localCIDRs" is invalid', 0);
+                $r[] = $this->Translate('local CIDR\'s are invalid');
+            }
+        }
+
+        $hook = $this->ReadPropertyString('hook');
+        if ($hook != '' && $this->HookIsUsed($hook)) {
+            $this->SendDebug(__FUNCTION__, '"hook" is already used', 0);
+            $r[] = $this->Translate('Webhook is already in use');
+        }
+
+        if ($r != []) {
+            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
+            foreach ($r as $p) {
+                $s .= '- ' . $p . PHP_EOL;
+            }
+        }
+
+        return $s;
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        $module_disable = $this->ReadPropertyBoolean('module_disable');
-        if ($module_disable) {
-            $this->SetStatus(IS_INACTIVE);
-            return;
-        }
 
         $with_last_contact = $this->ReadPropertyBoolean('with_last_contact');
         $with_last_event = $this->ReadPropertyBoolean('with_last_event');
@@ -161,82 +200,6 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
 
-        $product_id = $this->ReadPropertyString('product_id');
-        $product_info = $product_id . ' (' . $product_type . ')';
-        $this->SetSummary($product_info);
-
-        if (IPS_GetKernelRunlevel() == KR_READY) {
-            $timelapse_path = $this->ReadPropertyString('timelapse_path');
-            if ($timelapse_path != '') {
-                $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
-                if ($timelapse_hour < -1 || $timelapse_hour > 23) {
-                    $this->SendDebug(__FUNCTION__, 'invalid \'timelapse_hour\' "' . $timelapse_hour . '"', 0);
-                    $this->SetStatus(self::$IS_INVALIDCONFIG);
-                    return;
-                }
-            }
-
-            $ipsIP = $this->ReadPropertyString('ipsIP');
-            if ($ipsIP != '') {
-                if ($this->deternmineIp($ipsIP) == false) {
-                    $this->SendDebug(__FUNCTION__, 'invalid \'ipsIP\' "' . $ipsIP . '"', 0);
-                    $this->SetStatus(self::$IS_INVALIDCONFIG);
-                    return;
-                }
-            }
-
-            $externalIP = $this->ReadPropertyString('externalIP');
-            if ($externalIP != '') {
-                if ($this->deternmineIp($externalIP) == false) {
-                    $this->SendDebug(__FUNCTION__, 'invalid \'externalIPˇ\' "' . $externalIP . '"', 0);
-                    $this->SetStatus(self::$IS_INVALIDCONFIG);
-                    return;
-                }
-            }
-
-            $localCIDRs = $this->ReadPropertyString('localCIDRs');
-            if ($localCIDRs != '') {
-                $ok = true;
-                $cidrs = explode(';', $localCIDRs);
-                foreach ($cidrs as $cidr) {
-                    list($net, $mask) = explode('/', $cidr);
-                    if (ip2long($net) == false) {
-                        $ok = false;
-                    }
-                    if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $mask)) {
-                        if (ip2long($mask) == false) {
-                            $ok = false;
-                        }
-                    } else {
-                        if (!is_numeric($mask) || $mask < 1 || $mask > 31) {
-                            $ok = false;
-                        }
-                    }
-                    if (!$ok) {
-                        break;
-                    }
-                }
-                if (!$ok) {
-                    $this->SendDebug(__FUNCTION__, 'invalid \'localCIDRs\' "' . $localCIDRs . '"', 0);
-                    $this->SetStatus(self::$IS_INVALIDCONFIG);
-                    return;
-                }
-            }
-
-            $hook = $this->ReadPropertyString('hook');
-            if ($hook != '') {
-                if ($this->HookIsUsed($hook)) {
-                    $this->SetStatus(self::$IS_USEDWEBHOOK);
-                    return;
-                }
-                $this->RegisterHook($hook);
-                $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetServerUrl() . $hook, 0);
-                if ($this->GetServerUrl() != $this->GetLocalServerUrl()) {
-                    $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetLocalServerUrl() . $hook, 0);
-                }
-            }
-        }
-
         $refs = $this->GetReferenceList();
         foreach ($refs as $ref) {
             $this->UnregisterReference($ref);
@@ -244,9 +207,24 @@ class NetatmoSecurityCamera extends IPSModule
         $propertyNames = ['ImportCategoryID', 'new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
         foreach ($propertyNames as $name) {
             $oid = $this->ReadPropertyInteger($name);
-            if ($oid > 0) {
+            if ($oid >= 10000) {
                 $this->RegisterReference($oid);
             }
+        }
+
+        $product_id = $this->ReadPropertyString('product_id');
+        $product_info = $product_id . ' (' . $product_type . ')';
+        $this->SetSummary($product_info);
+
+        $module_disable = $this->ReadPropertyBoolean('module_disable');
+        if ($module_disable) {
+            $this->SetStatus(IS_INACTIVE);
+            return;
+        }
+
+        if ($this->CheckConfiguration() != false) {
+            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            return;
         }
 
         /*
@@ -256,6 +234,14 @@ class NetatmoSecurityCamera extends IPSModule
          */
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
+            $hook = $this->ReadPropertyString('hook');
+            if ($hook != '') {
+                $this->RegisterHook($hook);
+                $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetServerUrl() . $hook, 0);
+                if ($this->GetServerUrl() != $this->GetLocalServerUrl()) {
+                    $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetLocalServerUrl() . $hook, 0);
+                }
+            }
             $this->SetTimer();
         }
 
@@ -269,10 +255,6 @@ class NetatmoSecurityCamera extends IPSModule
         if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
-                if ($this->HookIsUsed($hook)) {
-                    $this->SetStatus(self::$IS_USEDWEBHOOK);
-                    return;
-                }
                 $this->RegisterHook($hook);
                 $this->SendDebug(__FUNCTION__, 'webhook-url=' . $this->GetServerUrl() . $hook, 0);
                 if ($this->GetServerUrl() != $this->GetLocalServerUrl()) {
@@ -292,8 +274,7 @@ class NetatmoSecurityCamera extends IPSModule
             $dt = new DateTime(date($fmt, time() + (24 * 60 * 60)));
             $ts = (int) $dt->format('U');
             $msec = ($ts - time()) * 1000;
-            $this->SetTimerInterval('LoadTimelapse', $msec);
-            $this->SendDebug(__FUNCTION__, 'LoadTimelapse=' . date('d.m.Y H:i:s', $ts) . ', msec=' . $msec, 0);
+            $this->MaintainTimer('LoadTimelapse', $msec);
         }
 
         $ftp_max_age = $this->ReadPropertyInteger('ftp_max_age');
@@ -302,26 +283,26 @@ class NetatmoSecurityCamera extends IPSModule
             $dt = new DateTime(date('d.m.Y 00:30:00', time() + (24 * 60 * 60)));
             $ts = (int) $dt->format('U');
             $msec = ($ts - time()) * 1000;
-            $this->SetTimerInterval('CleanupPath', $msec);
-            $this->SendDebug(__FUNCTION__, 'CleanupPath=' . date('d.m.Y H:i:s', $ts) . ', msec=' . $msec, 0);
+            $this->MaintainTimer('CleanupPath', $msec);
         }
     }
 
     private function SetLocation()
     {
+        $catID = $this->ReadPropertyInteger('ImportCategoryID');
         $tree_position = [];
-        $category = $this->ReadPropertyInteger('ImportCategoryID');
-        if ($category > 0 && IPS_ObjectExists($category)) {
-            $tree_position[] = IPS_GetName($category);
-            $parent = IPS_GetObject($category)['ParentID'];
-            while ($parent > 0) {
-                if ($parent > 0) {
-                    $tree_position[] = IPS_GetName($parent);
+        if ($catID >= 10000 && IPS_ObjectExists($catID)) {
+            $tree_position[] = IPS_GetName($catID);
+            $parID = IPS_GetObject($catID)['ParentID'];
+            while ($parID > 0) {
+                if ($parID > 0) {
+                    $tree_position[] = IPS_GetName($parID);
                 }
-                $parent = IPS_GetObject($parent)['ParentID'];
+                $parID = IPS_GetObject($parID)['ParentID'];
             }
             $tree_position = array_reverse($tree_position);
         }
+        $this->SendDebug(__FUNCTION__, 'tree_position=' . print_r($tree_position, true), 0);
         return $tree_position;
     }
 
@@ -329,24 +310,28 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $entries = [];
 
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
+            return $entries;
+        }
+
         if ($this->HasActiveParent() == false) {
             $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
-            $this->LogMessage('has no active parent instance', KL_WARNING);
             return $entries;
         }
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
+        $jdata = json_decode($data, true);
 
-        $this->SendDebug(__FUNCTION__, "data=$data", 0);
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
         $guid = '{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}';
         $instIDs = IPS_GetInstanceListByModuleID($guid);
 
-        if ($data != '') {
+        if (is_array($jdata)) {
             $home_id = $this->ReadPropertyString('home_id');
             $product_id = $this->ReadPropertyString('product_id');
-            $jdata = json_decode($data, true);
 
             $homes = $jdata['body']['homes'];
             foreach ($homes as $home) {
@@ -358,7 +343,7 @@ class NetatmoSecurityCamera extends IPSModule
                 $home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
                 if (isset($home['persons'])) {
                     $persons = $home['persons'];
-                    if ($persons != '') {
+                    if (is_array($persons)) {
                         foreach ($persons as $person) {
                             $this->SendDebug(__FUNCTION__, 'person=' . print_r($person, true), 0);
 
@@ -375,10 +360,10 @@ class NetatmoSecurityCamera extends IPSModule
                             }
 
                             $entry = [
-                                'home'       => $home_name,
-                                'name'       => $pseudo,
-                                'person_id'  => $person_id,
                                 'instanceID' => $instID,
+                                'name'       => $pseudo,
+                                'home'       => $home_name,
+                                'person_id'  => $person_id,
                                 'create'     => [
                                     'moduleID'       => $guid,
                                     'location'       => $this->SetLocation(),
@@ -395,6 +380,32 @@ class NetatmoSecurityCamera extends IPSModule
                     }
                 }
             }
+        }
+        foreach ($instIDs as $instID) {
+            $fnd = false;
+            foreach ($entries as $entry) {
+                if ($entry['instanceID'] == $instID) {
+                    $fnd = true;
+                    break;
+                }
+            }
+            if ($fnd) {
+                continue;
+            }
+
+            $name = IPS_GetProperty($instID, 'pseudo');
+            $home = '';
+            $person_id = IPS_GetProperty($instID, 'person_id');
+
+            $entry = [
+                'instanceID' => $instID,
+                'name'       => $name,
+                'home'       => $home,
+                'person_id'  => $person_id,
+            ];
+
+            $entries[] = $entry;
+            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
         }
 
         return $entries;
@@ -447,19 +458,6 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $formElements = [];
 
-        if ($this->HasActiveParent() == false) {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => 'Instance has no active parent instance',
-            ];
-        }
-
-        $formElements[] = [
-            'type'    => 'CheckBox',
-            'name'    => 'module_disable',
-            'caption' => 'Disable instance'
-        ];
-
         $product_type = $this->ReadPropertyString('product_type');
         switch ($product_type) {
             case 'NACamera':
@@ -472,194 +470,224 @@ class NetatmoSecurityCamera extends IPSModule
                 $product_type_s = 'Netatmo Camera';
                 break;
         }
-
         $formElements[] = [
             'type'    => 'Label',
-            'caption' => $product_type_s];
-
-        $items = [];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'product_type',
-            'caption' => 'Product-Type'
-        ];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'product_id',
-            'caption' => 'Product-ID'
-        ];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'home_id',
-            'caption' => 'Home-ID'
-        ];
-        $formElements[] = [
-            'type'    => 'ExpansionPanel',
-            'items'   => $items,
-            'caption' => 'Basic configuration (don\'t change)'
+            'caption' => $product_type_s
         ];
 
-        $items = [];
-        $items[] = [
+        if ($this->HasActiveParent() == false) {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => 'Instance has no active parent instance',
+            ];
+        }
+
+        @$s = $this->CheckConfiguration();
+        if ($s != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $s,
+            ];
+            $formElements[] = [
+                'type'    => 'Label',
+            ];
+        }
+
+        $formElements[] = [
             'type'    => 'CheckBox',
-            'name'    => 'with_last_contact',
-            'caption' => 'last communication with Netatmo'
+            'name'    => 'module_disable',
+            'caption' => 'Disable instance'
         ];
-        $items[] = [
-            'type'    => 'CheckBox',
-            'name'    => 'with_last_event',
-            'caption' => 'last event from Netatmo'
-        ];
-        $items[] = [
-            'type'    => 'CheckBox',
-            'name'    => 'with_last_notification',
-            'caption' => 'last notification from Netatmo'
-        ];
-        $items[] = [
-            'type'    => 'CheckBox',
-            'name'    => 'with_wifi_strength',
-            'caption' => 'Strength of wifi-signal'
-        ];
+
         $formElements[] = [
             'type'    => 'ExpansionPanel',
-            'items'   => $items,
+            'items'   => [
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'product_type',
+                    'caption' => 'Product-Type'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'product_id',
+                    'caption' => 'Product-ID'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'home_id',
+                    'caption' => 'Home-ID'
+                ],
+            ],
+            'caption' => 'Basic configuration (don\'t change)',
+        ];
+
+        $formElements[] = [
+            'type'    => 'ExpansionPanel',
+            'items'   => [
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_last_contact',
+                    'caption' => 'last communication with Netatmo'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_last_event',
+                    'caption' => 'last event from Netatmo'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_last_notification',
+                    'caption' => 'last notification from Netatmo'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_wifi_strength',
+                    'caption' => 'Strength of wifi-signal'
+                ],
+            ],
             'caption' => 'optional data'
         ];
 
-        $items = [];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'hook',
-            'caption' => 'Webhook'
-        ];
-        $items[] = [
-            'type'    => 'SelectScript',
-            'name'    => 'webhook_script',
-            'caption' => 'Adjustment of the returned HTML code'
-        ];
-        $items[] = [
-            'type'    => 'Label',
-            'caption' => 'Access to the IPS server'
-        ];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'ipsIP',
-            'caption' => 'IP-Address'
-        ];
-        $items[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'ipsPort',
-            'caption' => 'Port-Number'
-        ];
-        $items[] = [
-            'type'    => 'Label',
-            'caption' => 'Check whether the retrieval is from the local network'
-        ];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'externalIP',
-            'caption' => 'external IP-Address'
-        ];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'localCIDRs',
-            'caption' => 'local CIDR\'s'
-        ];
-        $items[] = [
-            'type'    => 'SelectScript',
-            'name'    => 'url_changed_script',
-            'caption' => 'Call with changed VPN-URL'
-        ];
         $formElements[] = [
             'type'    => 'ExpansionPanel',
-            'items'   => $items,
+            'items'   => [
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'hook',
+                    'caption' => 'Webhook'
+                ],
+                [
+                    'type'    => 'SelectScript',
+                    'name'    => 'webhook_script',
+                    'caption' => 'Adjustment of the returned HTML code'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Access to the IPS server'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'ipsIP',
+                    'caption' => 'IP-Address'
+                ],
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'ipsPort',
+                    'caption' => 'Port-Number'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Check whether the retrieval is from the local network'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'externalIP',
+                    'caption' => 'external IP-Address'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'localCIDRs',
+                    'caption' => 'local CIDR\'s'
+                ],
+                [
+                    'type'    => 'SelectScript',
+                    'name'    => 'url_changed_script',
+                    'caption' => 'Call with changed VPN-URL'
+                ],
+            ],
             'caption' => 'Webhook'
         ];
 
-        $items = [];
-        $items[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'event_max_age',
-            'caption' => 'maximum age until deletion',
-            'suffix'  => 'days'
-        ];
-        $items[] = [
-            'type'    => 'SelectScript',
-            'name'    => 'new_event_script',
-            'caption' => 'Call upon receipt of new events'
-        ];
         $formElements[] = [
             'type'    => 'ExpansionPanel',
-            'items'   => $items,
+            'items'   => [
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'event_max_age',
+                    'caption' => 'maximum age until deletion',
+                    'minimum' => 0,
+                    'suffix'  => 'days'
+                ],
+                [
+                    'type'    => 'SelectScript',
+                    'name'    => 'new_event_script',
+                    'caption' => 'Call upon receipt of new events'
+                ],
+            ],
             'caption' => 'Events'
         ];
 
-        $items = [];
-        $items[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'notification_max_age',
-            'caption' => 'maximum age until deletion',
-            'suffix'  => 'days'
-        ];
-        $items[] = [
-            'type'    => 'SelectScript',
-            'name'    => 'notify_script',
-            'caption' => 'Call upon receipt of a notification'
-        ];
         $formElements[] = [
             'type'    => 'ExpansionPanel',
-            'items'   => $items,
+            'items'   => [
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'notification_max_age',
+                    'caption' => 'maximum age until deletion',
+                    'minimum' => 0,
+                    'suffix'  => 'days'
+                ],
+                [
+                    'type'    => 'SelectScript',
+                    'name'    => 'notify_script',
+                    'caption' => 'Call upon receipt of a notification'
+                ],
+            ],
             'caption' => 'Notifications'
         ];
 
-        $items = [];
-        $items[] = [
-            'type'    => 'Label',
-            'caption' => 'Local copy of videos from Netatmo via FTP'
-        ];
-        $items[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'ftp_path',
-            'caption' => 'Path'
-        ];
-        $items[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'ftp_max_age',
-            'caption' => 'maximum age until deletion',
-            'suffix'  => 'days'
-        ];
         $formElements[] = [
             'type'    => 'ExpansionPanel',
-            'items'   => $items,
+            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Local copy of videos from Netatmo via FTP'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'ftp_path',
+                    'caption' => 'Path'
+                ],
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'ftp_max_age',
+                    'caption' => 'maximum age until deletion',
+                    'minimum' => 0,
+                    'suffix'  => 'days'
+                ],
+            ],
             'caption' => 'FTP'
         ];
 
         if ($product_type == 'NOC') {
-            $items = [];
-            $items[] = [
-                'type'    => 'Label',
-                'caption' => 'Local copy of Netatmo-Timelapse'
-            ];
-            $items[] = [
-                'type'    => 'ValidationTextBox',
-                'name'    => 'timelapse_path',
-                'caption' => 'Path'
-            ];
-            $items[] = [
-                'type'    => 'NumberSpinner',
-                'name'    => 'timelapse_hour',
-                'caption' => 'Startime',
-                'suffix'  => 'hour of day'
-            ];
-            $items[] = [
-                'type'    => 'NumberSpinner',
-                'name'    => 'timelapse_max_age',
-                'caption' => 'maximum age until deletion',
-                'suffix'  => 'days'
-            ];
             $formElements[] = [
                 'type'    => 'ExpansionPanel',
-                'items'   => $items,
+                'items'   => [
+                    [
+                        'type'    => 'Label',
+                        'caption' => 'Local copy of Netatmo-Timelapse'
+                    ],
+                    [
+                        'type'    => 'ValidationTextBox',
+                        'name'    => 'timelapse_path',
+                        'caption' => 'Path'
+                    ],
+                    [
+                        'type'    => 'NumberSpinner',
+                        'name'    => 'timelapse_hour',
+                        'caption' => 'Startime',
+                        'minimum' => 0,
+                        'maximum' => 23,
+                        'suffix'  => 'hour of day'
+                    ],
+                    [
+                        'type'    => 'NumberSpinner',
+                        'name'    => 'timelapse_max_age',
+                        'caption' => 'maximum age until deletion',
+                        'minimum' => 0,
+                        'suffix'  => 'days'
+                    ],
+                ],
                 'caption' => 'Timelapse'
             ];
         }
@@ -667,51 +695,47 @@ class NetatmoSecurityCamera extends IPSModule
         if ($product_type == 'NACamera') {
             $entries = $this->getConfiguratorValues();
             if (count($entries) > 0) {
-                $items = [];
-                $items[] = [
-                    'type'    => 'Label',
-                    'caption' => 'category for persons to be created:'
-                ];
-                $items[] = [
-                    'type'    => 'SelectCategory',
-                    'name'    => 'ImportCategoryID',
-                    'caption' => 'category'
-                ];
-                $items[] = [
-                    'type'    => 'Configurator',
-                    'name'    => 'persons',
-                    'caption' => 'Persons',
-
-                    'rowCount' => count($entries),
-
-                    'add'    => false,
-                    'delete' => false,
-                    'sort'   => [
-                        'column'    => 'name',
-                        'direction' => 'ascending'
-                    ],
-                    'columns' => [
-                        [
-                            'caption' => 'Home',
-                            'name'    => 'home',
-                            'width'   => '200px'
-                        ],
-                        [
-                            'caption' => 'Pseudonym',
-                            'name'    => 'name',
-                            'width'   => 'auto'
-                        ],
-                        [
-                            'caption' => 'Id',
-                            'name'    => 'person_id',
-                            'width'   => '200px'
-                        ]
-                    ],
-                    'values' => $entries,
-                ];
                 $formElements[] = [
                     'type'    => 'ExpansionPanel',
-                    'items'   => $items,
+                    'items'   => [
+                        [
+                            'type'    => 'SelectCategory',
+                            'name'    => 'ImportCategoryID',
+                            'caption' => 'category for persons to be created'
+                        ],
+                        [
+                            'type'    => 'Configurator',
+                            'name'    => 'persons',
+                            'caption' => 'Persons',
+
+                            'rowCount' => count($entries),
+
+                            'add'    => false,
+                            'delete' => false,
+                            'sort'   => [
+                                'column'    => 'name',
+                                'direction' => 'ascending'
+                            ],
+                            'columns' => [
+                                [
+                                    'caption' => 'Home',
+                                    'name'    => 'home',
+                                    'width'   => '200px'
+                                ],
+                                [
+                                    'caption' => 'Pseudonym',
+                                    'name'    => 'name',
+                                    'width'   => 'auto'
+                                ],
+                                [
+                                    'caption' => 'Id',
+                                    'name'    => 'person_id',
+                                    'width'   => '200px'
+                                ]
+                            ],
+                            'values' => $entries,
+                        ],
+                    ],
                     'caption' => 'Persons'
                 ];
             }
@@ -723,6 +747,33 @@ class NetatmoSecurityCamera extends IPSModule
     private function GetFormActions()
     {
         $formActions = [];
+
+        $formActions[] = [
+            'type'      => 'ExpansionPanel',
+            'caption'   => 'Expert area',
+            'expanded ' => false,
+            'items'     => [
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Re-install variable-profiles',
+                    'onClick' => 'NetatmoSecurity_InstallVarProfiles($id, true);'
+                ],
+            ],
+        ];
+
+        $formActions[] = [
+            'type'      => 'ExpansionPanel',
+            'caption'   => 'Test area',
+            'expanded ' => false,
+            'items'     => [
+                [
+                    'type'    => 'TestCenter',
+                ],
+            ]
+        ];
+
+        $formActions[] = $this->GetInformationForm();
+        $formActions[] = $this->GetReferencesForm();
 
         return $formActions;
     }
@@ -836,6 +887,16 @@ class NetatmoSecurityCamera extends IPSModule
                                             $this->SetValue('PowerStatus', $power_status);
                                         }
                                     }
+                                    /*
+                                        31.10.2021, 14:33:51 |        GetHomeStatus | module=Array
+                                        (
+                                            [type] => NOC
+                                            [siren_monitoring] => off
+                                            [siren_status] => warning
+                                        )
+                                        $siren_status = $this->map_siren_status($this->GetArrayElem($camera, 'siren_status', ''));
+                                        no_sound
+                                     */
 
                                     if ($with_light) {
                                         $s = $this->GetArrayElem($camera, 'light_mode_status', '');
@@ -915,6 +976,10 @@ class NetatmoSecurityCamera extends IPSModule
                             if ($type == 'sd') {
                                 $sub_type = $this->GetArrayElem($event, 'sub_type', '');
                                 $type = ($sub_type == 4) ? 'sd_ok' : 'sd_nok';
+                            }
+                            if ($type == 'siren_sounding') {
+                                $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                $type = ($sub_type == 1) ? 'siren_sounding' : 'siren_stopped';
                             }
                             if ($type != '') {
                                 $new_event['event_type'] = $type;
@@ -1066,7 +1131,7 @@ class NetatmoSecurityCamera extends IPSModule
                     } else {
                         $s = '';
                     }
-                    $this->SetMediaData('Events', $s, false);
+                    $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
 
                     $with_last_event = $this->ReadPropertyBoolean('with_last_event');
                     if ($with_last_event && $n_new_events > 0) {
@@ -1086,7 +1151,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                     if ($n_new_events > 0 || $n_chg_events > 0 || $n_del_events > 0) {
                         $new_event_script = $this->ReadPropertyInteger('new_event_script');
-                        if ($new_event_script > 0) {
+                        if ($new_event_script >= 10000) {
                             $opts = [
                                 'InstanceID'  => $this->InstanceID,
                                 'new_events'  => json_encode($new_events)
@@ -1098,7 +1163,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                     if ($url_changed) {
                         $url_changed_script = $this->ReadPropertyInteger('url_changed_script');
-                        if ($url_changed_script > 0) {
+                        if ($url_changed_script >= 10000) {
                             $r = IPS_RunScriptWaitEx($url_changed_script, ['InstanceID' => $this->InstanceID]);
                             $this->SendDebug(__FUNCTION__, 'url_changed_script=' . IPS_GetName($url_changed_script) . ', ret=' . $r, 0);
                         }
@@ -1160,8 +1225,6 @@ class NetatmoSecurityCamera extends IPSModule
                                         break;
                                 }
 
-                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
-
                                 $cur_notification = [
                                     'tstamp'       => $now,
                                     'id'           => $event_id,
@@ -1171,23 +1234,27 @@ class NetatmoSecurityCamera extends IPSModule
                                     'subevent_id'  => $subevent_id,
                                 ];
 
-                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
-                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
-                                $snapshot = [];
+                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot_id', '');
+                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot_key', '');
                                 if ($snapshot_id != '' && $snapshot_key != '') {
-                                    $snapshot['id'] = $snapshot_id;
-                                    $snapshot['key'] = $snapshot_key;
+                                    $snapshot = [
+                                        'id'  => $snapshot_id,
+                                        'key' => $snapshot_key,
+                                    ];
                                     $cur_notification['snapshot'] = $snapshot;
                                 }
 
-                                $vignette_id = $this->GetArrayElem($notification, 'vignette.id', '');
-                                $vignette_key = $this->GetArrayElem($notification, 'vignette.key', '');
-                                $vignette = [];
+                                $vignette_id = $this->GetArrayElem($notification, 'vignette_id', '');
+                                $vignette_key = $this->GetArrayElem($notification, 'vignette_key', '');
                                 if ($vignette_id != '' && $vignette_key != '') {
-                                    $vignette['id'] = $vignette_id;
-                                    $vignette['key'] = $vignette_key;
+                                    $vignette = [
+                                        'id'  => $vignette_id,
+                                        'key' => $vignette_key,
+                                    ];
                                     $cur_notification['vignette'] = $vignette;
                                 }
+
+                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type . ' => ' . print_r($cur_notification, true), 0);
 
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
@@ -1212,8 +1279,6 @@ class NetatmoSecurityCamera extends IPSModule
                                         break;
                                 }
 
-                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
-
                                 $cur_notification = [
                                     'tstamp'       => $now,
                                     'id'           => $event_id,
@@ -1222,21 +1287,23 @@ class NetatmoSecurityCamera extends IPSModule
                                     'message'      => $message,
                                 ];
 
-                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot.id', '');
-                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot.key', '');
-                                $snapshot = [];
+                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot_id', '');
+                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot_key', '');
                                 if ($snapshot_id != '' && $snapshot_key != '') {
-                                    $snapshot['id'] = $snapshot_id;
-                                    $snapshot['key'] = $snapshot_key;
+                                    $snapshot = [
+                                        'id'  => $snapshot_id,
+                                        'key' => $snapshot_key,
+                                    ];
                                     $cur_notification['snapshot'] = $snapshot;
                                 }
 
-                                $vignette_id = $this->GetArrayElem($notification, 'vignette.id', '');
-                                $vignette_key = $this->GetArrayElem($notification, 'vignette.key', '');
-                                $vignette = [];
+                                $vignette_id = $this->GetArrayElem($notification, 'vignette_id', '');
+                                $vignette_key = $this->GetArrayElem($notification, 'vignette_key', '');
                                 if ($vignette_id != '' && $vignette_key != '') {
-                                    $vignette['id'] = $vignette_id;
-                                    $vignette['key'] = $vignette_key;
+                                    $vignette = [
+                                        'id'  => $vignette_id,
+                                        'key' => $vignette_key,
+                                    ];
                                     $cur_notification['vignette'] = $vignette;
                                 }
 
@@ -1266,11 +1333,10 @@ class NetatmoSecurityCamera extends IPSModule
                                     }
                                 }
 
+                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type . ' => ' . print_r($cur_notification, true), 0);
+
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
-
-                                $this->SendDebug(__FUNCTION__, 'notification=' . print_r($notification, true), 0);
-                                $this->SendDebug(__FUNCTION__, 'cur_notification=' . print_r($cur_notification, true), 0);
                                 break;
                             case 'NACamera-alarm_started':
                             case 'NACamera-connection':
@@ -1336,8 +1402,6 @@ class NetatmoSecurityCamera extends IPSModule
                                         break;
                                 }
 
-                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type, 0);
-
                                 $cur_notification = [
                                     'tstamp'       => $now,
                                     'id'           => $id,
@@ -1345,11 +1409,11 @@ class NetatmoSecurityCamera extends IPSModule
                                     'event_type'   => $event_type,
                                     'message'      => $message,
                                 ];
+
+                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type . ' => ' . print_r($cur_notification, true), 0);
+
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
-
-                                $this->SendDebug(__FUNCTION__, 'notification=' . print_r($notification, true), 0);
-                                $this->SendDebug(__FUNCTION__, 'cur_notification=' . print_r($cur_notification, true), 0);
                                 break;
                             case 'alert':
                             case 'daily_summary':
@@ -1373,7 +1437,7 @@ class NetatmoSecurityCamera extends IPSModule
                     } else {
                         $s = '';
                     }
-                    $this->SetMediaData('Notifications', $s, false);
+                    $this->SetMediaData('Notifications', $s, MEDIATYPE_DOCUMENT, '.dat', false);
 
                     $n_new_notifications = count($new_notifications);
 
@@ -1383,7 +1447,7 @@ class NetatmoSecurityCamera extends IPSModule
                             $this->SetValue('LastNotification', $now);
                         }
                         $notify_script = $this->ReadPropertyInteger('notify_script');
-                        if ($notify_script > 0) {
+                        if ($notify_script >= 10000) {
                             $opts = [
                                 'InstanceID'        => $this->InstanceID,
                                 'new_notifications' => json_encode($new_notifications)
@@ -1404,35 +1468,39 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
-    public function RequestAction($Ident, $Value)
+    public function RequestAction($ident, $value)
     {
+        if ($this->CommonRequestAction($ident, $value)) {
+            return;
+        }
+
         $product_type = $this->ReadPropertyString('product_type');
 
-        switch ($Ident) {
+        switch ($ident) {
             case 'LightAction':
                 if ($product_type == 'NOC') {
-                    $this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
-                    $this->SwitchLight($Value);
+                    $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
+                    $this->SwitchLight($value);
                 } else {
-                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident . ' for product ' . $product_type, 0);
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident . ' for product ' . $product_type, 0);
                 }
                 break;
             case 'LightIntensity':
                 if ($product_type == 'NOC') {
-                    $this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
-                    if ($this->DimLight($Value)) {
-                        $this->SetValue('LightIntensity', $Value);
+                    $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
+                    if ($this->DimLight($value)) {
+                        $this->SetValue('LightIntensity', $value);
                     }
                 } else {
-                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident . ' for product ' . $product_type, 0);
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident . ' for product ' . $product_type, 0);
                 }
                 break;
             case 'CameraAction':
-                $this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
-                $this->SwitchCamera($Value);
+                $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
+                $this->SwitchCamera($value);
                 break;
             default:
-                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident, 0);
+                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
                 break;
         }
     }
@@ -1670,7 +1738,7 @@ class NetatmoSecurityCamera extends IPSModule
                     break;
                 }
             }
-            $this->SetMediaData('Events', json_encode($events), false);
+            $this->SetMediaData('Events', json_encode($events), MEDIATYPE_DOCUMENT, '.dat', false);
         }
 
         return $status == 'ok';
@@ -2521,7 +2589,7 @@ class NetatmoSecurityCamera extends IPSModule
                 $url = $this->GetTimelapseUrl($date, $preferLocal);
                 break;
             case 'script':
-                if ($webhook_script == 0) {
+                if (IPS_ScriptExists($webhook_script) == false) {
                     http_response_code(404);
                     die('no custom-script not found!');
                 }
@@ -2543,7 +2611,7 @@ class NetatmoSecurityCamera extends IPSModule
                         $html = $url;
                         break;
                     case 'custom':
-                        if ($webhook_script == 0) {
+                        if (IPS_ScriptExists($webhook_script) == false) {
                             http_response_code(404);
                             die('no custom-script not found!');
                         }
@@ -2913,6 +2981,24 @@ class NetatmoSecurityCamera extends IPSModule
         $this->LogMessage(__FUNCTION__ . ': path=' . $path . ', ' . $msg, KL_MESSAGE);
     }
 
+    public function GetLocalServerUrl()
+    {
+        $ipsIP = $this->ReadPropertyString('ipsIP');
+        $ipsPort = $this->ReadPropertyInteger('ipsPort');
+
+        $url = 'http://' . ($ipsIP != '' ? $ipsIP : gethostbyname(gethostname())) . ':' . $ipsPort;
+        return $url;
+    }
+
+    public function GetServerUrl()
+    {
+        $url = $this->GetConnectUrl();
+        if ($url == false) {
+            $url = $this->GetLocalServerUrl();
+        }
+        return $url;
+    }
+
     // Event-Typ
     private function event_type2icon($val)
     {
@@ -2938,6 +3024,9 @@ class NetatmoSecurityCamera extends IPSModule
             'update_dl_fail'  => 'dl_fail.png',
             'start_update'    => 'start_update_icon.png',
             'end_update'      => 'end_update_icon.png',
+            'siren_sounding'  => 'sounding.png',
+            'siren_stopped'   => 'stopped.png',
+
         ];
 
         if (isset($val2icon[$val])) {
@@ -2973,6 +3062,8 @@ class NetatmoSecurityCamera extends IPSModule
             'update_dl_fail'  => 'Update download failed',
             'start_update'    => 'Update startet',
             'end_update'      => 'Update finished',
+            'siren_sounding'  => 'Siren on',
+            'siren_stopped'   => 'Siren off',
         ];
 
         if (isset($val2txt[$val])) {
@@ -2997,78 +3088,6 @@ class NetatmoSecurityCamera extends IPSModule
     public function EventType2Text(string $event_type)
     {
         $txt = $this->event_type2text($event_type);
-    }
-
-    public function GetLocalServerUrl()
-    {
-        $ipsIP = $this->ReadPropertyString('ipsIP');
-        $ipsPort = $this->ReadPropertyInteger('ipsPort');
-
-        $url = 'http://' . ($ipsIP != '' ? $ipsIP : gethostbyname(gethostname())) . ':' . $ipsPort;
-        return $url;
-    }
-
-    public function GetServerUrl()
-    {
-        $url = $this->GetConnectUrl();
-        if ($url == false) {
-            $url = $this->GetLocalServerUrl();
-        }
-        return $url;
-    }
-
-    // Wifi-Strength
-    private function map_wifi_strength($strength)
-    {
-        if ($strength <= 56) {
-            // "high"
-            $val = 3;
-        } elseif ($strength <= 71) {
-            // "good"
-            $val = 2;
-        } elseif ($strength <= 86) {
-            // "average"
-            $val = 1;
-        } else {
-            // "bad"
-            $val = 0;
-        }
-
-        return $val;
-    }
-
-    private function wifi_strength2text($strength)
-    {
-        $strength2txt = [
-            'bad',
-            'average',
-            'good',
-            'high'
-        ];
-
-        if ($strength >= 0 && $strength < count($strength2txt)) {
-            $txt = $this->Translate($strength2txt[$strength]);
-        } else {
-            $txt = '';
-        }
-        return $txt;
-    }
-
-    private function wifi_strength2icon($strength)
-    {
-        $strength2icon = [
-            'wifi_low.png',
-            'wifi_medium.png',
-            'wifi_high.png',
-            'wifi_full.png',
-        ];
-
-        if ($strength >= 0 && $strength < count($strength2icon)) {
-            $img = $strength2icon[$strength];
-        } else {
-            $img = '';
-        }
-        return $img;
     }
 
     public function WifiStrength2Icon(string $wifi_strength, bool $asPath)

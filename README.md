@@ -48,54 +48,23 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
 
 ## 3. Installation
 
-### a. Laden des Moduls
+### a. Installation des Moduls
 
-**Installieren über den Module-Store**
-
-Die Webconsole von IP-Symcon mit http://<IP-Symcon IP>:3777/console/ öffnen.
-
-Anschließend oben rechts auf das Symbol für den Modulstore (IP-Symcon > 5.1) klicken
-
-Im Suchfeld nun NetatmoSecurity eingeben, das Modul auswählen und auf Installieren drücken.
-
-**Installieren über die Modules-Instanz**
-
-Die Konsole von IP-Symcon öffnen. Im Objektbaum unter Kerninstanzen die Instanz __*Modules*__ durch einen doppelten Mausklick öffnen.
-
-In der _Modules_ Instanz rechts oben auf den Button __*Hinzufügen*__ drücken.
-
-In dem sich öffnenden Fenster folgende URL hinzufügen:
-
-`https://github.com/demel42/IPSymconNetatmoSecurity.git`
-
-und mit _OK_ bestätigen. Ggfs. auf anderen Branch wechseln (Modul-Eintrag editieren, _Zweig_ auswählen).
-
-Anschließend erscheint ein Eintrag für das Modul in der Liste der Instanz _Modules_
+Im [Module Store](https://www.symcon.de/service/dokumentation/komponenten/verwaltungskonsole/module-store/) ist das Modul unter dem Suchbegriff *NetatmoSecurity* zu finden.<br>
+Alternativ kann das Modul über [Module Control](https://www.symcon.de/service/dokumentation/modulreferenz/module-control/) unter Angabe der URL `https://github.com/demel42/IPSymconNetatmoSecurity` installiert werden.
 
 ### b. Einrichtung in IPS
 
 #### NetatmoSecurityIO
 
-In IP-Symcon nun unterhalb von _I/O Instanzen_ die Funktion _Instanz hinzufügen_ (_CTRL+1_) auswählen, als Hersteller _Netatmo_ und als Gerät _NetatmoSecurity I/O_ auswählen.
+In IP-Symcon nun unterhalb von _I/O Instanzen_ die Funktion _Instanz hinzufügen_ auswählen, als Hersteller _Netatmo_ und als Gerät _NetatmoSecurity I/O_ auswählen.
+Num muss man im I/O-Modul den Verbindungstyp auswählen
 
-In dem Konfigurationsformular nun den gewünschten Zugang wählen, entweder als Nutzer über IP-Symcon Connect oder als Entwickler mit eigenem Entwicklerschlüssel.
-
-**Zugriff mit Netatmo-Benutzerdaten über IP-Symcon Connect**
-
-Hierzu _bei Netatmo anmelden_ auswählen. Es öffnet sich ein Browserfenster mit der Anmeldeseite von Netatmo; hier bitte anmelden. Dann erscheint ein weiteres Fenster
-
-![OAUTH1](docs/netatmo_login_1.png?raw=true "oauth 1")
-
-Hier bitte den Zugriff des _IP-Symcon Netatmo Connector_ akzeptieren; es erscheint 
-
-![OAUTH1](docs/netatmo_login_2.png?raw=true "oauth 2")
-
-Das Browserfenster schliessen.
-
+#### über IP-Symcon Connect
+_bei Netatmo anmelden_ auswählen und auf der Netatmo Login-Seite Benutzernamen und Passwort eingeben.
 Anmerkung: auch wenn hier alle möglichen Netamo-Produkte aufgelistet sind, bezieht sich das Login nur auf die Produkte dieses Moduls.
 
-**Zugriff als Entwickler mit eigenem Entwicklerschlüssel**
-
+#### mit eigenem Entwicklerschlüssel
 In dem Konfigurationsdialog die Netatmo-Zugangsdaten eintragen.
 
 #### NetatmoSecurityConfig
@@ -529,10 +498,10 @@ NetatmoSecurity.PowerStatus
 | event_type   | string         | nein     | Art des Ereignisses |
 | message      | string         | nein     | Nachrichtentext |
 | subevent_id  | string         | ja       | ID des Einzel-Erignisses (siehe _Sub-Events_) |
-| snapshot_id  | string         | ja       | siehe _Sub-Events_ |
-| snapshot_key | string         | ja       | siehe _Sub-Events_ |
-| vignette_id  | string         | ja       | siehe _Sub-Events_ |
-| vignette_key | string         | ja       | siehe _Sub-Events_ |
+| snapshot.id  | string         | ja       | siehe _Sub-Events_ |
+| snapshot.key | string         | ja       | siehe _Sub-Events_ |
+| vignette.id  | string         | ja       | siehe _Sub-Events_ |
+| vignette.key | string         | ja       | siehe _Sub-Events_ |
 | persons      | Objekt-Liste   | ja       | Liste der Personen |
 
 #### Person
@@ -565,6 +534,13 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.22 @ 16.04.2022 11:21
+  - Anpassungen an IPS 6.2 (Prüfung auf ungültige ID's)
+  - Konfigurator zeigt nun auch Instanzen an, die nicht mehr zu den vorhandenen Geräten passen
+  - Anzeige der Referenzen der Instanz incl. Statusvariablen und Instanz-Timer
+  - submodule libs/CommonStubs
+  - Korrektur: Speicherung der Informationen für snapshot und vignette in notifications
 
 - 1.21 @ 14.09.2021 16:48
   - Fix: Aufräumen des FTP-Verzeichnisses funktionierte nicht (mehr)

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../libs/common.php';  // globale Funktionen
-require_once __DIR__ . '/../libs/local.php';   // lokale Funktionen
+require_once __DIR__ . '/../libs/common.php';
+require_once __DIR__ . '/../libs/local.php';
 
 class NetatmoSecurityPerson extends IPSModule
 {
-    use NetatmoSecurityCommonLib;
+    use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
     public function Create()
@@ -20,31 +20,43 @@ class NetatmoSecurityPerson extends IPSModule
         $this->RegisterPropertyString('home_id', '');
         $this->RegisterPropertyString('pseudo', '');
 
-        $associations = [];
-        $associations[] = ['Wert' => false, 'Name' => $this->Translate('absent'), 'Farbe' => 0xEE0000];
-        $associations[] = ['Wert' => true, 'Name' => $this->Translate('present'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.Presence', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 1, '', $associations);
-
-        $associations = [];
-        $associations[] = ['Wert' => self::$PRESENCE_ACTION_AWAY, 'Name' => $this->Translate('away'), 'Farbe' => -1];
-        $associations[] = ['Wert' => self::$PRESENCE_ACTION_HOME, 'Name' => $this->Translate('home'), 'Farbe' => -1];
-        $associations[] = ['Wert' => self::$PRESENCE_ACTION_ALLAWAY, 'Name' => $this->Translate('all away'), 'Farbe' => -1];
-        $this->CreateVarProfile('NetatmoSecurity.PresenceAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations);
+        $this->InstallVarProfiles(false);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
 
+    private function CheckConfiguration()
+    {
+        $s = '';
+        $r = [];
+
+        $person_id = $this->ReadPropertyString('person_id');
+        if ($person_id == '') {
+            $this->SendDebug(__FUNCTION__, '"person_id" is empty', 0);
+            $r[] = $this->Translate('Person-ID must be specified');
+        }
+
+        $home_id = $this->ReadPropertyString('home_id');
+        if ($home_id == '') {
+            $this->SendDebug(__FUNCTION__, '"home_id" is empty', 0);
+            $r[] = $this->Translate('Home-ID must be specified');
+        }
+
+        if ($r != []) {
+            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
+            foreach ($r as $p) {
+                $s .= '- ' . $p . PHP_EOL;
+            }
+        }
+
+        return $s;
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        $module_disable = $this->ReadPropertyBoolean('module_disable');
-        if ($module_disable) {
-            $this->SetStatus(IS_INACTIVE);
-            return;
-        }
 
         $vpos = 0;
 
@@ -53,6 +65,29 @@ class NetatmoSecurityPerson extends IPSModule
         $this->MaintainVariable('PresenceAction', $this->Translate('Change presence'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.PresenceAction', $vpos++, true);
 
         $this->MaintainAction('PresenceAction', true);
+
+        $refs = $this->GetReferenceList();
+        foreach ($refs as $ref) {
+            $this->UnregisterReference($ref);
+        }
+        $propertyNames = [];
+        foreach ($propertyNames as $name) {
+            $oid = $this->ReadPropertyInteger($name);
+            if ($oid >= 10000) {
+                $this->RegisterReference($oid);
+            }
+        }
+
+        $module_disable = $this->ReadPropertyBoolean('module_disable');
+        if ($module_disable) {
+            $this->SetStatus(IS_INACTIVE);
+            return;
+        }
+
+        if ($this->CheckConfiguration() != false) {
+            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            return;
+        }
 
         $person_id = $this->ReadPropertyString('person_id');
         $pseudo = $this->ReadPropertyString('pseudo');
@@ -74,6 +109,11 @@ class NetatmoSecurityPerson extends IPSModule
     {
         $formElements = [];
 
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => 'Netatmo Persons'
+        ];
+
         if ($this->HasActiveParent() == false) {
             $formElements[] = [
                 'type'    => 'Label',
@@ -81,15 +121,21 @@ class NetatmoSecurityPerson extends IPSModule
             ];
         }
 
+        @$s = $this->CheckConfiguration();
+        if ($s != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $s,
+            ];
+            $formElements[] = [
+                'type'    => 'Label',
+            ];
+        }
+
         $formElements[] = [
             'type'    => 'CheckBox',
             'name'    => 'module_disable',
             'caption' => 'Disable instance'
-        ];
-
-        $formElements[] = [
-            'type'    => 'Label',
-            'caption' => 'Netatmo Persons'
         ];
 
         $formElements[] = [
@@ -115,6 +161,9 @@ class NetatmoSecurityPerson extends IPSModule
     private function GetFormActions()
     {
         $formActions = [];
+
+        $formActions[] = $this->GetInformationForm();
+        $formActions[] = $this->GetReferencesForm();
 
         return $formActions;
     }
@@ -184,15 +233,18 @@ class NetatmoSecurityPerson extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
-    public function RequestAction($Ident, $Value)
+    public function RequestAction($ident, $Value)
     {
-        switch ($Ident) {
+        if ($this->CommonRequestAction($ident, $value)) {
+            return;
+        }
+        switch ($ident) {
             case 'PresenceAction':
-                $this->SendDebug(__FUNCTION__, $Ident . '=' . $Value, 0);
-                $this->SwitchPresence($Value);
+                $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
+                $this->SwitchPresence($value);
                 break;
             default:
-                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $Ident, 0);
+                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
                 break;
         }
     }

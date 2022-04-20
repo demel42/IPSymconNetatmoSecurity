@@ -535,6 +535,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.23 @ 20.04.2022 11:47
+  - Implememtierung einer Update-Logik
+  - diverse interne Änderungen
+
 - 1.22 @ 16.04.2022 11:21
   - Anpassungen an IPS 6.2 (Prüfung auf ungültige ID's)
   - Konfigurator zeigt nun auch Instanzen an, die nicht mehr zu den vorhandenen Geräten passen

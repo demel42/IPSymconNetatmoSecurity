@@ -49,19 +49,20 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
+        $this->RegisterAttributeString('UpdateInfo', '');
+
         $this->InstallVarProfiles(false);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
-        $this->RegisterTimer('CleanupPath', 0, 'NetatmoSecurity_doCleanupPath(' . $this->InstanceID . ');');
-        $this->RegisterTimer('LoadTimelapse', 0, 'NetatmoSecurity_doLoadTimelapse(' . $this->InstanceID . ');');
+        $this->RegisterTimer('CleanupPath', 0, $this->GetModulePrefix() . '_doCleanupPath(' . $this->InstanceID . ');');
+        $this->RegisterTimer('LoadTimelapse', 0, $this->GetModulePrefix() . '_doLoadTimelapse(' . $this->InstanceID . ');');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
 
-    private function CheckConfiguration()
+    private function CheckModuleConfiguration()
     {
-        $s = '';
         $r = [];
 
         $product_type = $this->ReadPropertyString('product_type');
@@ -141,19 +142,45 @@ class NetatmoSecurityCamera extends IPSModule
             $r[] = $this->Translate('Webhook is already in use');
         }
 
-        if ($r != []) {
-            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
-            foreach ($r as $p) {
-                $s .= '- ' . $p . PHP_EOL;
-            }
-        }
-
-        return $s;
+        return $r;
     }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+
+        if ($this->CheckPrerequisites() != false) {
+            $this->MaintainTimer('CleanupPath', 0);
+            $this->MaintainTimer('LoadTimelapse', 0);
+            $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
+            return;
+        }
+
+        if ($this->CheckUpdate() != false) {
+            $this->MaintainTimer('CleanupPath', 0);
+            $this->MaintainTimer('LoadTimelapse', 0);
+            $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
+            return;
+        }
+
+        $refs = $this->GetReferenceList();
+        foreach ($refs as $ref) {
+            $this->UnregisterReference($ref);
+        }
+        $propertyNames = ['ImportCategoryID', 'new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
+        foreach ($propertyNames as $name) {
+            $oid = $this->ReadPropertyInteger($name);
+            if ($oid >= 10000) {
+                $this->RegisterReference($oid);
+            }
+        }
+
+        if ($this->CheckConfiguration() != false) {
+            $this->MaintainTimer('CleanupPath', 0);
+            $this->MaintainTimer('LoadTimelapse', 0);
+            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            return;
+        }
 
         $with_last_contact = $this->ReadPropertyBoolean('with_last_contact');
         $with_last_event = $this->ReadPropertyBoolean('with_last_event');
@@ -200,30 +227,13 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
 
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = ['ImportCategoryID', 'new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
-        }
-
         $product_id = $this->ReadPropertyString('product_id');
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
-            $this->SetStatus(IS_INACTIVE);
-            return;
-        }
-
-        if ($this->CheckConfiguration() != false) {
-            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            $this->SetStatus(self::$IS_DEACTIVATED);
             return;
         }
 
@@ -456,8 +466,6 @@ class NetatmoSecurityCamera extends IPSModule
 
     private function GetFormElements()
     {
-        $formElements = [];
-
         $product_type = $this->ReadPropertyString('product_type');
         switch ($product_type) {
             case 'NACamera':
@@ -470,27 +478,10 @@ class NetatmoSecurityCamera extends IPSModule
                 $product_type_s = 'Netatmo Camera';
                 break;
         }
-        $formElements[] = [
-            'type'    => 'Label',
-            'caption' => $product_type_s
-        ];
+        $formElements = $this->GetCommonFormElements($product_type_s);
 
-        if ($this->HasActiveParent() == false) {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => 'Instance has no active parent instance',
-            ];
-        }
-
-        @$s = $this->CheckConfiguration();
-        if ($s != '') {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => $s,
-            ];
-            $formElements[] = [
-                'type'    => 'Label',
-            ];
+        if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
+            return $formElements;
         }
 
         $formElements[] = [
@@ -748,6 +739,15 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $formActions = [];
 
+        if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
+            $formActions[] = $this->GetCompleteUpdateFormAction();
+
+            $formActions[] = $this->GetInformationFormAction();
+            $formActions[] = $this->GetReferencesFormAction();
+
+            return $formActions;
+        }
+
         $formActions[] = [
             'type'      => 'ExpansionPanel',
             'caption'   => 'Expert area',
@@ -756,7 +756,7 @@ class NetatmoSecurityCamera extends IPSModule
                 [
                     'type'    => 'Button',
                     'caption' => 'Re-install variable-profiles',
-                    'onClick' => 'NetatmoSecurity_InstallVarProfiles($id, true);'
+                    'onClick' => $this->GetModulePrefix() . '_InstallVarProfiles($id, true);'
                 ],
             ],
         ];
@@ -772,8 +772,8 @@ class NetatmoSecurityCamera extends IPSModule
             ]
         ];
 
-        $formActions[] = $this->GetInformationForm();
-        $formActions[] = $this->GetReferencesForm();
+        $formActions[] = $this->GetInformationFormAction();
+        $formActions[] = $this->GetReferencesFormAction();
 
         return $formActions;
     }

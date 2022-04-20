@@ -3,13 +3,27 @@
 		"de": {
 			"Netatmo Security I/O": "Netatmo Security I/O",
 
-			"Disable instance": "Instanz deaktivieren",
+			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
 
-			"The following points of the configuration are incorrect":
-				"Die folgenden Punkte der Konfiguration sind fehlerhaft",
+			"The following points of the configuration are incorrect": "Die folgenden Punkte der Konfiguration sind fehlerhaft",
+			"Username must be specified": "Benutzername muss angegeben sein",
+			"Password must be specified": "Passwort muss angegeben sein",
+			"Client-ID must be specified": "Client-ID muss angegeben sein",
+			"Client-Secret must be specified": "Client-Secret  muss angegeben sein",
 			"Webhook is already in use": "Webhook wird bereits verwendet",
-			"Neither the base URL is specified nor an active connect service is available":
-				"Es ist weder die Base-URL angegeben noch ein aktiver Connect-Dienst vorhanden",
+			"Neither the base URL is specified nor an active connect service is available": "Es ist weder die Base-URL angegeben noch ein aktiver Connect-Dienst vorhanden",
+
+			"The following system prerequisites are missing": "Folgende Systemvoraussetzungen fehlen",
+
+			"Still something to do to complete the update": "Es ist noch etwas zu tun, um das Update abzuschließen",
+			"old version": "alte Version",
+			"new version": "neue Version",
+			"unknwon": "unbekannt",
+			"Press button 'Complete update' to carry out the required work": "Taste 'Update abschliessen' betätigen um die erforderlichen Arbeiten auszuführen",
+			"Complete update": "Update abschliessen",
+			"Unable to complete the update": "Das Update kann nicht abgeschlossen werden",
+			"please contact the author": "Bitte kontaktieren Sie den Autor",
+			"Disable instance": "Instanz deaktivieren",
 
 			"Status: Symcon Connect is OK!": "Status: Symcon Connect ist OK!",
 			"Error: Symcon Connect is not active!": "Fehler: Symcon Connect ist nicht aktiv!",
@@ -31,15 +45,13 @@
 
 			"Netatmo Access-Details": "Netatmo Zugangsdaten",
 
-			"Netatmo-Account from https://my.netatmo.com":
-				"Netatmo Konto-Daten von https://my.netatmo.com",
+			"Netatmo-Account from https://my.netatmo.com": "Netatmo Konto-Daten von https://my.netatmo.com",
 			"Username": "Benutzername",
 			"Password": "Passwort",
 
-			"Netatmo-Connect from https://dev.netatmo.com":
-				"Netatmo-Connect-Daten von https://dev.netatmo.com",
-			"Client ID": "Client ID",
-			"Client Secret": "Client Secret",
+			"Netatmo-Connect from https://dev.netatmo.com": "Netatmo-Connect-Daten von https://dev.netatmo.com",
+			"Client-ID": "Client-ID",
+			"Client-Secret": "Client-Secret",
 
 			"Call settings": "Abrufeinstellungen",
 
@@ -98,12 +110,19 @@
 			"Next run": "nächste Ausführung",
 			"Last run": "letzte Ausführung",
 			"Timer information": "Timer-Information",
+			"Refresh references panel": "Referenzen-Panel aktualisieren",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
 			"Instance is deleted": "Instanz wird gelöscht",
 			"Instance is inactive": "Instanz ist inaktiv",
 			"Instance is not created": "Instanz wurde nicht erzeugt",
+
+			"Instance is inactive (invalid preconditions)": "Instanz ist inaktiv (ungültige Voraussetzungen)",
+			"Instance is inactive (update not completed)": "Instanz ist inaktiv (Update nicht abgeschlossen)",
+			"Instance is inactive (invalid configuration)": "Instanz ist inaktiv (ungültige Konfiguration)",
+			"Instance is inactive (deactivated)": "Instanz ist inaktiv (deaktiviert)",
+			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 
 			"Instance is inactive (no data)": "Instanz ist inaktiv (keine Daten)",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
@@ -114,8 +133,6 @@
 			"Instance is inactive (no module)": "Instanz ist inaktiv (kein Modul)",
 			"Instance is inactive (module missing)": "Instanz ist inaktiv (Modul ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
-			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)",
-			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)"
 		}
 	}

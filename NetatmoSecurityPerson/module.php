@@ -20,6 +20,8 @@ class NetatmoSecurityPerson extends IPSModule
         $this->RegisterPropertyString('home_id', '');
         $this->RegisterPropertyString('pseudo', '');
 
+        $this->RegisterAttributeString('UpdateInfo', '');
+
         $this->InstallVarProfiles(false);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
@@ -27,9 +29,8 @@ class NetatmoSecurityPerson extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
 
-    private function CheckConfiguration()
+    private function CheckModuleConfiguration()
     {
-        $s = '';
         $r = [];
 
         $person_id = $this->ReadPropertyString('person_id');
@@ -44,19 +45,39 @@ class NetatmoSecurityPerson extends IPSModule
             $r[] = $this->Translate('Home-ID must be specified');
         }
 
-        if ($r != []) {
-            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
-            foreach ($r as $p) {
-                $s .= '- ' . $p . PHP_EOL;
-            }
-        }
-
-        return $s;
+        return $r;
     }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+
+        if ($this->CheckPrerequisites() != false) {
+            $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
+            return;
+        }
+
+        if ($this->CheckUpdate() != false) {
+            $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
+            return;
+        }
+
+        $refs = $this->GetReferenceList();
+        foreach ($refs as $ref) {
+            $this->UnregisterReference($ref);
+        }
+        $propertyNames = [];  // LISTE
+        foreach ($propertyNames as $name) {
+            $oid = $this->ReadPropertyInteger($name);
+            if ($oid >= 10000) {
+                $this->RegisterReference($oid);
+            }
+        }
+
+        if ($this->CheckConfiguration() != false) {
+            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            return;
+        }
 
         $vpos = 0;
 
@@ -66,26 +87,9 @@ class NetatmoSecurityPerson extends IPSModule
 
         $this->MaintainAction('PresenceAction', true);
 
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = [];
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
-        }
-
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
-            $this->SetStatus(IS_INACTIVE);
-            return;
-        }
-
-        if ($this->CheckConfiguration() != false) {
-            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            $this->SetStatus(self::$IS_DEACTIVATED);
             return;
         }
 
@@ -107,29 +111,10 @@ class NetatmoSecurityPerson extends IPSModule
 
     private function GetFormElements()
     {
-        $formElements = [];
+        $formElements = $this->GetCommonFormElements('Netatmo Persons');
 
-        $formElements[] = [
-            'type'    => 'Label',
-            'caption' => 'Netatmo Persons'
-        ];
-
-        if ($this->HasActiveParent() == false) {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => 'Instance has no active parent instance',
-            ];
-        }
-
-        @$s = $this->CheckConfiguration();
-        if ($s != '') {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => $s,
-            ];
-            $formElements[] = [
-                'type'    => 'Label',
-            ];
+        if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
+            return $formElements;
         }
 
         $formElements[] = [
@@ -162,8 +147,17 @@ class NetatmoSecurityPerson extends IPSModule
     {
         $formActions = [];
 
-        $formActions[] = $this->GetInformationForm();
-        $formActions[] = $this->GetReferencesForm();
+        if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
+            $formActions[] = $this->GetCompleteUpdateFormAction();
+
+            $formActions[] = $this->GetInformationFormAction();
+            $formActions[] = $this->GetReferencesFormAction();
+
+            return $formActions;
+        }
+
+        $formActions[] = $this->GetInformationFormAction();
+        $formActions[] = $this->GetReferencesFormAction();
 
         return $formActions;
     }

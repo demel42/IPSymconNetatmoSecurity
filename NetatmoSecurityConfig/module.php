@@ -16,27 +16,24 @@ class NetatmoSecurityConfig extends IPSModule
 
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
+        $this->RegisterAttributeString('UpdateInfo', '');
+
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
-    }
-
-    private function CheckConfiguration()
-    {
-        $s = '';
-        $r = [];
-
-        if ($r != []) {
-            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
-            foreach ($r as $p) {
-                $s .= '- ' . $p . PHP_EOL;
-            }
-        }
-
-        return $s;
     }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+
+        if ($this->CheckPrerequisites() != false) {
+            $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
+            return;
+        }
+
+        if ($this->CheckUpdate() != false) {
+            $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
+            return;
+        }
 
         $refs = $this->GetReferenceList();
         foreach ($refs as $ref) {
@@ -263,29 +260,10 @@ class NetatmoSecurityConfig extends IPSModule
 
     private function GetFormElements()
     {
-        $formElements = [];
+        $formElements = $this->GetCommonFormElements('Netatmo Security Configurator');
 
-        $formElements[] = [
-            'type'    => 'Label',
-            'caption' => 'Netatmo Security Configurator',
-        ];
-
-        if ($this->HasActiveParent() == false) {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => 'Instance has no active parent instance',
-            ];
-        }
-
-        @$s = $this->CheckConfiguration();
-        if ($s != '') {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => $s,
-            ];
-            $formElements[] = [
-                'type'    => 'Label',
-            ];
+        if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
+            return $formElements;
         }
 
         $formElements[] = [
@@ -340,8 +318,17 @@ class NetatmoSecurityConfig extends IPSModule
     {
         $formActions = [];
 
-        $formActions[] = $this->GetInformationForm();
-        $formActions[] = $this->GetReferencesForm();
+        if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
+            $formActions[] = $this->GetCompleteUpdateFormAction();
+
+            $formActions[] = $this->GetInformationFormAction();
+            $formActions[] = $this->GetReferencesFormAction();
+
+            return $formActions;
+        }
+
+        $formActions[] = $this->GetInformationFormAction();
+        $formActions[] = $this->GetReferencesFormAction();
 
         return $formActions;
     }

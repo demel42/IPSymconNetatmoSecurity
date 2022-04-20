@@ -7,8 +7,7 @@
 
 			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
 
-			"The following points of the configuration are incorrect":
-				"Die folgenden Punkte der Konfiguration sind fehlerhaft",
+			"The following points of the configuration are incorrect": "Die folgenden Punkte der Konfiguration sind fehlerhaft",
 			"Product-Type must be specified": "Produkt-Typ muss angegeben sein",
 			"Product-ID must be specified": "Produkt-ID muss angegeben sein",
 			"Home-ID must be specified": "Heim-ID muss angegeben sein",
@@ -17,6 +16,17 @@
 			"external IP-Address is invalid": "externe IP-Adresse ist ungültig",
 			"local CIDR's are invalid": "lokale CIDR's sind ungültig",
 			"Webhook is already in use": "Webhook wird bereits verwendet",
+
+			"The following system prerequisites are missing": "Folgende Systemvoraussetzungen fehlen",
+
+			"Still something to do to complete the update": "Es ist noch etwas zu tun, um das Update abzuschließen",
+			"old version": "alte Version",
+			"new version": "neue Version",
+			"unknwon": "unbekannt",
+			"Press button 'Complete update' to carry out the required work": "Taste 'Update abschliessen' betätigen um die erforderlichen Arbeiten auszuführen",
+			"Complete update": "Update abschliessen",
+			"Unable to complete the update": "Das Update kann nicht abgeschlossen werden",
+			"please contact the author": "Bitte kontaktieren Sie den Autor",
 
 			"Disable instance": "Instanz deaktivieren",
 
@@ -39,14 +49,12 @@
 			"last notification from Netatmo": "letzte Benachrichtigung von Netatmo",
 			"Strength of wifi-signal": "Stärke des Wifi-Signals",
 
-			"Adjustment of the returned HTML code":
-				"Anpassung des zurückgegebenen HTML-Codes",
+			"Adjustment of the returned HTML code": "Anpassung des zurückgegebenen HTML-Codes",
 
 			"Access to the IPS server": "Zugriff auf den IPS-Server",
 			"IP-Address": "IP-Adresse",
 			"Port-Number": "Portnummer",
-			"Check whether the retrieval is from the local network":
-				"Prüfung, ob der Abruf aus dem lokalen Netz erfolgt",
+			"Check whether the retrieval is from the local network": "Prüfung, ob der Abruf aus dem lokalen Netz erfolgt",
 			"external IP-Address": "externe IP-Adresse",
 			"local CIDR's": "lokale CIDR's",
 
@@ -167,12 +175,19 @@
 			"Next run": "nächste Ausführung",
 			"Last run": "letzte Ausführung",
 			"Timer information": "Timer-Information",
+			"Refresh references panel": "Referenzen-Panel aktualisieren",
 
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
 			"Instance is deleted": "Instanz wird gelöscht",
 			"Instance is inactive": "Instanz ist inaktiv",
 			"Instance is not created": "Instanz wurde nicht erzeugt",
+
+			"Instance is inactive (invalid preconditions)": "Instanz ist inaktiv (ungültige Voraussetzungen)",
+			"Instance is inactive (update not completed)": "Instanz ist inaktiv (Update nicht abgeschlossen)",
+			"Instance is inactive (invalid configuration)": "Instanz ist inaktiv (ungültige Konfiguration)",
+			"Instance is inactive (deactivated)": "Instanz ist inaktiv (deaktiviert)",
+			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 
 			"Instance is inactive (no data)": "Instanz ist inaktiv (keine Daten)",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
@@ -183,8 +198,6 @@
 			"Instance is inactive (no product)": "Instanz ist inaktiv (kein Produkt)",
 			"Instance is inactive (product missing)": "Instanz ist inaktiv (Produkt ist unbekannt)",
 			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
-			"Instance is inactive (invalid config)": "Instanz ist inaktiv (ungültige Konfiguration)",
-			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)"
 		}
 	}

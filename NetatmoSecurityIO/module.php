@@ -592,7 +592,7 @@ class NetatmoSecurityIO extends IPSModule
             $formActions[] = [
                 'type'    => 'Button',
                 'caption' => 'Login at Netatmo',
-                'onClick' => 'echo NetatmoSecurity_Login($id);'
+                'onClick' => 'echo ' . $this->GetModulePrefix() . '_Login($id);'
             ];
         }
 

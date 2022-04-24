@@ -52,6 +52,8 @@ class NetatmoSecurityPerson extends IPSModule
     {
         parent::ApplyChanges();
 
+        $this->MaintainReferences();
+
         if ($this->CheckPrerequisites() != false) {
             $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
             return;
@@ -60,18 +62,6 @@ class NetatmoSecurityPerson extends IPSModule
         if ($this->CheckUpdate() != false) {
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
-        }
-
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = [];  // LISTE
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
         }
 
         if ($this->CheckConfiguration() != false) {

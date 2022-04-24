@@ -100,11 +100,11 @@ class NetatmoSecurityIO extends IPSModule
         return $r;
     }
 
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink($tstamp, $senderID, $message, $data)
     {
-        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
+        parent::MessageSink($tstamp, $senderID, $message, $data);
 
-        if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
+        if ($message == IPS_KERNELMESSAGE && $data[0] == KR_READY) {
             $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
             if ($oauth_type == self::$CONNECTION_OAUTH) {
                 $this->RegisterOAuth($this->oauthIdentifer);
@@ -116,7 +116,7 @@ class NetatmoSecurityIO extends IPSModule
             }
             $this->UpdateData();
         }
-        if ($Message == IPS_KERNELSHUTDOWN) {
+        if ($message == IPS_KERNELSHUTDOWN) {
             $register_webhook = $this->ReadPropertyBoolean('register_webhook');
             if ($register_webhook && $this->GetBuffer('ApiAccessToken') != '') {
                 $this->LogMessage('drop webhook', KL_NOTIFY);
@@ -129,6 +129,8 @@ class NetatmoSecurityIO extends IPSModule
     {
         parent::ApplyChanges();
 
+        $this->MaintainReferences();
+
         if ($this->CheckPrerequisites() != false) {
             $this->MaintainTimer('UpdateData', 0);
             $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
@@ -139,18 +141,6 @@ class NetatmoSecurityIO extends IPSModule
             $this->MaintainTimer('UpdateData', 0);
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
-        }
-
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = [];  // LISTE
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
         }
 
         if ($this->CheckConfiguration() != false) {

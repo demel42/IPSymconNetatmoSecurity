@@ -149,6 +149,9 @@ class NetatmoSecurityCamera extends IPSModule
     {
         parent::ApplyChanges();
 
+        $propertyNames = ['ImportCategoryID', 'new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
+        $this->MaintainReferences($propertyNames);
+
         if ($this->CheckPrerequisites() != false) {
             $this->MaintainTimer('CleanupPath', 0);
             $this->MaintainTimer('LoadTimelapse', 0);
@@ -161,18 +164,6 @@ class NetatmoSecurityCamera extends IPSModule
             $this->MaintainTimer('LoadTimelapse', 0);
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
-        }
-
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = ['ImportCategoryID', 'new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
         }
 
         if ($this->CheckConfiguration() != false) {

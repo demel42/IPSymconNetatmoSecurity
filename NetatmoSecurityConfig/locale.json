@@ -35,6 +35,54 @@
 
 			"category for products to be created": "Kategorie für anzulegende Produkte",
 
+			"__variableprofile__": "NetatmoSecurity.CameraStatus",
+			"unknown": "unbekannt",
+			"off": "aus",
+			"on": "an",
+			"disconnected": "getrennt",
+
+			"__variableprofile__": "NetatmoSecurity.CameraAction",
+			"off": "aus",
+			"on": "an",
+
+			"__variableprofile__": "NetatmoSecurity.LightModeStatus",
+			"unknown": "unbekannt",
+			"off": "aus",
+			"on": "an",
+			"auto": "automatisch",
+
+			"__variableprofile__": "NetatmoSecurity.LightModeAction",
+			"off": "aus",
+			"on": "an",
+			"auto": "automatisch",
+
+			"__variableprofile__": "NetatmoSecurity.LightIntensity",
+
+			"__variableprofile__": "NetatmoSecurity.SDCardStatus",
+			"unknown": "unbekannt",
+			"unusable": "unbrauchbar",
+			"ready": "bereit",
+
+			"__variableprofile__": "NetatmoSecurity.PowerStatus",
+			"unknown": "unbekannt",
+			"good": "gut",
+			"bad": "schwach",
+
+			"__variableprofile__": "NetatmoSecurity.WifiStrength",
+			"bad": "schwach",
+			"average": "mittel",
+			"good": "gut",
+			"high": "hoch",
+
+			"__variableprofile__": "NetatmoSecurity.Presence",
+			"absent": "abwesend",
+			"present": "anwesend",
+
+			"__variableprofile__": "NetatmoSecurity.PresenceAction",
+			"home": "kommt",
+			"away": "geht",
+			"all away": "alle gehen",
+
 			"Test area": "Test-Bereich",
 
 			"Expert area": "Experten-Bereich",

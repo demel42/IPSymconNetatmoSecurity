@@ -1,6 +1,6 @@
 # IPSymconNetatmoSecurity
 
-[![IPS-Version](https://img.shields.io/badge/Symcon_Version-5.3+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
+[![IPS-Version](https://img.shields.io/badge/Symcon_Version-6.0+-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 ![Code](https://img.shields.io/badge/Code-PHP-blue.svg)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
@@ -36,7 +36,7 @@ Je nach Produktyp umfasst das Modul folgende Funktionen:
 
 ## 2. Voraussetzungen
 
- - IP-Symcon ab Version 5.3
+ - IP-Symcon ab Version 6.0
  - ein Netatmo Security-Modul (also Kamera oder Rauchmelder)
  - den "normalen" Benutzer-Account, der bei der Anmeldung der Geräte bei Netatmo erzeugt wird (https://my.netatmo.com)
  - IP-Symcon Connect<br>
@@ -534,6 +534,10 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.23.2 @ 26.04.2022 12:37
+  - Korrektur: self::$IS_DEACTIVATED wieder IS_INACTIVE
+  - IPS-Version ist nun minimal 6.0
 
 - 1.23.1 @ 24.04.2022 10:48
   - Übersetzung vervollständigt

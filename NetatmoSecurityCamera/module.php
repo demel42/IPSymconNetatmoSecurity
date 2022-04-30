@@ -10,6 +10,15 @@ class NetatmoSecurityCamera extends IPSModule
     use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
+    private $ModuleDir;
+
+    public function __construct(string $InstanceID)
+    {
+        parent::__construct($InstanceID);
+
+        $this->ModuleDir = __DIR__;
+    }
+
     public function Create()
     {
         parent::Create();
@@ -486,16 +495,19 @@ class NetatmoSecurityCamera extends IPSModule
             'items'   => [
                 [
                     'type'    => 'ValidationTextBox',
+					'enabled' => false,
                     'name'    => 'product_type',
                     'caption' => 'Product-Type'
                 ],
                 [
                     'type'    => 'ValidationTextBox',
+					'enabled' => false,
                     'name'    => 'product_id',
                     'caption' => 'Product-ID'
                 ],
                 [
                     'type'    => 'ValidationTextBox',
+					'enabled' => false,
                     'name'    => 'home_id',
                     'caption' => 'Home-ID'
                 ],

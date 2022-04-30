@@ -535,6 +535,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.23.3 @ 30.04.2022 09:49
+  - Überlagerung von Translate und Aufteilung von locale.json in 3 translation.json (Modul, libs und CommonStubs)
+
 - 1.23.2 @ 26.04.2022 12:37
   - Korrektur: self::$IS_DEACTIVATED wieder IS_INACTIVE
   - IPS-Version ist nun minimal 6.0

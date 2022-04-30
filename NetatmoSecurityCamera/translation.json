@@ -1,0 +1,119 @@
+{
+	"translations": {
+		"de": {
+			"Netatmo camera": "Netatmo Kamera",
+			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",
+			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
+
+			"__function__": "CheckConfiguration",
+			"Product-Type must be specified": "Produkt-Typ muss angegeben sein",
+			"Product-ID must be specified": "Produkt-ID muss angegeben sein",
+			"Home-ID must be specified": "Heim-ID muss angegeben sein",
+			"\"hour of day\" is invalid": "\"Stunde des Tages\" ist ungültig",
+			"IP-Address is invalid": "IP-Adresse ist ungültig",
+			"external IP-Address is invalid": "externe IP-Adresse ist ungültig",
+			"local CIDR's are invalid": "lokale CIDR's sind ungültig",
+			"Webhook is already in use": "Webhook wird bereits verwendet",
+
+			"__elements__": "",
+			"Disable instance": "Instanz deaktivieren",
+
+			"Basic configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
+			"Product-Type": "Produkt-Typ",
+			"Product-ID": "Produkt-ID",
+			"Home-ID": "Heim-ID",
+
+			"category for persons to be created": "Kategorie für anzulegende Personen",
+
+			"Persons": "Personen",
+			"Home": "Heim",
+			"Pseudonym": "Pseudonym",
+			"Id": "Id",
+
+			"optional data": "optionale Daten",
+			"last communication with Netatmo": "letzte Kommunikation mit Netatmo",
+			"last event from Netatmo": "letztes Ereignis von Netatmo",
+			"last notification from Netatmo": "letzte Benachrichtigung von Netatmo",
+			"Strength of wifi-signal": "Stärke des Wifi-Signals",
+
+			"Adjustment of the returned HTML code": "Anpassung des zurückgegebenen HTML-Codes",
+
+			"Access to the IPS server": "Zugriff auf den IPS-Server",
+			"IP-Address": "IP-Adresse",
+			"Port-Number": "Portnummer",
+			"Check whether the retrieval is from the local network": "Prüfung, ob der Abruf aus dem lokalen Netz erfolgt",
+			"external IP-Address": "externe IP-Adresse",
+			"local CIDR's": "lokale CIDR's",
+
+			"maximum age until deletion": "maximales Alter bis zum Löschen",
+			"days": "Tage",
+
+			"FTP": "FTP",
+			"Local copy of videos from Netatmo via FTP": "lokale Kopien der Videos von Netatmo per FTP",
+			"Path": "Verzeichnis",
+
+			"Timelapse": "Zeitraffer",
+			"Local copy of Netatmo-Timelapse": "lokale Kopie der Netatmo-Zeitraffer-Darstellung",
+			"Startime": "Startzeitpunkt",
+			"hour of day": "Stunde des Tages",
+
+			"Call upon receipt of a notification": "Aufruf bei Empfang einer Benachrichtigung",
+			" ... Script": " ... Script",
+			"Call upon receipt of new events": "Aufruf bei Empfang neuer Ereignisse",
+
+			"Call with changed VPN-URL": "Aufruf bei geänderter VPN-URL",
+
+			"__variables__": "",
+			"Power state": "Stromversorgung",
+			"Camera operation": "Kamera schalten",
+			"Camera state": "Kamera",
+			"Events": "Ereignisse",
+			"Last communication": "letzte Kommunikation",
+			"Last event": "letzes Ereignis",
+			"Last notification": "letzte Benachrichtigung",
+			"Light intensity": "Licht-Intensität",
+			"Lightmode state": "Licht-Modus",
+			"Light operation": "Licht schalten",
+			"Notifications": "Benachrichtigungen",
+			"optional data": "optionale Daten",
+			"SD-Card state": "SD-Karte",
+			"State": "Status",
+
+			"__function__": "ReceiveData",
+			"Alarm detected": "Alarm erkannt",
+			"Animal captured": "Tier erfasst",
+			"Animal": "Tier",
+			"Camera connected": "Kamera verbunden",
+			"Camera disconnected": "Kamera getrennt",
+			"Camera is booting": "Kamera startet",
+			"FTP failed": "FTP fehlerhaft",
+			"FTP successful": "FTP erfolgreich",
+			"Human": "Mensch",
+			"Light": "Licht",
+			"Light-mode changed to auto": "Licht-Modus geändert auf automatisch",
+			"Light-mode changed to off": "Licht-Modus geändert auf aus",
+			"Light-mode changed to on": "Licht-Modus geändert auf ein",
+			"Monitoring disabled": "Überwachung deaktiviert",
+			"Monitoring enabled": "Überwachung aktiviert",
+			"Movement": "Bewegung",
+			"Movement detected": "Bewegung erkannt",
+			"Network error (FTP)": "Netzwerkfehler (FTP)",
+			"Person captured": "Person erfasst",
+			"Person has left the house": "Person hat das Haus verlassen",
+			"Person": "Person",
+			"SD-Card not ok": "SD-Karte nicht verfügbar",
+			"SD-Card ok": "SD-Karte bereit",
+			"Siren off": "Sirene ist aus",
+			"Siren on": "Sirene ist an",
+			"Update download failed": "Update wird heruntergeladen",
+			"Update downloading": "Update wird heruntergeladen",
+			"Update finished": "Update abgeschlossen",
+			"Update startet": "Update wird durchgeführt",
+			"Upload successful (FTP)": "Upload erfolgreich (FTP)",
+			"Vehicle captured": "Fahrzeug erfasst",
+			"Vehicle": "Fahrzeug",
+
+			"__end__": ""
+		}
+	}
+}

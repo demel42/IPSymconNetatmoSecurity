@@ -10,6 +10,15 @@ class NetatmoSecurityPerson extends IPSModule
     use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
+    private $ModuleDir;
+
+    public function __construct(string $InstanceID)
+    {
+        parent::__construct($InstanceID);
+
+        $this->ModuleDir = __DIR__;
+    }
+
     public function Create()
     {
         parent::Create();
@@ -109,19 +118,28 @@ class NetatmoSecurityPerson extends IPSModule
 
         $formElements[] = [
             'type'    => 'CheckBox',
+			'enabled' => false,
             'name'    => 'module_disable',
             'caption' => 'Disable instance'
         ];
 
         $formElements[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'person_id',
-            'caption' => 'Person-ID'
-        ];
-        $formElements[] = [
-            'type'    => 'ValidationTextBox',
-            'name'    => 'home_id',
-            'caption' => 'Home-ID'
+            'type'    => 'ExpansionPanel',
+            'items'   => [
+				[
+					'type'    => 'ValidationTextBox',
+					'enabled' => false,
+					'name'    => 'person_id',
+					'caption' => 'Person-ID'
+				],
+				[
+					'type'    => 'ValidationTextBox',
+					'enabled' => false,
+					'name'    => 'home_id',
+					'caption' => 'Home-ID'
+				],
+            ],
+            'caption' => 'Basic configuration (don\'t change)',
         ];
 
         $formElements[] = [

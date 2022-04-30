@@ -1,0 +1,66 @@
+{
+	"translations": {
+		"de": {
+			"__variableprofile__": "NetatmoSecurity.CameraStatus",
+			"unknown": "unbekannt",
+			"off": "aus",
+			"on": "an",
+			"disconnected": "getrennt",
+
+			"__variableprofile__": "NetatmoSecurity.CameraAction",
+			"off": "aus",
+			"on": "an",
+
+			"__variableprofile__": "NetatmoSecurity.LightModeStatus",
+			"unknown": "unbekannt",
+			"off": "aus",
+			"on": "an",
+			"auto": "automatisch",
+
+			"__variableprofile__": "NetatmoSecurity.LightModeAction",
+			"off": "aus",
+			"on": "an",
+			"auto": "automatisch",
+
+			"__variableprofile__": "NetatmoSecurity.LightIntensity",
+
+			"__variableprofile__": "NetatmoSecurity.SDCardStatus",
+			"unknown": "unbekannt",
+			"unusable": "unbrauchbar",
+			"ready": "bereit",
+
+			"__variableprofile__": "NetatmoSecurity.PowerStatus",
+			"unknown": "unbekannt",
+			"good": "gut",
+			"bad": "schwach",
+
+			"__variableprofile__": "NetatmoSecurity.WifiStrength",
+			"bad": "schwach",
+			"average": "mittel",
+			"good": "gut",
+			"high": "hoch",
+
+			"__variableprofile__": "NetatmoSecurity.Presence",
+			"absent": "abwesend",
+			"present": "anwesend",
+
+			"__variableprofile__": "NetatmoSecurity.PresenceAction",
+			"home": "kommt",
+			"away": "geht",
+			"all away": "alle gehen",
+
+			"Instance is inactive (no data)": "Instanz ist inaktiv (keine Daten)",
+			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
+			"Instance is inactive (forbidden)": "Instanz ist inaktiv (fehlende Berechtigung)",
+			"Instance is inactive (server error)": "Instanz ist inaktiv (Serverfehler)",
+			"Instance is inactive (http error)": "Instanz ist inaktiv (HTTP-Fehler)",
+			"Instance is inactive (invalid data)": "Instanz ist inaktiv (ungültige Daten)",
+			"Instance is inactive (no module)": "Instanz ist inaktiv (kein Modul)",
+			"Instance is inactive (module missing)": "Instanz ist inaktiv (Modul ist unbekannt)",
+			"Instance is inactive (webhook not given)": "Instanz ist inaktiv (Webhook ist nicht angegeben)",
+			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)",
+
+			"__end__": ""
+		}
+	}
+}

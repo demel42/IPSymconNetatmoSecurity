@@ -1,0 +1,25 @@
+{
+	"translations": {
+		"de": {
+			"Netatmo Security Configurator": "Netatmo Security Konfigurator",
+
+			"__elements__": "",
+			"category for products to be created": "Kategorie für anzulegende Produkte",
+
+			"Product": "Produkt",
+			"Products": "Produkte",
+
+			"Camera": "Kamera",
+			"Outdoor camera": "Aussenkamera",
+			"Indoor camera": "Innenkamera",
+			"Smoke detector": "Rauchmelder",
+
+			"Category": "Kategorie",
+			"Home": "Heim",
+			"Name": "Name",
+			"Id": "Id",
+
+			"__end__": ""
+		}
+	}
+}

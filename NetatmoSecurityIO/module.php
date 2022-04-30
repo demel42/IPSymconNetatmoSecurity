@@ -12,6 +12,15 @@ class NetatmoSecurityIO extends IPSModule
 
     private $oauthIdentifer = 'netatmo';
 
+    private $ModuleDir;
+
+    public function __construct(string $InstanceID)
+    {
+        parent::__construct($InstanceID);
+
+        $this->ModuleDir = __DIR__;
+    }
+
     public function Create()
     {
         parent::Create();
@@ -492,6 +501,7 @@ class NetatmoSecurityIO extends IPSModule
                         ],
                         [
                             'type'    => 'ValidationTextBox',
+							'width'   => '400px',
                             'name'    => 'Netatmo_Secret',
                             'caption' => 'Client-Secret'
                         ],

@@ -1,0 +1,27 @@
+{
+	"translations": {
+		"de": {
+			"Netatmo Persons": "Netatmo Personen",
+
+			"__function__": "CheckConfiguration",
+			"Person-ID must be specified": "Personen-ID muss angegeben sein",
+			"Home-ID must be specified": "Heim-ID muss angegeben sein",
+
+			"__elements__": "",
+			"Disable instance": "Instanz deaktivieren",
+
+			"Basic configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
+			"Person-ID": "Personen-ID",
+			"Home-ID": "Heim-ID",
+
+			"Pseudonym": "Pseudonym",
+
+			"__variables__": "",
+			"Last seen": "zuletzt gesehen",
+			"Presence": "Anwesenheit",
+			"Change presence": "Anwesenheit ändern",
+
+			"__end__": ""
+		}
+	}
+}

@@ -495,19 +495,19 @@ class NetatmoSecurityCamera extends IPSModule
             'items'   => [
                 [
                     'type'    => 'ValidationTextBox',
-					'enabled' => false,
+                    'enabled' => false,
                     'name'    => 'product_type',
                     'caption' => 'Product-Type'
                 ],
                 [
                     'type'    => 'ValidationTextBox',
-					'enabled' => false,
+                    'enabled' => false,
                     'name'    => 'product_id',
                     'caption' => 'Product-ID'
                 ],
                 [
                     'type'    => 'ValidationTextBox',
-					'enabled' => false,
+                    'enabled' => false,
                     'name'    => 'home_id',
                     'caption' => 'Home-ID'
                 ],

@@ -501,7 +501,7 @@ class NetatmoSecurityIO extends IPSModule
                         ],
                         [
                             'type'    => 'ValidationTextBox',
-							'width'   => '400px',
+                            'width'   => '400px',
                             'name'    => 'Netatmo_Secret',
                             'caption' => 'Client-Secret'
                         ],
@@ -957,7 +957,12 @@ class NetatmoSecurityIO extends IPSModule
             http_response_code(404);
             die('File not found!');
         }
-        $basename = substr($uri, strlen('/hook/NetatmoSecurity/'));
+        $hook = $this->ReadPropertyString('hook');
+        if ($hook == '') {
+            http_response_code(404);
+            die('File not found!');
+        }
+        $basename = substr($uri, strlen($hook));
         if ($basename == 'event') {
             $data = file_get_contents('php://input');
             $jdata = json_decode($data, true);

@@ -118,7 +118,7 @@ class NetatmoSecurityPerson extends IPSModule
 
         $formElements[] = [
             'type'    => 'CheckBox',
-			'enabled' => false,
+            'enabled' => false,
             'name'    => 'module_disable',
             'caption' => 'Disable instance'
         ];
@@ -126,18 +126,18 @@ class NetatmoSecurityPerson extends IPSModule
         $formElements[] = [
             'type'    => 'ExpansionPanel',
             'items'   => [
-				[
-					'type'    => 'ValidationTextBox',
-					'enabled' => false,
-					'name'    => 'person_id',
-					'caption' => 'Person-ID'
-				],
-				[
-					'type'    => 'ValidationTextBox',
-					'enabled' => false,
-					'name'    => 'home_id',
-					'caption' => 'Home-ID'
-				],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'enabled' => false,
+                    'name'    => 'person_id',
+                    'caption' => 'Person-ID'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'enabled' => false,
+                    'name'    => 'home_id',
+                    'caption' => 'Home-ID'
+                ],
             ],
             'caption' => 'Basic configuration (don\'t change)',
         ];

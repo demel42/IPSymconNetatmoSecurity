@@ -535,6 +535,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.23.4 @ 01.05.2022 12:42
+  - Webhook besser prüfen
+
 - 1.23.3 @ 30.04.2022 09:49
   - Überlagerung von Translate und Aufteilung von locale.json in 3 translation.json (Modul, libs und CommonStubs)
 

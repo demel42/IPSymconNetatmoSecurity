@@ -761,6 +761,35 @@ class NetatmoSecurityCamera extends IPSModule
                     'caption' => 'Re-install variable-profiles',
                     'onClick' => $this->GetModulePrefix() . '_InstallVarProfiles($id, true);'
                 ],
+                [
+                    'type'     => 'List',
+                    'columns'  => [
+                        [
+                            'name'     => 'type',
+                            'width'    => '100px',
+                            'caption'  => 'Type',
+                        ],
+                        [
+                            'name'     => 'value',
+                            'width'    => 'auto',
+                            'caption'  => 'Value',
+                        ],
+                    ],
+                    'add'      => false,
+                    'delete'   => false,
+                    'rowCount' => 2,
+                    'values'   => [
+                        [
+                            'type'  => 'vpn_url',
+                            'value' => $this->GetBuffer('vpn_url'),
+                        ],
+                        [
+                            'type'  => 'local_url',
+                            'value' => $this->GetBuffer('local_url'),
+                        ],
+                    ],
+                    'caption'  => 'internal information',
+                ],
             ],
         ];
 

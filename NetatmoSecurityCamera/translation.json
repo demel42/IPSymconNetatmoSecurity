@@ -113,6 +113,11 @@
 			"Vehicle captured": "Fahrzeug erfasst",
 			"Vehicle": "Fahrzeug",
 
+			"__actions__": "",
+			"internal informations": "interne Informationen",
+			"Type": "Typ",
+			"Value": "Wert",
+
 			"__end__": ""
 		}
 	}

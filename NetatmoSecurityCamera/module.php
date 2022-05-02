@@ -788,7 +788,7 @@ class NetatmoSecurityCamera extends IPSModule
                             'value' => $this->GetBuffer('local_url'),
                         ],
                     ],
-                    'caption'  => 'internal information',
+                    'caption'  => 'internal informations',
                 ],
             ],
         ];

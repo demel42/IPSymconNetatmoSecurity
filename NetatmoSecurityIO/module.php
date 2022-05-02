@@ -183,6 +183,10 @@ class NetatmoSecurityIO extends IPSModule
             if ($oauth_type == self::$CONNECTION_OAUTH) {
                 $this->RegisterOAuth($this->oauthIdentifer);
             }
+            $hook = $this->ReadPropertyString('hook');
+            if ($hook != '') {
+                $this->RegisterHook($hook);
+            }
             $register_webhook = $this->ReadPropertyBoolean('register_webhook');
             if ($register_webhook) {
                 $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
@@ -196,10 +200,6 @@ class NetatmoSecurityIO extends IPSModule
                 $this->AddWebhook();
             } else {
                 $this->DropWebhook();
-            }
-            $hook = $this->ReadPropertyString('hook');
-            if ($hook != '') {
-                $this->RegisterHook($hook);
             }
             $this->MaintainTimer('UpdateData', 1000);
         }

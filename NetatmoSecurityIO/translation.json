@@ -41,10 +41,8 @@
 
 			"Call settings": "Abrufeinstellungen",
 
-			"Number of events retrieved during an update": "Anzahl der Ereignisse die bei einem Update abgerufen werden",
-			"Count": "Anzahl",
-
-			"Update data every X minutes": "Aktualisiere Daten alle X Minuten",
+			"Number of events per update": "Anzahl der Ereignisse pro Aktualisierung",
+			"Update interval": "Aktualisierungsintervall",
 			"Minutes": "Minuten",
 
 			"Notification settings": "Benachrichtigungs-Einstellungen",

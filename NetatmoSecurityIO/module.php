@@ -517,23 +517,17 @@ class NetatmoSecurityIO extends IPSModule
             'type'    => 'ExpansionPanel',
             'items'   => [
                 [
-                    'type'    => 'Label',
-                    'caption' => 'Number of events retrieved during an update'
-                ],
-                [
                     'type'    => 'NumberSpinner',
-                    'name'    => 'sync_event_count',
                     'minimum' => 0,
-                    'caption' => 'Count'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Update data every X minutes'
+                    'suffix'  => 'Minutes',
+                    'name'    => 'UpdateDataInterval',
+                    'caption' => 'Update interval'
                 ],
                 [
                     'type'    => 'NumberSpinner',
-                    'name'    => 'UpdateDataInterval',
-                    'caption' => 'Minutes'
+                    'minimum' => 0,
+                    'name'    => 'sync_event_count',
+                    'caption' => 'Number of events per update'
                 ],
             ],
             'caption' => 'Call settings'

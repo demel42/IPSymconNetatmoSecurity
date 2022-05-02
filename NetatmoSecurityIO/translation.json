@@ -50,7 +50,7 @@
 			"Webhook for receive notifications from Netatmo (must be reachable from internet)":
 				"Webhook zum Empfang von Benachrichtibungen von Netatmo (muss aus dem Internet erreichbar sein)",
 			"Register Webhook": "Webhook registrieren",
-			"to the base-URL '/hook/NetatmoSecurity/event' is appended": "an die Basis-URL wird '/hook/NetatmoSecurity/event' angehängt",
+			"the base-URL will extended with": "die Basis-URL wird ergänzt um",
 			" ... if not given, the Connect-URL is used" : " ... falls nicht angegeben, wird die Connect-URL verwendet",
 			"Base-URL": "Basis-URL",
 

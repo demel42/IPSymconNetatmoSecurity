@@ -195,64 +195,41 @@ class NetatmoSecurityConfig extends IPSModule
             }
         }
 
-        $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
-        $instIDs = IPS_GetInstanceListByModuleID($guid);
-        foreach ($instIDs as $instID) {
-            $fnd = false;
-            foreach ($entries as $entry) {
-                if ($entry['instanceID'] == $instID) {
-                    $fnd = true;
-                    break;
+        $modules = [
+            [
+                'category' => 'Camera',
+                'guid'     => '{06D589CF-7789-44B1-A0EC-6F51428352E6}',
+            ],
+        ];
+        foreach ($modules as $module) {
+            $category = $this->Translate($module['category']);
+            $instIDs = IPS_GetInstanceListByModuleID($module['guid']);
+            foreach ($instIDs as $instID) {
+                $fnd = false;
+                foreach ($entries as $entry) {
+                    if ($entry['instanceID'] == $instID) {
+                        $fnd = true;
+                        break;
+                    }
                 }
-            }
-            if ($fnd) {
-                continue;
-            }
-
-            $category = $this->Translate('Indoor camera');
-            $product_name = IPS_GetName($instID);
-            $$home_name = '';
-            $product_id = IPS_GetProperty($instID, 'product_id');
-
-            $entry = [
-                'instanceID' => $instID,
-                'category'   => $category,
-                'home'       => $home_name,
-                'name'       => $product_name,
-                'product_id' => $product_id,
-            ];
-            $entries[] = $entry;
-            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
-        }
-
-        $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
-        $instIDs = IPS_GetInstanceListByModuleID($guid);
-        foreach ($instIDs as $instID) {
-            $fnd = false;
-            foreach ($entries as $entry) {
-                if ($entry['instanceID'] == $instID) {
-                    $fnd = true;
-                    break;
+                if ($fnd) {
+                    continue;
                 }
-            }
-            if ($fnd) {
-                continue;
-            }
 
-            $category = $this->Translate('Outdoor camera');
-            $product_name = IPS_GetName($instID);
-            $$home_name = '';
-            $product_id = IPS_GetProperty($instID, 'product_id');
+                $product_name = IPS_GetName($instID);
+                $home_name = '';
+                $product_id = IPS_GetProperty($instID, 'product_id');
 
-            $entry = [
-                'instanceID' => $instID,
-                'category'   => $category,
-                'home'       => $home_name,
-                'name'       => $product_name,
-                'product_id' => $product_id,
-            ];
-            $entries[] = $entry;
-            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
+                $entry = [
+                    'instanceID' => $instID,
+                    'category'   => $category,
+                    'home'       => $home_name,
+                    'name'       => $product_name,
+                    'product_id' => $product_id,
+                ];
+                $entries[] = $entry;
+                $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
+            }
         }
 
         return $entries;

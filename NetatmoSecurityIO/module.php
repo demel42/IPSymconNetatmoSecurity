@@ -51,13 +51,6 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterTimer('UpdateData', 0, $this->GetModulePrefix() . '_UpdateData(' . $this->InstanceID . ');');
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
         $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
-
-        if (IPS_GetKernelRunlevel() == KR_READY) {
-            $hook = $this->ReadPropertyString('hook');
-            if ($hook != '') {
-                $this->RegisterHook($hook);
-            }
-        }
     }
 
     private function CheckModuleConfiguration()
@@ -121,9 +114,9 @@ class NetatmoSecurityIO extends IPSModule
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
                 $this->RegisterHook($hook);
-                $this->AddWebhook();
             }
-            $this->UpdateData();
+            $this->AddWebhook();
+            $this->MaintainTimer('UpdateData', 1000);
         }
         if ($message == IPS_KERNELSHUTDOWN) {
             $register_webhook = $this->ReadPropertyBoolean('register_webhook');
@@ -200,33 +193,15 @@ class NetatmoSecurityIO extends IPSModule
                         return;
                     }
                 }
+                $this->AddWebhook();
             } else {
                 $this->DropWebhook();
             }
+            $hook = $this->ReadPropertyString('hook');
+            if ($hook != '') {
+                $this->RegisterHook($hook);
+            }
             $this->MaintainTimer('UpdateData', 1000);
-        }
-    }
-
-    private function RegisterOAuth($WebOAuth)
-    {
-        $ids = IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}');
-        if (count($ids) > 0) {
-            $clientIDs = json_decode(IPS_GetProperty($ids[0], 'ClientIDs'), true);
-            $found = false;
-            foreach ($clientIDs as $index => $clientID) {
-                if ($clientID['ClientID'] == $WebOAuth) {
-                    if ($clientID['TargetID'] == $this->InstanceID) {
-                        return;
-                    }
-                    $clientIDs[$index]['TargetID'] = $this->InstanceID;
-                    $found = true;
-                }
-            }
-            if (!$found) {
-                $clientIDs[] = ['ClientID' => $WebOAuth, 'TargetID' => $this->InstanceID];
-            }
-            IPS_SetProperty($ids[0], 'ClientIDs', json_encode($clientIDs));
-            IPS_ApplyChanges($ids[0]);
         }
     }
 
@@ -545,7 +520,7 @@ class NetatmoSecurityIO extends IPSModule
             ],
             [
                 'type'    => 'Label',
-                'caption' => 'to the base-URL \'/hook/NetatmoSecurity/event\' is appended'
+                'caption' => $this->Translate('the base-URL will extended with') . ' "' . $this->ReadPropertyString('hook') . '/event"'
             ],
             [
                 'type'    => 'ValidationTextBox',
@@ -956,15 +931,14 @@ class NetatmoSecurityIO extends IPSModule
             http_response_code(404);
             die('File not found!');
         }
-        $basename = substr($uri, strlen($hook));
+        $basename = substr($uri, strlen($hook . '/'));
         if ($basename == 'event') {
             $data = file_get_contents('php://input');
             $jdata = json_decode($data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
             if ($jdata == '') {
-                echo 'malformed data: ' . $data;
-                $this->SendDebug(__FUNCTION__, 'malformed data: ' . $data, 0);
-                return;
+                http_response_code(406);
+                die('malformed data!');
             }
             http_response_code(200);
             $this->SendData($data, 'EVENT');
@@ -1034,7 +1008,12 @@ class NetatmoSecurityIO extends IPSModule
                 return;
             }
         }
-        $webhook_baseurl .= '/hook/NetatmoSecurity/event';
+        $hook = $this->ReadPropertyString('hook');
+        if ($hook == '') {
+            $this->SendDebug(__FUNCTION__, 'hook empty', 0);
+            return;
+        }
+        $webhook_baseurl .= $hook . '/event';
         $url .= '&url=' . rawurlencode($webhook_baseurl);
 
         $data = '';

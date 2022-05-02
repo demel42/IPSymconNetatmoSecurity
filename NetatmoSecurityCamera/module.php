@@ -228,6 +228,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
 
         $product_id = $this->ReadPropertyString('product_id');
+        $product_type = $this->ReadPropertyString('product_type');
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 

@@ -27,6 +27,8 @@ class NetatmoSecurityConfig extends IPSModule
 
         $this->RegisterAttributeString('UpdateInfo', '');
 
+        $this->InstallVarProfiles(false);
+
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
     }
 
@@ -124,7 +126,6 @@ class NetatmoSecurityConfig extends IPSModule
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
         $jdata = json_decode($data, true);
-
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
         if (is_array($jdata)) {

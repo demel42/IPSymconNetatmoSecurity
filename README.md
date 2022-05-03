@@ -535,7 +535,7 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.23.5 @ 02.05.2022 17:38
+- 1.23.5 @ 03.05.2022 15:23
   - Ausgabe der URL's im Experten-Bereich 
   - Korrektur des Netatmo-Webhook (Fehler aus 1.23)
 

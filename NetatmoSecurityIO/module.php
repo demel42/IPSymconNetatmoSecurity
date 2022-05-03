@@ -48,7 +48,10 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterAttributeString('ApiRefreshToken', '');
         $this->RegisterAttributeString('AppRefreshToken', '');
 
+        $this->InstallVarProfiles(false);
+
         $this->RegisterTimer('UpdateData', 0, $this->GetModulePrefix() . '_UpdateData(' . $this->InstanceID . ');');
+
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
         $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
     }

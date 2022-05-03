@@ -63,6 +63,11 @@ trait NetatmoSecurityLocalLib
     public static $CONNECTION_OAUTH = 1;
     public static $CONNECTION_DEVELOPER = 2;
 
+    public static $WIFI_BAD = 0;
+    public static $WIFI_AVERAGE = 1;
+    public static $WIFI_GOOD = 2;
+    public static $WIFI_HIGH = 3;
+
     public static $CAMERA_STATUS_UNDEFINED = -1;
     public static $CAMERA_STATUS_OFF = 0;
     public static $CAMERA_STATUS_ON = 1;
@@ -137,10 +142,10 @@ trait NetatmoSecurityLocalLib
         $this->CreateVarProfile('NetatmoSecurity.PowerStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
 
         $associations = [
-            ['Wert' => 0, 'Name' => $this->wifi_strength2text(0), 'Farbe' => 0xEE0000],
-            ['Wert' => 1, 'Name' => $this->wifi_strength2text(1), 'Farbe' => 0xFFFF00],
-            ['Wert' => 2, 'Name' => $this->wifi_strength2text(2), 'Farbe' => 0x32CD32],
-            ['Wert' => 3, 'Name' => $this->wifi_strength2text(3), 'Farbe' => 0x228B22],
+            ['Wert' => self::$WIFI_BAD, 'Name' => $this->Translate('bad'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$WIFI_AVERAGE, 'Name' => $this->Translate('average'), 'Farbe' => 0xFFFF00],
+            ['Wert' => self::$WIFI_GOOD, 'Name' => $this->Translate('good'), 'Farbe' => 0x32CD32],
+            ['Wert' => self::$WIFI_HIGH, 'Name' => $this->Translate('high'), 'Farbe' => 0x228B22],
         ];
         $this->CreateVarProfile('NetatmoSecurity.WifiStrength', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, 'Intensity', $associations, $reInstall);
 
@@ -156,162 +161,6 @@ trait NetatmoSecurityLocalLib
             ['Wert' => self::$PRESENCE_ACTION_ALLAWAY, 'Name' => $this->Translate('all away'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('NetatmoSecurity.PresenceAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
-    }
-
-    private function map_camera_status($status)
-    {
-        switch ($status) {
-            case 'off':
-                $val = self::$CAMERA_STATUS_OFF;
-                break;
-            case 'on':
-                $val = self::$CAMERA_STATUS_ON;
-                break;
-            case 'disconnected':
-                $val = self::$CAMERA_STATUS_DISCONNECTED;
-                break;
-            default:
-                $e = 'unknown state "' . $status . '"';
-                $this->SendDebug(__FUNCTION__, $e, 0);
-                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = self::$CAMERA_STATUS_UNDEFINED;
-                break;
-        }
-
-        return $val;
-    }
-
-    private function map_lightmode_status($status)
-    {
-        switch ($status) {
-            case 'off':
-                $val = self::$LIGHT_STATUS_OFF;
-                break;
-            case 'on':
-                $val = self::$LIGHT_STATUS_ON;
-                break;
-            case 'auto':
-                $val = self::$LIGHT_STATUS_AUTO;
-                break;
-            default:
-                $e = 'unknown state "' . $status . '"';
-                $this->SendDebug(__FUNCTION__, $e, 0);
-                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = self::$LIGHT_STATUS_UNDEFINED;
-                break;
-        }
-
-        return $val;
-    }
-
-    private function map_sd_status($status)
-    {
-        switch ($status) {
-            case 'off':
-                $val = self::$SDCARD_STATUS_UNUSABLE;
-                break;
-            case 'on':
-                $val = self::$SDCARD_STATUS_READY;
-                break;
-            default:
-                $e = 'unknown state "' . $status . '"';
-                $this->SendDebug(__FUNCTION__, $e, 0);
-                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = self::$SDCARD_STATUS_UNDEFINED;
-                break;
-        }
-
-        return $val;
-    }
-
-    private function map_power_status($status)
-    {
-        switch ($status) {
-            case 'off':
-                $val = self::$POWER_STATUS_BAD;
-                break;
-            case 'on':
-                $val = self::$POWER_STATUS_GOOD;
-                break;
-            default:
-                $e = 'unknown state "' . $status . '"';
-                $this->SendDebug(__FUNCTION__, $e, 0);
-                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
-                $val = self::$POWER_STATUS_UNDEFINED;
-                break;
-        }
-
-        return $val;
-    }
-
-    private function determineVpnUrl()
-    {
-        $vpn_url = $this->GetBuffer('vpn_url');
-        $this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
-        return $vpn_url;
-    }
-
-    private function determineLocalUrl()
-    {
-        $is_local = $this->GetBuffer('is_local');
-        $this->SendDebug(__FUNCTION__, 'is_local=' . $is_local, 0);
-        if (!$is_local) {
-            return false;
-        }
-
-        $local_url = $this->GetBuffer('local_url');
-        $this->SendDebug(__FUNCTION__, 'local_url=' . $local_url, 0);
-        if ($local_url != '') {
-            return $local_url;
-        }
-
-        $vpn_url = $this->GetBuffer('vpn_url');
-        $this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
-        if ($vpn_url == '') {
-            return false;
-        }
-
-        $data = '';
-        $err = '';
-
-        $url = $vpn_url . '/command/ping';
-        $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
-        if ($statuscode == 0) {
-            $response1 = json_decode($data, true);
-            $this->SendDebug(__FUNCTION__, 'response1=' . print_r($response1, true), 0);
-            $local_url1 = $this->GetArrayElem($response1, 'local_url', '');
-
-            $url = $local_url1 . '/command/ping';
-            $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
-            if ($statuscode == 0) {
-                $response2 = json_decode($data, true);
-                $this->SendDebug(__FUNCTION__, 'response2=' . print_r($response2, true), 0);
-                $local_url2 = $this->GetArrayElem($response2, 'local_url', '');
-                if ($local_url1 == $local_url2) {
-                    $local_url = $local_url1;
-                }
-            }
-        }
-
-        $this->SetBuffer('local_url', $local_url);
-
-        if ($statuscode) {
-            $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-            $this->SendDebug(__FUNCTION__, $err, 0);
-            $this->SetStatus($statuscode);
-            return false;
-        }
-
-        return $local_url;
-    }
-
-    private function determineUrl()
-    {
-        $url = $this->determineLocalUrl();
-        if ($url == false) {
-            $url = $this->determineVpnUrl();
-        }
-        return $url;
     }
 
     private function do_HttpRequest($url, $header, $postdata, $mode, &$data, &$err)
@@ -407,59 +256,5 @@ trait NetatmoSecurityLocalLib
         $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
         $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
         return $statuscode;
-    }
-
-    // Wifi-Strength
-    private function map_wifi_strength($strength)
-    {
-        if ($strength <= 56) {
-            // "high"
-            $val = 3;
-        } elseif ($strength <= 71) {
-            // "good"
-            $val = 2;
-        } elseif ($strength <= 86) {
-            // "average"
-            $val = 1;
-        } else {
-            // "bad"
-            $val = 0;
-        }
-
-        return $val;
-    }
-
-    private function wifi_strength2text($strength)
-    {
-        $strength2txt = [
-            'bad',
-            'average',
-            'good',
-            'high'
-        ];
-
-        if ($strength >= 0 && $strength < count($strength2txt)) {
-            $txt = $this->Translate($strength2txt[$strength]);
-        } else {
-            $txt = '';
-        }
-        return $txt;
-    }
-
-    private function wifi_strength2icon($strength)
-    {
-        $strength2icon = [
-            'wifi_low.png',
-            'wifi_medium.png',
-            'wifi_high.png',
-            'wifi_full.png',
-        ];
-
-        if ($strength >= 0 && $strength < count($strength2icon)) {
-            $img = $strength2icon[$strength];
-        } else {
-            $img = '';
-        }
-        return $img;
     }
 }

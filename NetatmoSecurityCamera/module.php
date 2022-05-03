@@ -259,11 +259,11 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink($tstamp, $senderID, $message, $data)
     {
-        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
+        parent::MessageSink($tstamp, $senderID, $message, $data);
 
-        if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
+        if ($message == IPS_KERNELMESSAGE && $data[0] == KR_READY) {
             $hook = $this->ReadPropertyString('hook');
             if ($hook != '') {
                 $this->RegisterHook($hook);
@@ -1881,6 +1881,76 @@ class NetatmoSecurityCamera extends IPSModule
         return (strcmp($a_id, $b_id) < 0) ? -1 : 1;
     }
 
+    private function determineVpnUrl()
+    {
+        $vpn_url = $this->GetBuffer('vpn_url');
+        $this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
+        return $vpn_url;
+    }
+
+    private function determineLocalUrl()
+    {
+        $is_local = $this->GetBuffer('is_local');
+        $this->SendDebug(__FUNCTION__, 'is_local=' . $is_local, 0);
+        if (!$is_local) {
+            return false;
+        }
+
+        $local_url = $this->GetBuffer('local_url');
+        $this->SendDebug(__FUNCTION__, 'local_url=' . $local_url, 0);
+        if ($local_url != '') {
+            return $local_url;
+        }
+
+        $vpn_url = $this->GetBuffer('vpn_url');
+        $this->SendDebug(__FUNCTION__, 'vpn_url=' . $vpn_url, 0);
+        if ($vpn_url == '') {
+            return false;
+        }
+
+        $data = '';
+        $err = '';
+
+        $url = $vpn_url . '/command/ping';
+        $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+        if ($statuscode == 0) {
+            $response1 = json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'response1=' . print_r($response1, true), 0);
+            $local_url1 = $this->GetArrayElem($response1, 'local_url', '');
+
+            $url = $local_url1 . '/command/ping';
+            $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+            if ($statuscode == 0) {
+                $response2 = json_decode($data, true);
+                $this->SendDebug(__FUNCTION__, 'response2=' . print_r($response2, true), 0);
+                $local_url2 = $this->GetArrayElem($response2, 'local_url', '');
+                if ($local_url1 == $local_url2) {
+                    $local_url = $local_url1;
+                }
+            }
+        }
+
+        $this->SetBuffer('local_url', $local_url);
+
+        if ($statuscode) {
+            $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+            $this->SendDebug(__FUNCTION__, $err, 0);
+            $this->SetStatus($statuscode);
+            return false;
+        }
+
+        return $local_url;
+    }
+
+    private function determineUrl()
+    {
+        $url = $this->determineLocalUrl();
+        if ($url == false) {
+            $url = $this->determineVpnUrl();
+        }
+        return $url;
+    }
+
     public function GetVpnUrl()
     {
         $url = $this->determineVpnUrl();
@@ -3106,6 +3176,131 @@ class NetatmoSecurityCamera extends IPSModule
         }
         $this->SendDebug(__FUNCTION__, 'val=' . $val . ', txt=' . $txt, 0);
         return $txt;
+    }
+
+    private function map_camera_status($status)
+    {
+        switch ($status) {
+            case 'off':
+                $val = self::$CAMERA_STATUS_OFF;
+                break;
+            case 'on':
+                $val = self::$CAMERA_STATUS_ON;
+                break;
+            case 'disconnected':
+                $val = self::$CAMERA_STATUS_DISCONNECTED;
+                break;
+            default:
+                $e = 'unknown state "' . $status . '"';
+                $this->SendDebug(__FUNCTION__, $e, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
+                $val = self::$CAMERA_STATUS_UNDEFINED;
+                break;
+        }
+
+        return $val;
+    }
+
+    private function map_lightmode_status($status)
+    {
+        switch ($status) {
+            case 'off':
+                $val = self::$LIGHT_STATUS_OFF;
+                break;
+            case 'on':
+                $val = self::$LIGHT_STATUS_ON;
+                break;
+            case 'auto':
+                $val = self::$LIGHT_STATUS_AUTO;
+                break;
+            default:
+                $e = 'unknown state "' . $status . '"';
+                $this->SendDebug(__FUNCTION__, $e, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
+                $val = self::$LIGHT_STATUS_UNDEFINED;
+                break;
+        }
+
+        return $val;
+    }
+
+    private function map_sd_status($status)
+    {
+        switch ($status) {
+            case 'off':
+                $val = self::$SDCARD_STATUS_UNUSABLE;
+                break;
+            case 'on':
+                $val = self::$SDCARD_STATUS_READY;
+                break;
+            default:
+                $e = 'unknown state "' . $status . '"';
+                $this->SendDebug(__FUNCTION__, $e, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
+                $val = self::$SDCARD_STATUS_UNDEFINED;
+                break;
+        }
+
+        return $val;
+    }
+
+    private function map_power_status($status)
+    {
+        switch ($status) {
+            case 'off':
+                $val = self::$POWER_STATUS_BAD;
+                break;
+            case 'on':
+                $val = self::$POWER_STATUS_GOOD;
+                break;
+            default:
+                $e = 'unknown state "' . $status . '"';
+                $this->SendDebug(__FUNCTION__, $e, 0);
+                $this->LogMessage(__FUNCTION__ . ': ' . $e, KL_NOTIFY);
+                $val = self::$POWER_STATUS_UNDEFINED;
+                break;
+        }
+
+        return $val;
+    }
+
+    // Wifi-Strength
+    private function map_wifi_strength($strength)
+    {
+        if ($strength <= 56) {
+            // "high"
+            $val = self::$WIFI_HIGH;
+        } elseif ($strength <= 71) {
+            $val = self::$WIFI_BAD;
+        } elseif ($strength <= 86) {
+            $val = self::$WIFI_AVERAGE;
+        } else {
+            $val = self::$WIFI_BAD;
+        }
+
+        return $val;
+    }
+
+    private function wifi_strength2text($strength)
+    {
+        return $this->CheckVarProfile4Value('NetatmoSecurity.WifiStrength', $status);
+    }
+
+    private function wifi_strength2icon($strength)
+    {
+        $strength2icon = [
+            'wifi_low.png',
+            'wifi_medium.png',
+            'wifi_high.png',
+            'wifi_full.png',
+        ];
+
+        if ($strength >= 0 && $strength < count($strength2icon)) {
+            $img = $strength2icon[$strength];
+        } else {
+            $img = '';
+        }
+        return $img;
     }
 
     public function EventType2Icon(string $event_type, bool $asPath)

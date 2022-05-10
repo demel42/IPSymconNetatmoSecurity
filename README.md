@@ -535,6 +535,11 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.23.6 @ 10.05.2022 15:06
+  - update submodule CommonStubs
+  - SetLocation() -> GetConfiguratorLocation()
+  - weitere Absicherung ungültiger ID's
+
 - 1.23.5 @ 03.05.2022 15:23
   - Ausgabe der URL's im Experten-Bereich 
   - Korrektur des Netatmo-Webhook (Fehler aus 1.23)

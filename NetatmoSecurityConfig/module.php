@@ -57,25 +57,6 @@ class NetatmoSecurityConfig extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
-    private function SetLocation()
-    {
-        $catID = $this->ReadPropertyInteger('ImportCategoryID');
-        $tree_position = [];
-        if ($catID >= 10000 && IPS_ObjectExists($catID)) {
-            $tree_position[] = IPS_GetName($catID);
-            $parID = IPS_GetObject($catID)['ParentID'];
-            while ($parID > 0) {
-                if ($parID > 0) {
-                    $tree_position[] = IPS_GetName($parID);
-                }
-                $parID = IPS_GetObject($parID)['ParentID'];
-            }
-            $tree_position = array_reverse($tree_position);
-        }
-        $this->SendDebug(__FUNCTION__, 'tree_position=' . print_r($tree_position, true), 0);
-        return $tree_position;
-    }
-
     private function buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category)
     {
         $instID = 0;
@@ -88,6 +69,8 @@ class NetatmoSecurityConfig extends IPSModule
             }
         }
 
+        $catID = $this->ReadPropertyInteger('ImportCategoryID');
+
         $entry = [
             'instanceID' => $instID,
             'category'   => $this->Translate($product_category),
@@ -96,7 +79,7 @@ class NetatmoSecurityConfig extends IPSModule
             'product_id' => $product_id,
             'create'     => [
                 'moduleID'       => $guid,
-                'location'       => $this->SetLocation(),
+                'location'       => $this->GetConfiguratorLocation($catID),
                 'info'           => $home_name . '\\' . $product_name,
                 'configuration'  => [
                     'product_type' => $product_type,

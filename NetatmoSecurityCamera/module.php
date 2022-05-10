@@ -298,25 +298,6 @@ class NetatmoSecurityCamera extends IPSModule
         }
     }
 
-    private function SetLocation()
-    {
-        $catID = $this->ReadPropertyInteger('ImportCategoryID');
-        $tree_position = [];
-        if ($catID >= 10000 && IPS_ObjectExists($catID)) {
-            $tree_position[] = IPS_GetName($catID);
-            $parID = IPS_GetObject($catID)['ParentID'];
-            while ($parID > 0) {
-                if ($parID > 0) {
-                    $tree_position[] = IPS_GetName($parID);
-                }
-                $parID = IPS_GetObject($parID)['ParentID'];
-            }
-            $tree_position = array_reverse($tree_position);
-        }
-        $this->SendDebug(__FUNCTION__, 'tree_position=' . print_r($tree_position, true), 0);
-        return $tree_position;
-    }
-
     private function getConfiguratorValues()
     {
         $entries = [];
@@ -330,6 +311,8 @@ class NetatmoSecurityCamera extends IPSModule
             $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
             return $entries;
         }
+
+        $catID = $this->ReadPropertyInteger('ImportCategoryID');
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -377,7 +360,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 'person_id'  => $person_id,
                                 'create'     => [
                                     'moduleID'       => $guid,
-                                    'location'       => $this->SetLocation(),
+                                    'location'       => $this->GetConfiguratorLocation($catID),
                                     'info'           => $home_name . '\\' . $pseudo,
                                     'configuration'  => [
                                         'pseudo'     => $pseudo,
@@ -1184,7 +1167,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                     if ($n_new_events > 0 || $n_chg_events > 0 || $n_del_events > 0) {
                         $new_event_script = $this->ReadPropertyInteger('new_event_script');
-                        if ($new_event_script >= 10000) {
+                        if (IPS_ScriptExists($new_event_script)) {
                             $opts = [
                                 'InstanceID'  => $this->InstanceID,
                                 'new_events'  => json_encode($new_events)
@@ -1196,7 +1179,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                     if ($url_changed) {
                         $url_changed_script = $this->ReadPropertyInteger('url_changed_script');
-                        if ($url_changed_script >= 10000) {
+                        if (IPS_ScriptExists($url_changed_script)) {
                             $r = IPS_RunScriptWaitEx($url_changed_script, ['InstanceID' => $this->InstanceID]);
                             $this->SendDebug(__FUNCTION__, 'url_changed_script=' . IPS_GetName($url_changed_script) . ', ret=' . $r, 0);
                         }
@@ -1480,7 +1463,7 @@ class NetatmoSecurityCamera extends IPSModule
                             $this->SetValue('LastNotification', $now);
                         }
                         $notify_script = $this->ReadPropertyInteger('notify_script');
-                        if ($notify_script >= 10000) {
+                        if (IPS_ScriptExists($notify_script)) {
                             $opts = [
                                 'InstanceID'        => $this->InstanceID,
                                 'new_notifications' => json_encode($new_notifications)

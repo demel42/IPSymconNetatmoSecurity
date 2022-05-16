@@ -902,15 +902,17 @@ class NetatmoSecurityIO extends IPSModule
                 $err .= ' => 15min pause';
                 $this->MaintainTimer('UpdateData', 15 * 60 * 1000);
                 $this->SetBuffer('ApiAccessToken', '');
+            } else {
+                $this->SetUpdateInterval();
             }
 
             $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
-            $this->SetStatus($statuscode);
             $this->SetMultiBuffer('LastData', '');
+
+            $this->SetStatus($statuscode);
             return;
         }
-
         $this->SendData($data, 'QUERY');
         $this->SetMultiBuffer('LastData', $data);
 

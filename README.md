@@ -535,6 +535,15 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.24 @ 09.07.2022 12:29
+  - einige Funktionen (GetFormElements, GetFormActions) waren fehlerhafterweise "protected" und nicht "private"
+  - interne Funktionen sind nun private und ggfs nur noch via IPS_RequestAction() erreichbar
+  - Fix: Angabe der Kompatibilität auf 6.2 korrigiert
+  - Verbesserung: IPS-Status wird nur noch gesetzt, wenn er sich ändert
+  - update submodule CommonStubs
+    Fix: Ausgabe des nächsten Timer-Zeitpunkts
+    Fix: keine korrekte Registrierung für OAuth
+
 - 1.23.8 @ 17.05.2022 15:38
   - update submodule CommonStubs
     Fix: Absicherung gegen fehlende Objekte

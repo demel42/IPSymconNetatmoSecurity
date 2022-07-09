@@ -64,17 +64,17 @@ class NetatmoSecurityPerson extends IPSModule
         $this->MaintainReferences();
 
         if ($this->CheckPrerequisites() != false) {
-            $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
+            $this->MaintainStatus(self::$IS_INVALIDPREREQUISITES);
             return;
         }
 
         if ($this->CheckUpdate() != false) {
-            $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
+            $this->MaintainStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
         }
 
         if ($this->CheckConfiguration() != false) {
-            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            $this->MaintainStatus(self::$IS_INVALIDCONFIG);
             return;
         }
 
@@ -88,7 +88,7 @@ class NetatmoSecurityPerson extends IPSModule
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
-            $this->SetStatus(IS_INACTIVE);
+            $this->MaintainStatus(IS_INACTIVE);
             return;
         }
 
@@ -97,7 +97,7 @@ class NetatmoSecurityPerson extends IPSModule
         $person_info = $person_id . ' (' . $pseudo . ')';
         $this->SetSummary($person_info);
 
-        $this->SetStatus(IS_ACTIVE);
+        $this->MaintainStatus(IS_ACTIVE);
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -163,6 +163,15 @@ class NetatmoSecurityPerson extends IPSModule
 
             return $formActions;
         }
+
+        $formActions[] = [
+            'type'      => 'ExpansionPanel',
+            'caption'   => 'Expert area',
+            'expanded ' => false,
+            'items'     => [
+                $this->GetInstallVarProfilesFormItem(),
+            ],
+        ];
 
         $formActions[] = $this->GetInformationFormAction();
         $formActions[] = $this->GetReferencesFormAction();
@@ -232,11 +241,31 @@ class NetatmoSecurityPerson extends IPSModule
             }
         }
 
-        $this->SetStatus(IS_ACTIVE);
+        $this->MaintainStatus(IS_ACTIVE);
+    }
+
+    private function LocalRequestAction($ident, $value)
+    {
+        $r = true;
+        switch ($ident) {
+            case 'XXXXXX':
+                $this->XXXXXX();
+                break;
+            case 'XXXXXX':
+                $this->XXXXXX($value);
+                break;
+            default:
+                $r = false;
+                break;
+        }
+        return $r;
     }
 
     public function RequestAction($ident, $Value)
     {
+        if ($this->LocalRequestAction($ident, $value)) {
+            return;
+        }
         if ($this->CommonRequestAction($ident, $value)) {
             return;
         }

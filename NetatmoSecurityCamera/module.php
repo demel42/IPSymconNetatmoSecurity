@@ -64,8 +64,8 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
 
-        $this->RegisterTimer('CleanupPath', 0, $this->GetModulePrefix() . '_doCleanupPath(' . $this->InstanceID . ');');
-        $this->RegisterTimer('LoadTimelapse', 0, $this->GetModulePrefix() . '_doLoadTimelapse(' . $this->InstanceID . ');');
+        $this->RegisterTimer('CleanupPath', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doCleanupPath", "");');
+        $this->RegisterTimer('LoadTimelapse', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doLoadTimelapse", "");');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
@@ -164,21 +164,21 @@ class NetatmoSecurityCamera extends IPSModule
         if ($this->CheckPrerequisites() != false) {
             $this->MaintainTimer('CleanupPath', 0);
             $this->MaintainTimer('LoadTimelapse', 0);
-            $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
+            $this->MaintainStatus(self::$IS_INVALIDPREREQUISITES);
             return;
         }
 
         if ($this->CheckUpdate() != false) {
             $this->MaintainTimer('CleanupPath', 0);
             $this->MaintainTimer('LoadTimelapse', 0);
-            $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
+            $this->MaintainStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
         }
 
         if ($this->CheckConfiguration() != false) {
             $this->MaintainTimer('CleanupPath', 0);
             $this->MaintainTimer('LoadTimelapse', 0);
-            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            $this->MaintainStatus(self::$IS_INVALIDCONFIG);
             return;
         }
 
@@ -234,7 +234,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
-            $this->SetStatus(IS_INACTIVE);
+            $this->MaintainStatus(IS_INACTIVE);
             return;
         }
 
@@ -256,7 +256,7 @@ class NetatmoSecurityCamera extends IPSModule
             $this->SetTimer();
         }
 
-        $this->SetStatus(IS_ACTIVE);
+        $this->MaintainStatus(IS_ACTIVE);
     }
 
     public function MessageSink($tstamp, $senderID, $message, $data)
@@ -276,7 +276,7 @@ class NetatmoSecurityCamera extends IPSModule
         }
     }
 
-    public function SetTimer()
+    private function SetTimer()
     {
         $timelapse_path = $this->ReadPropertyString('timelapse_path');
         $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
@@ -740,11 +740,7 @@ class NetatmoSecurityCamera extends IPSModule
             'caption'   => 'Expert area',
             'expanded ' => false,
             'items'     => [
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Re-install variable-profiles',
-                    'onClick' => $this->GetModulePrefix() . '_InstallVarProfiles($id, true);'
-                ],
+                $this->GetInstallVarProfilesFormItem(),
                 [
                     'type'     => 'List',
                     'columns'  => [
@@ -1481,11 +1477,31 @@ class NetatmoSecurityCamera extends IPSModule
             }
         }
 
-        $this->SetStatus(IS_ACTIVE);
+        $this->MaintainStatus(IS_ACTIVE);
+    }
+
+    private function LocalRequestAction($ident, $value)
+    {
+        $r = true;
+        switch ($ident) {
+            case 'doCleanupPath':
+                $this->doCleanupPath();
+                break;
+            case 'doLoadTimelapse':
+                $this->doLoadTimelapse();
+                break;
+            default:
+                $r = false;
+                break;
+        }
+        return $r;
     }
 
     public function RequestAction($ident, $value)
     {
+        if ($this->LocalRequestAction($ident, $value)) {
+            return;
+        }
         if ($this->CommonRequestAction($ident, $value)) {
             return;
         }
@@ -1918,7 +1934,7 @@ class NetatmoSecurityCamera extends IPSModule
         if ($statuscode) {
             $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
-            $this->SetStatus($statuscode);
+            $this->MaintainStatus($statuscode);
             return false;
         }
 
@@ -2745,7 +2761,7 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
-            $this->SetStatus(IS_INACTIVE);
+            $this->MaintainStatus(IS_INACTIVE);
             return false;
         }
 
@@ -2944,7 +2960,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->cleanupPath($path, $max_age, false);
     }
 
-    public function doLoadTimelapse()
+    private function doLoadTimelapse()
     {
         $semaphoreID = __CLASS__ . __FUNCTION__;
         $semaphoreTM = 5 * 60 * 1000; // der Abruf des 'Timelapse' dauert 1-2 min
@@ -2960,7 +2976,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SetTimer();
     }
 
-    public function doCleanupPath()
+    private function doCleanupPath()
     {
         $semaphoreID = __CLASS__ . __FUNCTION__;
         $semaphoreTM = 500;

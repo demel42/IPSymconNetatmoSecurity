@@ -50,7 +50,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->InstallVarProfiles(false);
 
-        $this->RegisterTimer('UpdateData', 0, $this->GetModulePrefix() . '_UpdateData(' . $this->InstanceID . ');');
+        $this->RegisterTimer('UpdateData', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "UpdateData", "");');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
         $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
@@ -138,44 +138,44 @@ class NetatmoSecurityIO extends IPSModule
 
         if ($this->CheckPrerequisites() != false) {
             $this->MaintainTimer('UpdateData', 0);
-            $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
+            $this->MaintainStatus(self::$IS_INVALIDPREREQUISITES);
             return;
         }
 
         if ($this->CheckUpdate() != false) {
             $this->MaintainTimer('UpdateData', 0);
-            $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
+            $this->MaintainStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
         }
 
         if ($this->CheckConfiguration() != false) {
             $this->MaintainTimer('UpdateData', 0);
-            $this->SetStatus(self::$IS_INVALIDCONFIG);
+            $this->MaintainStatus(self::$IS_INVALIDCONFIG);
             return;
         }
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
             $this->MaintainTimer('UpdateData', 0);
-            $this->SetStatus(IS_INACTIVE);
+            $this->MaintainStatus(IS_INACTIVE);
             return;
         }
 
         $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
         switch ($oauth_type) {
             case self::$CONNECTION_DEVELOPER:
-                $this->SetStatus(IS_ACTIVE);
+                $this->MaintainStatus(IS_ACTIVE);
                 break;
             case self::$CONNECTION_OAUTH:
                 if ($this->GetConnectUrl() == false) {
-                    $this->SetStatus(self::$IS_NOSYMCONCONNECT);
+                    $this->MaintainStatus(self::$IS_NOSYMCONCONNECT);
                     return;
                 }
                 $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
                 if ($refresh_token == '') {
-                    $this->SetStatus(self::$IS_NOLOGIN);
+                    $this->MaintainStatus(self::$IS_NOLOGIN);
                 } else {
-                    $this->SetStatus(IS_ACTIVE);
+                    $this->MaintainStatus(IS_ACTIVE);
                 }
                 break;
             default:
@@ -196,7 +196,7 @@ class NetatmoSecurityIO extends IPSModule
                 if ($webhook_baseurl == '') {
                     $webhook_baseurl = $this->GetConnectUrl();
                     if ($webhook_baseurl == '') {
-                        $this->SetStatus(self::$IS_NOWEBHOOK);
+                        $this->MaintainStatus(self::$IS_NOWEBHOOK);
                         return;
                     }
                 }
@@ -282,7 +282,7 @@ class NetatmoSecurityIO extends IPSModule
         }
         if ($statuscode) {
             $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
-            $this->SetStatus($statuscode);
+            $this->MaintainStatus($statuscode);
             return false;
         }
         return $jdata;
@@ -336,7 +336,7 @@ class NetatmoSecurityIO extends IPSModule
                 $this->WriteAttributeString('ApiRefreshToken', '');
                 $this->SetBuffer('ApiAccessToken', '');
                 $this->MaintainTimer('UpdateData', 0);
-                $this->SetStatus(self::$IS_NOLOGIN);
+                $this->MaintainStatus(self::$IS_NOLOGIN);
                 return false;
             }
             $jdata = $this->Call4AccessToken(['refresh_token' => $refresh_token]);
@@ -371,7 +371,7 @@ class NetatmoSecurityIO extends IPSModule
             $this->WriteAttributeString('ApiRefreshToken', '');
             $this->SetBuffer('ApiAccessToken', '');
             $this->MaintainTimer('UpdateData', 0);
-            $this->SetStatus(self::$IS_NOLOGIN);
+            $this->MaintainStatus(self::$IS_NOLOGIN);
             return;
         }
         $refresh_token = $this->FetchRefreshToken($_GET['code']);
@@ -379,7 +379,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
         if ($this->GetStatus() == self::$IS_NOLOGIN) {
             $this->MaintainTimer('UpdateData', 1000);
-            $this->SetStatus(IS_ACTIVE);
+            $this->MaintainStatus(IS_ACTIVE);
         }
     }
 
@@ -564,25 +564,32 @@ class NetatmoSecurityIO extends IPSModule
             $formActions[] = [
                 'type'    => 'Button',
                 'caption' => 'Login at Netatmo',
-                'onClick' => 'echo ' . $this->GetModulePrefix() . '_Login($id);'
+                'onClick' => 'echo "' . $this->Login() . '";',
             ];
         }
 
         $formActions[] = [
             'type'    => 'Button',
-            'caption' => 'Register Webhook',
-            'onClick' => $this->GetModulePrefix() . '_AddWebhook($id);'
-        ];
-        $formActions[] = [
-            'type'    => 'Button',
-            'caption' => 'Clear Token',
-            'onClick' => $this->GetModulePrefix() . '_ClearToken($id);'
+            'caption' => 'Update data',
+            'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "UpdateData", "");',
         ];
 
         $formActions[] = [
-            'type'    => 'Button',
-            'caption' => 'Update data',
-            'onClick' => $this->GetModulePrefix() . '_UpdateData($id);'
+            'type'      => 'ExpansionPanel',
+            'caption'   => 'Expert area',
+            'expanded ' => false,
+            'items'     => [
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Register Webhook',
+                    'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "AddWebhook", "");',
+                ],
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Clear Token',
+                    'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "ClearToken", "");'
+                ],
+            ],
         ];
 
         $formActions[] = $this->GetInformationFormAction();
@@ -591,8 +598,31 @@ class NetatmoSecurityIO extends IPSModule
         return $formActions;
     }
 
+    private function LocalRequestAction($ident, $value)
+    {
+        $r = true;
+        switch ($ident) {
+            case 'UpdateData':
+                $this->UpdateData();
+                break;
+            case 'AddWebhook':
+                $this->AddWebhook();
+                break;
+            case 'ClearToken':
+                $this->ClearToken();
+                break;
+            default:
+                $r = false;
+                break;
+        }
+        return $r;
+    }
+
     public function RequestAction($ident, $value)
     {
+        if ($this->LocalRequestAction($ident, $value)) {
+            return;
+        }
         if ($this->CommonRequestAction($ident, $value)) {
             return;
         }
@@ -603,7 +633,7 @@ class NetatmoSecurityIO extends IPSModule
         }
     }
 
-    protected function SetUpdateInterval()
+    private function SetUpdateInterval()
     {
         $min = $this->ReadPropertyInteger('UpdateDataInterval');
         $msec = $min > 0 ? $min * 1000 * 60 : 0;
@@ -723,7 +753,7 @@ class NetatmoSecurityIO extends IPSModule
                     if ($statuscode) {
                         $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
                         $this->SendDebug(__FUNCTION__, $err, 0);
-                        $this->SetStatus($statuscode);
+                        $this->MaintainStatus($statuscode);
                         $this->SetMultiBuffer('LastData', '');
                         return false;
                     }
@@ -745,7 +775,7 @@ class NetatmoSecurityIO extends IPSModule
                         $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
                     }
 
-                    $this->SetStatus(IS_ACTIVE);
+                    $this->MaintainStatus(IS_ACTIVE);
                     $this->do_AddWebhook($access_token);
                 }
                 break;
@@ -804,7 +834,7 @@ class NetatmoSecurityIO extends IPSModule
             if ($statuscode) {
                 $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
                 $this->SendDebug(__FUNCTION__, $err, 0);
-                $this->SetStatus($statuscode);
+                $this->MaintainStatus($statuscode);
                 $this->SetMultiBuffer('LastData', '');
                 return false;
             }
@@ -824,12 +854,12 @@ class NetatmoSecurityIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'new refresh_token=' . $refresh_token, 0);
                 $this->WriteAttributeString('AppRefreshToken', $refresh_token);
             }
-            $this->SetStatus(IS_ACTIVE);
+            $this->MaintainStatus(IS_ACTIVE);
         }
         return $access_token;
     }
 
-    public function UpdateData()
+    private function UpdateData()
     {
         if ($this->CheckStatus() == self::$STATUS_INVALID) {
             if ($this->GetStatus() == self::$IS_NOLOGIN) {
@@ -910,13 +940,13 @@ class NetatmoSecurityIO extends IPSModule
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->SetMultiBuffer('LastData', '');
 
-            $this->SetStatus($statuscode);
+            $this->MaintainStatus($statuscode);
             return;
         }
         $this->SendData($data, 'QUERY');
         $this->SetMultiBuffer('LastData', $data);
 
-        $this->SetStatus(IS_ACTIVE);
+        $this->MaintainStatus(IS_ACTIVE);
 
         $this->SetUpdateInterval();
     }
@@ -963,7 +993,7 @@ class NetatmoSecurityIO extends IPSModule
         readfile($path);
     }
 
-    public function ClearToken()
+    private function ClearToken()
     {
         $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
         $this->SendDebug(__FUNCTION__, 'clear refresh_token=' . $refresh_token, 0);
@@ -974,7 +1004,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->SetBuffer('ApiAccessToken', '');
     }
 
-    public function AddWebhook()
+    private function AddWebhook()
     {
         if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
@@ -1036,11 +1066,11 @@ class NetatmoSecurityIO extends IPSModule
         if ($statuscode) {
             $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
-            $this->SetStatus($statuscode);
+            $this->MaintainStatus($statuscode);
             return;
         }
 
-        $this->SetStatus(IS_ACTIVE);
+        $this->MaintainStatus(IS_ACTIVE);
     }
 
     public function DropWebhook()
@@ -1085,18 +1115,17 @@ class NetatmoSecurityIO extends IPSModule
         if ($statuscode) {
             $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
             $this->SendDebug(__FUNCTION__, $err, 0);
-            $this->SetStatus($statuscode);
+            $this->MaintainStatus($statuscode);
             return;
         }
 
-        $this->SetStatus(IS_ACTIVE);
+        $this->MaintainStatus(IS_ACTIVE);
     }
 
     private function SendCommand($url)
     {
-        $inst = IPS_GetInstance($this->InstanceID);
-        if ($inst['InstanceStatus'] == IS_INACTIVE) {
-            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+        if ($this->GetStatus() == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return false;
         }
 
@@ -1125,9 +1154,8 @@ class NetatmoSecurityIO extends IPSModule
 
     private function SendCommandWithAuth($url, $postdata)
     {
-        $inst = IPS_GetInstance($this->InstanceID);
-        if ($inst['InstanceStatus'] == IS_INACTIVE) {
-            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+        if ($this->GetStatus() == IS_INACTIVE) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return false;
         }
 

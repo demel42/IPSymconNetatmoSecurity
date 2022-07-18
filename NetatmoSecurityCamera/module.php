@@ -278,23 +278,31 @@ class NetatmoSecurityCamera extends IPSModule
 
     private function SetTimer()
     {
-        $timelapse_path = $this->ReadPropertyString('timelapse_path');
-        $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
-        if ($timelapse_path != '' && $timelapse_hour >= 0 && $timelapse_hour < 24) {
-            $fmt = sprintf('d.m.Y 00:%02d:01', $timelapse_hour);
-            $dt = new DateTime(date($fmt, time() + (24 * 60 * 60)));
-            $ts = (int) $dt->format('U');
-            $msec = ($ts - time()) * 1000;
-            $this->MaintainTimer('LoadTimelapse', $msec);
+        $this->SendDebug(__FUNCTION__, $this->PrintTimer('LoadTimelapse'), 0);
+        $timer = $this->GetTimerByName('LoadTimelapse');
+        if ($timer['NextRun'] <= time()) {
+            $timelapse_path = $this->ReadPropertyString('timelapse_path');
+            $timelapse_hour = $this->ReadPropertyInteger('timelapse_hour');
+            if ($timelapse_path != '' && $timelapse_hour >= 0 && $timelapse_hour < 24) {
+                $fmt = sprintf('d.m.Y 00:%02d:01', $timelapse_hour);
+                $dt = new DateTime(date($fmt, time() + (24 * 60 * 60)));
+                $ts = (int) $dt->format('U');
+                $msec = ($ts - time()) * 1000;
+                $this->MaintainTimer('LoadTimelapse', $msec);
+            }
         }
 
-        $ftp_max_age = $this->ReadPropertyInteger('ftp_max_age');
-        $timelapse_max_age = $this->ReadPropertyInteger('timelapse_max_age');
-        if ($ftp_max_age > 0 || $timelapse_max_age > 0) {
-            $dt = new DateTime(date('d.m.Y 00:30:00', time() + (24 * 60 * 60)));
-            $ts = (int) $dt->format('U');
-            $msec = ($ts - time()) * 1000;
-            $this->MaintainTimer('CleanupPath', $msec);
+        $this->SendDebug(__FUNCTION__, $this->PrintTimer('CleanupPath'), 0);
+        $timer = $this->GetTimerByName('CleanupPath');
+        if ($timer['NextRun'] <= time()) {
+            $ftp_max_age = $this->ReadPropertyInteger('ftp_max_age');
+            $timelapse_max_age = $this->ReadPropertyInteger('timelapse_max_age');
+            if ($ftp_max_age > 0 || $timelapse_max_age > 0) {
+                $dt = new DateTime(date('d.m.Y 00:30:00', time() + (24 * 60 * 60)));
+                $ts = (int) $dt->format('U');
+                $msec = ($ts - time()) * 1000;
+                $this->MaintainTimer('CleanupPath', $msec);
+            }
         }
     }
 

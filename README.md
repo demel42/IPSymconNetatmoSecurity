@@ -535,6 +535,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.25 @ 17.07.2022 12:00
+  - Fix: das FTP-Verzeichnis wurde unter Umständen nicht aufgeräumt
+
 - 1.24 @ 09.07.2022 12:29
   - einige Funktionen (GetFormElements, GetFormActions) waren fehlerhafterweise "protected" und nicht "private"
   - interne Funktionen sind nun private und ggfs nur noch via IPS_RequestAction() erreichbar

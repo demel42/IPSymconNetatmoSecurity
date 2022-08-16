@@ -173,6 +173,17 @@ class NetatmoSecurityPerson extends IPSModule
             ],
         ];
 
+        $formActions[] = [
+            'type'      => 'ExpansionPanel',
+            'caption'   => 'Test area',
+            'expanded ' => false,
+            'items'     => [
+                [
+                    'type'    => 'TestCenter',
+                ],
+            ]
+        ];
+
         $formActions[] = $this->GetInformationFormAction();
         $formActions[] = $this->GetReferencesFormAction();
 
@@ -246,22 +257,10 @@ class NetatmoSecurityPerson extends IPSModule
 
     private function LocalRequestAction($ident, $value)
     {
-        $r = true;
-        switch ($ident) {
-            case 'XXXXXX':
-                $this->XXXXXX();
-                break;
-            case 'XXXXXX':
-                $this->XXXXXX($value);
-                break;
-            default:
-                $r = false;
-                break;
-        }
-        return $r;
+        return false;
     }
 
-    public function RequestAction($ident, $Value)
+    public function RequestAction($ident, $value)
     {
         if ($this->LocalRequestAction($ident, $value)) {
             return;

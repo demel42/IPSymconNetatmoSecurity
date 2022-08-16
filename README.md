@@ -535,6 +535,11 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.25.1 @ 16.08.2022 09:50
+  - Fix: Fehler in RequestAction() von NetatmoSecurityPerson
+  - update submodule CommonStubs
+    Fix: in den Konfiguratoren war es nicht möglich, eine Instanz direkt unter dem Wurzelverzeichnis "IP-Symcon" zu erzeugen
+
 - 1.25 @ 17.07.2022 12:00
   - Fix: das FTP-Verzeichnis wurde unter Umständen nicht aufgeräumt
 

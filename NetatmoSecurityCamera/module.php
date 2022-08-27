@@ -1261,7 +1261,7 @@ class NetatmoSecurityCamera extends IPSModule
                                     case 'NOC-animal':
                                         $message = $this->Translate('Animal captured');
                                         if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$self::$MOTION_TYPE_ANIMAL);
+                                            $this->SetValue('MotionType', self::self::$MOTION_TYPE_ANIMAL);
                                             $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
                                         }
                                         break;
@@ -1349,7 +1349,7 @@ class NetatmoSecurityCamera extends IPSModule
                                     case 'NACamera-animal':
                                         $message = $this->Translate('Animal captured');
                                         if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$self::$MOTION_TYPE_ANIMAL);
+                                            $this->SetValue('MotionType', self::self::$MOTION_TYPE_ANIMAL);
                                             $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
                                         }
                                         break;

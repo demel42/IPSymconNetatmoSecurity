@@ -35,6 +35,7 @@
 			"last event from Netatmo": "letztes Ereignis von Netatmo",
 			"last notification from Netatmo": "letzte Benachrichtigung von Netatmo",
 			"Strength of wifi-signal": "Stärke des Wifi-Signals",
+			"Motion detection": "Bewegungsmelder",
 
 			"Adjustment of the returned HTML code": "Anpassung des zurückgegebenen HTML-Codes",
 
@@ -78,6 +79,7 @@
 			"optional data": "optionale Daten",
 			"SD-Card state": "SD-Karte",
 			"State": "Status",
+			"Motion detected": "Bewegung erkannt",
 
 			"__function__": "ReceiveData",
 			"Alarm detected": "Alarm erkannt",

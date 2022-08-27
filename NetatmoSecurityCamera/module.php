@@ -12,6 +12,8 @@ class NetatmoSecurityCamera extends IPSModule
 
     private $ModuleDir;
 
+    public static $MOTION_RELEASE = 60; // Sekunden
+
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
@@ -34,6 +36,8 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyBoolean('with_last_notification', false);
         $this->RegisterPropertyBoolean('with_wifi_strength', false);
 
+        $this->RegisterPropertyBoolean('with_motion_detection', false);
+
         $this->RegisterPropertyString('hook', '');
 
         $this->RegisterPropertyString('ipsIP', '');
@@ -41,15 +45,15 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyString('externalIP', '');
         $this->RegisterPropertyString('localCIDRs', '');
 
-        $this->RegisterPropertyInteger('event_max_age', '14');
-        $this->RegisterPropertyInteger('notification_max_age', '2');
+        $this->RegisterPropertyInteger('event_max_age', 14);
+        $this->RegisterPropertyInteger('notification_max_age', 2);
 
         $this->RegisterPropertyString('ftp_path', '');
-        $this->RegisterPropertyInteger('ftp_max_age', '14');
+        $this->RegisterPropertyInteger('ftp_max_age', 14);
 
         $this->RegisterPropertyString('timelapse_path', '');
-        $this->RegisterPropertyInteger('timelapse_hour', '0');
-        $this->RegisterPropertyInteger('timelapse_max_age', '7');
+        $this->RegisterPropertyInteger('timelapse_hour', 0);
+        $this->RegisterPropertyInteger('timelapse_max_age', 7);
 
         $this->RegisterPropertyInteger('new_event_script', 0);
         $this->RegisterPropertyInteger('notify_script', 0);
@@ -66,6 +70,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->RegisterTimer('CleanupPath', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doCleanupPath", "");');
         $this->RegisterTimer('LoadTimelapse', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doLoadTimelapse", "");');
+        $this->RegisterTimer('MotionRelease', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doMotionRelease", "");');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
@@ -186,6 +191,7 @@ class NetatmoSecurityCamera extends IPSModule
         $with_last_event = $this->ReadPropertyBoolean('with_last_event');
         $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
+        $with_motion_detection = $this->ReadPropertyBoolean('with_motion_detection');
 
         $product_type = $this->ReadPropertyString('product_type');
         switch ($product_type) {
@@ -226,6 +232,8 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
+
+        $this->MaintainVariable('MotionType', $this->Translate('Motion detected'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.MotionType', $vpos++, $with_motion_detection);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_type = $this->ReadPropertyString('product_type');
@@ -530,6 +538,11 @@ class NetatmoSecurityCamera extends IPSModule
                     'name'    => 'with_wifi_strength',
                     'caption' => 'Strength of wifi-signal'
                 ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_motion_detection',
+                    'caption' => 'Motion detection'
+                ],
             ],
             'caption' => 'optional data'
         ];
@@ -830,6 +843,7 @@ class NetatmoSecurityCamera extends IPSModule
                 break;
         }
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
+        $with_motion_detection = $this->ReadPropertyBoolean('with_motion_detection');
 
         $event_max_age = $this->ReadPropertyInteger('event_max_age');
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');
@@ -1220,6 +1234,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                         $push_type = $this->GetArrayElem($notification, 'push_type', '');
                         switch ($push_type) {
+                            case 'NOC-movement':
                             case 'NOC-human':
                             case 'NOC-animal':
                             case 'NOC-vehicle':
@@ -1229,19 +1244,39 @@ class NetatmoSecurityCamera extends IPSModule
                                 $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                                 $message = $this->GetArrayElem($notification, 'message', '');
                                 switch ($push_type) {
+                                    case 'NOC-movement':
+                                        $message = $this->Translate('Movement detected');
+                                        if ($with_motion_detection) {
+                                            $this->SetValue('MotionType', self::$MOTION_TYPE_MOVEMENT);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
+                                        break;
                                     case 'NOC-human':
                                         $message = $this->Translate('Person captured');
+                                        if ($with_motion_detection) {
+                                            $this->SetValue('MotionType', self::$MOTION_TYPE_PERSON);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
                                         break;
                                     case 'NOC-animal':
                                         $message = $this->Translate('Animal captured');
+                                        if ($with_motion_detection) {
+                                            $this->SetValue('MotionType', self::$self::$MOTION_TYPE_ANIMAL);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
                                         break;
                                     case 'NOC-vehicle':
                                         $message = $this->Translate('Vehicle captured');
+                                        if ($with_motion_detection) {
+                                            $this->SetValue('MotionType', self::$MOTION_TYPE_VEHICLE);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
                                         break;
                                     default:
                                         if ($message == '') {
                                             $message = $event_type . '-' . $sub_type;
                                         }
+                                        $motion_type = self::$MOTION_TYPE_MOVEMENT;
                                         break;
                                 }
 
@@ -1281,6 +1316,8 @@ class NetatmoSecurityCamera extends IPSModule
                                 break;
                             case 'NACamera-movement':
                             case 'NACamera-person':
+                            case 'NACamera-animal':
+                            case 'NACamera-vehicle':
                                 $event_id = $this->GetArrayElem($notification, 'event_id', '');
                                 $event_type = $this->GetArrayElem($notification, 'event_type', '');
                                 $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
@@ -1288,9 +1325,40 @@ class NetatmoSecurityCamera extends IPSModule
                                 switch ($push_type) {
                                     case 'NACamera-movement':
                                         $message = $this->Translate('Movement detected');
+                                        if ($with_motion_detection) {
+                                            $this->SetValue('MotionType', self::$MOTION_TYPE_MOVEMENT);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
                                         break;
-                                    case 'NACamera-movement':
+                                    case 'NACamera-person':
                                         $message = $this->Translate('Person captured');
+                                        if ($with_motion_detection) {
+                                            $is_known = false;
+                                            if (isset($notification['persons'])) {
+                                                foreach ($notification['persons'] as $person) {
+                                                    $is_known = (bool) $this->GetArrayElem($person, 'is_known', '');
+                                                    if ($is_known) {
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            $this->SetValue('MotionType', $is_known ? self::$MOTION_TYPE_KNOWN_PERSON : self::$MOTION_TYPE_PERSON);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
+                                        break;
+                                    case 'NACamera-animal':
+                                        $message = $this->Translate('Animal captured');
+                                        if ($with_motion_detection) {
+                                            $this->SetValue('MotionType', self::$self::$MOTION_TYPE_ANIMAL);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
+                                        break;
+                                    case 'NACamera-vehicle':
+                                        $message = $this->Translate('Vehicle captured');
+                                        if ($with_motion_detection) {
+                                            $this->SetValue('MotionType', self::$MOTION_TYPE_VEHICLE);
+                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                        }
                                         break;
                                     default:
                                         if ($message == '') {
@@ -1367,7 +1435,6 @@ class NetatmoSecurityCamera extends IPSModule
                             case 'NOC-disconnection':
                             case 'NOC-ftp':
                             case 'NOC-light_mode':
-                            case 'NOC-movement':
                             case 'NOC-off':
                             case 'NOC-on':
                                 $id = $this->GetArrayElem($notification, 'id', '');
@@ -1385,9 +1452,6 @@ class NetatmoSecurityCamera extends IPSModule
                                         break;
                                     case 'NOC-light_mode':
                                         $message = $this->Translate('Light-mode changed to ' . $sub_type);
-                                        break;
-                                    case 'NOC-movement':
-                                        $message = $this->Translate('Movement detected');
                                         break;
                                     case 'NACamera-on':
                                     case 'NOC-off':
@@ -1497,6 +1561,9 @@ class NetatmoSecurityCamera extends IPSModule
                 break;
             case 'doLoadTimelapse':
                 $this->doLoadTimelapse();
+                break;
+            case 'doMotionRelease':
+                $this->doMotionRelease();
                 break;
             default:
                 $r = false;
@@ -3006,6 +3073,15 @@ class NetatmoSecurityCamera extends IPSModule
             $this->LogMessage(__FUNCTION__ . '/' . IPS_GetName($this->InstanceID) . ': sempahore ' . $semaphoreID . ' is not accessable', KL_WARNING);
         }
         $this->SetTimer();
+    }
+
+    private function doMotionRelease()
+    {
+        $with_motion_detection = $this->ReadPropertyBoolean('with_motion_detection');
+        if ($with_motion_detection) {
+            $this->SetValue('MotionType', self::$MOTION_TYPE_NONE);
+        }
+        $this->MaintainTimer('MotionRelease', 0);
     }
 
     private function cleanupPath($path, $max_age, $verbose)

@@ -376,6 +376,7 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | letztes Ereignis         | boolean  | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
 | letzte Benachrichtigung  | boolean  | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
 | Stärke des Wifi-Signals  | boolean  | Nein         | Ausgabe des Signal in den Abstufungen: _schlecht_, _mittel_, _gut_, _hoch_|
+| Bewegungsmelder          | boolean  | Nein         | Variable mit dem Ergebnis des Kamera-Bewegungsmelders |
 |                          |          |              | |
 | Webhook                  | string   |              | Webhook, um Daten dieser Kamera abzufragen |
 |  ... IPS IP-Adresse      | string   |              | DynDNS-Name oder IP des IPS-Servers |
@@ -430,6 +431,20 @@ Es dient dazu, z.B. eine Tabelle der Ereignisse zu erstelln und in einer HTML-Bo
 - Script bei geänderter VPN-URL: das Script wird aufgerufen, wenn die VPN-URL bei einem Datenabruf festgestellt wird, das sich die VPN-URL geändert hat (kann jederzeit erfolgen).
 Rumpfscript siehe [docs/processUrlChanged.php](docs/processUrlChanged.php).
 
+- Bewegungsmelder
+wird gesetzt aufgrund der Ereignisse der Kamera, mögliche Werte:
+
+| Wert | Bedeutung |
+| :--- | :-------- |
+| 0    | keine Bewegung |
+| 1    | Bewegung erkannt |
+| 2    | Person erkannt |
+| 3    | bekannte Person erkannt (nur bei Innenkamera) |
+| 4    | Tier erkannt |
+| 5    | Fahrzeug erkannt (nur AUssenkamera) |
+
+Wert wird nach 30 Sekunden auf *keine Bewegung* zurücќ gesetzt
+
 ### NetatmoSecurityPersons
 
 #### Properties
@@ -437,7 +452,7 @@ Rumpfscript siehe [docs/processUrlChanged.php](docs/processUrlChanged.php).
 | Eigenschaft               | Typ      | Standardwert | Beschreibung |
 | :------------------------ | :------  | :----------- | :----------- |
 | Personen-ID               | string   |              | ID der Person |
-| Heim-ID                   | string   |              | ID des "Heims" |
+| Heim-ID                   | string   |              | ID des "Heim" |
 | Pseudonym                 | string   |              | |
 
 ### Variablenprofile
@@ -447,10 +462,14 @@ Es werden folgende Variablenprofile angelegt:
 NetatmoSecurity.Presence
 
 * Integer<br>
-NetatmoSecurity.CameraStatus, NetatmoSecurity.CameraAction, <br>
-NetatmoSecurity.LightModeStatus, NetatmoSecurity.LightAction, NetatmoSecurity.LightIntensity, <br>
-NetatmoSecurity.SDCardStatus, <br>
+NetatmoSecurity.CameraAction,
+NetatmoSecurity.CameraStatus,
+NetatmoSecurity.LightAction,
+NetatmoSecurity.LightIntensity,
+NetatmoSecurity.LightModeStatus,
+NetatmoSecurity.MotionType,
 NetatmoSecurity.PowerStatus
+NetatmoSecurity.SDCardStatus,
 
 ### Datenstrukturen
 
@@ -514,11 +533,12 @@ NetatmoSecurity.PowerStatus
 
 - _push_type_:
   - Benachrichtigung mit _Event_ oder _Sub-Event_<br>
-    _NOC-human_, _NOC-animal_, _NOC-vehicle_<br>
-	_NACamera-movement_, _NACamera-person_
+    _NOC-movement_, __NOC-human_, _NOC-animal_, _NOC-vehicle_<br>
+	_NACamera-movement_, _NACamera-person_, _NACamera-animal_
   - sonstige Benachrichtigung:<br>
-    _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-movement_, _NOC-off_, _NOC-on_<br>
-	_NACamera-alarm_started_, _NACamera-off_, _NACamera-on_
+    _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-off_, _NOC-on_,<br>
+	_NACamera-alarm_started_, _NACamera-off_, _NACamera-on_,<br>
+	...
 
 ## 6. Anhang
 
@@ -534,6 +554,9 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.26 @ 27.08.2022 14:42
+  - Erweiterung: optionale Variable "Bewegungsmelder", wird aufgrund der von der Kamera gemeldeten Ereignisse gesezt und nach 60s wieder zurück gesetzt.
 
 - 1.25.1 @ 16.08.2022 09:50
   - Fix: Fehler in RequestAction() von NetatmoSecurityPerson

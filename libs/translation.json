@@ -34,6 +34,13 @@
 			"good": "gut",
 			"bad": "schwach",
 
+			"__variableprofile__": "NetatmoSecurity.MotionType",
+			"none": "keine",
+			"movement": "Bewegung",
+			"person": "Person",
+			"animal": "Tier",
+			"vehicle": "Fahrzeug",
+
 			"__variableprofile__": "NetatmoSecurity.WifiStrength",
 			"bad": "schwach",
 			"average": "mittel",

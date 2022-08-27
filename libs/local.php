@@ -90,6 +90,13 @@ trait NetatmoSecurityLocalLib
     public static $PRESENCE_ACTION_HOME = 1;
     public static $PRESENCE_ACTION_ALLAWAY = 2;
 
+    public static $MOTION_TYPE_NONE = 0;
+    public static $MOTION_TYPE_MOVEMENT = 1;
+    public static $MOTION_TYPE_PERSON = 2;
+    public static $MOTION_TYPE_KNOWN_PERSON = 3;
+    public static $MOTION_TYPE_ANIMAL = 4;
+    public static $MOTION_TYPE_VEHICLE = 5;
+
     private function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
@@ -161,6 +168,16 @@ trait NetatmoSecurityLocalLib
             ['Wert' => self::$PRESENCE_ACTION_ALLAWAY, 'Name' => $this->Translate('all away'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('NetatmoSecurity.PresenceAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$MOTION_TYPE_NONE, 'Name' => $this->Translate('none'), 'Farbe' => -1],
+            ['Wert' => self::$MOTION_TYPE_MOVEMENT, 'Name' => $this->Translate('movement'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$MOTION_TYPE_PERSON, 'Name' => $this->Translate('person'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$MOTION_TYPE_KNOWN_PERSON, 'Name' => $this->Translate('known person'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$MOTION_TYPE_ANIMAL, 'Name' => $this->Translate('animal'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$MOTION_TYPE_VEHICLE, 'Name' => $this->Translate('vehicle'), 'Farbe' => 0xEE0000],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.MotionType', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
     }
 
     private function do_HttpRequest($url, $header, $postdata, $mode, &$data, &$err)

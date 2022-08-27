@@ -556,7 +556,7 @@ GUIDs
 ## 7. Versions-Historie
 
 - 1.26 @ 27.08.2022 14:42
-  - Erweiterung: optionale Variable "Bewegungsmelder", wird aufgrund der von der Kamera gemeldeten Ereignisse gesezt und nach 60s wieder zurück gesetzt.
+  - Erweiterung: optionale Variable "Bewegungsmelder", wird aufgrund der von der Kamera gemeldeten Ereignisse gesetzt und nach 60s wieder zurück gesetzt.
 
 - 1.25.1 @ 16.08.2022 09:50
   - Fix: Fehler in RequestAction() von NetatmoSecurityPerson

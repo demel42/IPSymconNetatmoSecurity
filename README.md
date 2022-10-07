@@ -555,6 +555,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.26.1 @ 07.10.2022 13:59
+  - update submodule CommonStubs
+    Fix: Update-Prüfung wieder funktionsfähig
+
 - 1.26 @ 06.09.2022 16:13
   - Erweiterung: optionale Variable "Bewegungsmelder", wird aufgrund der von der Kamera gemeldeten Ereignisse gesetzt und nach 60s wieder zurück gesetzt.
 

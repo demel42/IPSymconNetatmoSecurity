@@ -360,17 +360,21 @@ class NetatmoSecurityCamera extends IPSModule
                             $person_id = $person['id'];
                             $pseudo = $this->GetArrayElem($person, 'pseudo', '');
 
-                            $instID = 0;
-                            foreach ($instIDs as $id) {
-                                $persID = IPS_GetProperty($id, 'person_id');
+                            $instanceID = 0;
+                            foreach ($instIDs as $instID) {
+                                $persID = IPS_GetProperty($instID, 'person_id');
                                 if ($persID == $person_id) {
-                                    $instID = $id;
+                                    $instanceID = $instID;
                                     break;
                                 }
                             }
 
+                            if ($instanceID && IPS_GetInstance($instanceID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
+                                continue;
+                            }
+
                             $entry = [
-                                'instanceID' => $instID,
+                                'instanceID' => $instanceID,
                                 'name'       => $pseudo,
                                 'home'       => $home_name,
                                 'person_id'  => $person_id,
@@ -400,6 +404,10 @@ class NetatmoSecurityCamera extends IPSModule
                 }
             }
             if ($fnd) {
+                continue;
+            }
+
+            if (IPS_GetInstance($instID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
                 continue;
             }
 

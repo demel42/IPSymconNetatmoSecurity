@@ -555,6 +555,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.26.2 @ 12.10.2022 14:44
+  - Konfigurator betrachtet nun nur noch Geräte, die entweder noch nicht angelegt wurden oder mit dem gleichen I/O verbunden sind
+  - update submodule CommonStubs
+
 - 1.26.1 @ 07.10.2022 13:59
   - update submodule CommonStubs
     Fix: Update-Prüfung wieder funktionsfähig

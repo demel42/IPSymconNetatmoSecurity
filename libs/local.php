@@ -92,8 +92,8 @@ trait NetatmoSecurityLocalLib
 
     public static $MOTION_TYPE_NONE = 0;
     public static $MOTION_TYPE_MOVEMENT = 1;
-    public static $MOTION_TYPE_PERSON = 2;
-    public static $MOTION_TYPE_KNOWN_PERSON = 3;
+    public static $MOTION_TYPE_HUMAN = 2;
+    public static $MOTION_TYPE_PERSON = 3;
     public static $MOTION_TYPE_ANIMAL = 4;
     public static $MOTION_TYPE_VEHICLE = 5;
 
@@ -172,8 +172,8 @@ trait NetatmoSecurityLocalLib
         $associations = [
             ['Wert' => self::$MOTION_TYPE_NONE, 'Name' => $this->Translate('none'), 'Farbe' => -1],
             ['Wert' => self::$MOTION_TYPE_MOVEMENT, 'Name' => $this->Translate('movement'), 'Farbe' => 0xEE0000],
-            ['Wert' => self::$MOTION_TYPE_PERSON, 'Name' => $this->Translate('person'), 'Farbe' => 0xEE0000],
-            ['Wert' => self::$MOTION_TYPE_KNOWN_PERSON, 'Name' => $this->Translate('known person'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$MOTION_TYPE_HUMAN, 'Name' => $this->Translate('person'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$MOTION_TYPE_PERSON, 'Name' => $this->Translate('known person'), 'Farbe' => 0xEE0000],
             ['Wert' => self::$MOTION_TYPE_ANIMAL, 'Name' => $this->Translate('animal'), 'Farbe' => 0xEE0000],
             ['Wert' => self::$MOTION_TYPE_VEHICLE, 'Name' => $this->Translate('vehicle'), 'Farbe' => 0xEE0000],
         ];

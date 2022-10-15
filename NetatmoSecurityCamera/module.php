@@ -976,7 +976,7 @@ class NetatmoSecurityCamera extends IPSModule
                             }
                             $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
 
-                            $id = $this->GetArrayElem($event, 'id', '');
+                            $event_id = $this->GetArrayElem($event, 'id', '');
 
                             if (isset($event['time'])) {
                                 $tstamp = $event['time'];
@@ -985,8 +985,8 @@ class NetatmoSecurityCamera extends IPSModule
                             }
 
                             $new_event = [
+                                'id'          => $event_id,
                                 'tstamp'      => $tstamp,
-                                'id'          => $id,
                             ];
 
                             $video_id = $this->GetArrayElem($event, 'video_id', '');
@@ -1061,13 +1061,13 @@ class NetatmoSecurityCamera extends IPSModule
                             $subevents = $this->GetArrayElem($event, 'event_list', '');
                             if ($subevents != '') {
                                 foreach ($subevents as $subevent) {
-                                    $id = $this->GetArrayElem($subevent, 'id', '');
+                                    $event_id = $this->GetArrayElem($subevent, 'id', '');
                                     $type = $this->GetArrayElem($subevent, 'type', '');
                                     $ts = $this->GetArrayElem($subevent, 'time', 0);
                                     $message = $this->GetArrayElem($subevent, 'message', '');
 
                                     $new_subevent = [
-                                        'id'         => $id,
+                                        'id'         => $event_id,
                                         'tstamp'     => $ts,
                                         'event_type' => $type,
                                         'message'    => $message,
@@ -1241,51 +1241,49 @@ class NetatmoSecurityCamera extends IPSModule
                         $this->SendDebug(__FUNCTION__, 'decode notification=' . print_r($notification, true), 0);
 
                         $push_type = $this->GetArrayElem($notification, 'push_type', '');
+
+                        $event_id = $this->GetArrayElem($notification, 'event_id', '');
+                        $event_type = $this->GetArrayElem($notification, 'event_type', '');
+                        $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
+                        $message = $this->GetArrayElem($notification, 'message', '');
+
+                        $event_id = $this->GetArrayElem($notification, 'event_id', '');
+                        $event_type = $this->GetArrayElem($notification, 'event_type', '');
+                        $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
+                        $message = $this->GetArrayElem($notification, 'message', '');
+
                         switch ($push_type) {
                             case 'NOC-movement':
                             case 'NOC-human':
                             case 'NOC-animal':
                             case 'NOC-vehicle':
-                                $event_id = $this->GetArrayElem($notification, 'event_id', '');
-                                $subevent_id = $this->GetArrayElem($notification, 'subevent_id', '');
-                                $event_type = $this->GetArrayElem($notification, 'event_type', '');
-                                $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
-                                $message = $this->GetArrayElem($notification, 'message', '');
                                 switch ($push_type) {
                                     case 'NOC-movement':
                                         $message = $this->Translate('Movement detected');
-                                        if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$MOTION_TYPE_MOVEMENT);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                        }
+                                        $motion_type = self::$MOTION_TYPE_MOVEMENT;
                                         break;
                                     case 'NOC-human':
                                         $message = $this->Translate('Person captured');
-                                        if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$MOTION_TYPE_PERSON);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                        }
+                                        $motion_type = self::$MOTION_TYPE_HUMAN;
                                         break;
                                     case 'NOC-animal':
                                         $message = $this->Translate('Animal captured');
-                                        if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$MOTION_TYPE_ANIMAL);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                        }
+                                        $motion_type = self::$MOTION_TYPE_ANIMAL;
                                         break;
                                     case 'NOC-vehicle':
                                         $message = $this->Translate('Vehicle captured');
-                                        if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$MOTION_TYPE_VEHICLE);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                        }
+                                        $motion_type = self::$MOTION_TYPE_VEHICLE;
                                         break;
                                     default:
                                         if ($message == '') {
                                             $message = $event_type . '-' . $sub_type;
                                         }
-                                        $motion_type = self::$MOTION_TYPE_MOVEMENT;
+                                        $motion_type = self::$MOTION_TYPE_NONE;
                                         break;
+                                }
+                                if ($with_motion_detection && $motion_type != self::$MOTION_TYPE_NONE) {
+                                    $this->SetValue('MotionType', $motion_type);
+                                    $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
                                 }
 
                                 $cur_notification = [
@@ -1294,8 +1292,12 @@ class NetatmoSecurityCamera extends IPSModule
                                     'push_type'    => $push_type,
                                     'event_type'   => $event_type,
                                     'message'      => $message,
-                                    'subevent_id'  => $subevent_id,
                                 ];
+
+                                $subevent_id = $this->GetArrayElem($notification, 'subevent_id', '');
+                                if ($subevent_id != '') {
+                                    $cur_notification['subevent_id'] = $subevent_id;
+                                }
 
                                 $snapshot_id = $this->GetArrayElem($notification, 'snapshot_id', '');
                                 $snapshot_key = $this->GetArrayElem($notification, 'snapshot_key', '');
@@ -1324,55 +1326,41 @@ class NetatmoSecurityCamera extends IPSModule
                                 break;
                             case 'NACamera-movement':
                             case 'NACamera-person':
+                            case 'NACamera-human':
                             case 'NACamera-animal':
-                            case 'NACamera-vehicle':
-                                $event_id = $this->GetArrayElem($notification, 'event_id', '');
-                                $event_type = $this->GetArrayElem($notification, 'event_type', '');
-                                $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
-                                $message = $this->GetArrayElem($notification, 'message', '');
                                 switch ($push_type) {
                                     case 'NACamera-movement':
                                         $message = $this->Translate('Movement detected');
-                                        if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$MOTION_TYPE_MOVEMENT);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                        }
+                                        $motion_type = self::$MOTION_TYPE_MOVEMENT;
                                         break;
                                     case 'NACamera-person':
+                                    case 'NACamera-human':
                                         $message = $this->Translate('Person captured');
-                                        if ($with_motion_detection) {
-                                            $is_known = false;
-                                            if (isset($notification['persons'])) {
-                                                foreach ($notification['persons'] as $person) {
-                                                    $is_known = (bool) $this->GetArrayElem($person, 'is_known', '');
-                                                    if ($is_known) {
-                                                        break;
-                                                    }
+                                        $is_known = false;
+                                        if (isset($notification['persons'])) {
+                                            foreach ($notification['persons'] as $person) {
+                                                $is_known = (bool) $this->GetArrayElem($person, 'is_known', false);
+                                                if ($is_known) {
+                                                    break;
                                                 }
                                             }
-                                            $this->SetValue('MotionType', $is_known ? self::$MOTION_TYPE_KNOWN_PERSON : self::$MOTION_TYPE_PERSON);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
                                         }
+                                        $motion_type = is_known ? self::$MOTION_TYPE_PERSON : self::$MOTION_TYPE_HUMAN;
                                         break;
                                     case 'NACamera-animal':
                                         $message = $this->Translate('Animal captured');
-                                        if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$MOTION_TYPE_ANIMAL);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                        }
-                                        break;
-                                    case 'NACamera-vehicle':
-                                        $message = $this->Translate('Vehicle captured');
-                                        if ($with_motion_detection) {
-                                            $this->SetValue('MotionType', self::$MOTION_TYPE_VEHICLE);
-                                            $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                        }
+                                        $motion_type = self::$MOTION_TYPE_ANIMAL;
                                         break;
                                     default:
                                         if ($message == '') {
                                             $message = $event_type . '-' . $sub_type;
                                         }
+                                        $motion_type = self::$MOTION_TYPE_NONE;
                                         break;
+                                }
+                                if ($with_motion_detection && $motion_type != self::$MOTION_TYPE_NONE) {
+                                    $this->SetValue('MotionType', $motion_type);
+                                    $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
                                 }
 
                                 $cur_notification = [
@@ -1434,6 +1422,8 @@ class NetatmoSecurityCamera extends IPSModule
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
                                 break;
+                            case 'connection':
+                            case 'disconnection':
                             case 'NACamera-alarm_started':
                             case 'NACamera-connection':
                             case 'NACamera-disconnection':
@@ -1445,15 +1435,15 @@ class NetatmoSecurityCamera extends IPSModule
                             case 'NOC-light_mode':
                             case 'NOC-off':
                             case 'NOC-on':
-                                $id = $this->GetArrayElem($notification, 'id', '');
-                                $event_type = $this->GetArrayElem($notification, 'event_type', '');
-                                $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
-                                $message = $this->GetArrayElem($notification, 'message', '');
+                            case 'off':
+                            case 'on':
                                 switch ($push_type) {
+                                    case 'connection':
                                     case 'NACamera-connection':
                                     case 'NOC-connection':
                                         $message = $this->Translate('Camera connected');
                                         break;
+                                    case 'disconnection':
                                     case 'NACamera-disconnection':
                                     case 'NOC-disconnection':
                                         $message = $this->Translate('Camera disconnected');
@@ -1461,10 +1451,12 @@ class NetatmoSecurityCamera extends IPSModule
                                     case 'NOC-light_mode':
                                         $message = $this->Translate('Light-mode changed to ' . $sub_type);
                                         break;
+                                    case 'on':
                                     case 'NACamera-on':
                                     case 'NOC-off':
                                         $message = $this->Translate('Monitoring disabled');
                                         break;
+                                    case 'off':
                                     case 'NACamera-off':
                                     case 'NOC-on':
                                         $message = $this->Translate('Monitoring enabled');
@@ -1496,7 +1488,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                                 $cur_notification = [
                                     'tstamp'       => $now,
-                                    'id'           => $id,
+                                    'id'           => $event_id,
                                     'push_type'    => $push_type,
                                     'event_type'   => $event_type,
                                     'message'      => $message,

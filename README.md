@@ -533,12 +533,20 @@ NetatmoSecurity.SDCardStatus,
 
 - _push_type_:
   - Benachrichtigung mit _Event_ oder _Sub-Event_<br>
-    _NOC-movement_, __NOC-human_, _NOC-animal_, _NOC-vehicle_<br>
-	_NACamera-movement_, _NACamera-person_, _NACamera-animal_
+	NACamera-movement, NOC-movement,<br>
+	NACamera-human, NOC-human, NACamera-person,<br>
+	NACamera-animal, NOC-animal,<br>
+	NOC-vehicle,<br>
   - sonstige Benachrichtigung:<br>
-    _NOC-connection_, _NOC-disconnection_, _NOC-light_mode_, _NOC-off_, _NOC-on_,<br>
-	_NACamera-alarm_started_, _NACamera-off_, _NACamera-on_,<br>
-	...
+    connection, NACamera-connection, NOC-connection,<br>
+    disconnection, NACamera-disconnection, NOC-disconnection,<br>
+    on, NACamera-on, NOC-on,<br>
+    off, NACamera-off, NOC-off,<br>
+    NOC-light_mode,<br>
+    NOC-ftp, ftp-ok, ftp-nok,<br>
+    NACamera-alarm_started<br>
+  - ignorierte Benachrichtigung:<br>
+    daily_summary, topology_changed, webhook_activation<br>
 
 ## 6. Anhang
 
@@ -554,6 +562,10 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
 
 ## 7. Versions-Historie
+
+- 1.27 @ 13.10.2022 10:24
+  - Fix: Bezeichnung der Event-Typen in der Netatmo-API hat sich teilweise geändert
+    (die Netatmo-Dokumentation entspricht nicht der Realität)
 
 - 1.26.2 @ 12.10.2022 14:44
   - Konfigurator betrachtet nun nur noch Geräte, die entweder noch nicht angelegt wurden oder mit dem gleichen I/O verbunden sind

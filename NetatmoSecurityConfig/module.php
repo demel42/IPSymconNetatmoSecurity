@@ -57,11 +57,6 @@ class NetatmoSecurityConfig extends IPSModule
         $this->MaintainStatus(IS_ACTIVE);
     }
 
-    private function buildEntry($guid, $product_type, $product_id, $product_name, $home_id, $home_name, $product_category)
-    {
-        return $entry;
-    }
-
     private function getConfiguratorValues()
     {
         $entries = [];

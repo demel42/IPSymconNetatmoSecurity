@@ -1345,7 +1345,7 @@ class NetatmoSecurityCamera extends IPSModule
                                                 }
                                             }
                                         }
-                                        $motion_type = is_known ? self::$MOTION_TYPE_PERSON : self::$MOTION_TYPE_HUMAN;
+                                        $motion_type = $is_known ? self::$MOTION_TYPE_PERSON : self::$MOTION_TYPE_HUMAN;
                                         break;
                                     case 'NACamera-animal':
                                         $message = $this->Translate('Animal captured');

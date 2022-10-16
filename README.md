@@ -563,6 +563,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.27.1 @ 16.10.2022 13:25
+  - Fix: Fehler in 1.27
+
 - 1.27 @ 13.10.2022 10:24
   - Fix: Bezeichnung der Event-Typen in der Netatmo-API hat sich teilweise geändert
     (die Netatmo-Dokumentation entspricht nicht der Realität)

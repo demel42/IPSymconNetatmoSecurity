@@ -94,7 +94,7 @@ Die Instanzen können dann in gewohnter Weise im Objektbaum frei positioniert we
 
 ### NetatmoSecurityIO
 
-`NetatmoSecurity_UpdateData(int $InstanzID)`
+`NetatmoSecurity_UpdateData(int $InstanzID)`<br>
 ruft die Daten der Netatmo-Security-Produkte ab. Wird automatisch zyklisch durch die Instanz durchgeführt im Abstand wie in der Konfiguration angegeben.
 
 ### NetatmoSecurityCamera

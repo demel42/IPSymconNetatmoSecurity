@@ -563,6 +563,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.27.2 @ 19.10.2022 09:16
+  - Fix: README
+  - update submodule CommonStubs
+
 - 1.27.1 @ 16.10.2022 13:25
   - Fix: Fehler in 1.27
 

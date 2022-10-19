@@ -118,7 +118,7 @@ class NetatmoSecurityIO extends IPSModule
             if ($hook != '') {
                 $this->RegisterHook($hook);
             }
-            $this->AddWebhook();
+            IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"AddWebhook", "");');
             $this->MaintainTimer('UpdateData', 1000);
         }
         if ($message == IPS_KERNELSHUTDOWN) {

@@ -563,6 +563,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.28 @ 19.10.2022 17:34
+  - Fix: Verbesserung in MessageSink() um VM_UPDATE-Meldungen zu vermeiden
+
 - 1.27.2 @ 19.10.2022 09:16
   - Fix: README
   - update submodule CommonStubs

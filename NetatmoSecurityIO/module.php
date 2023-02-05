@@ -12,13 +12,17 @@ class NetatmoSecurityIO extends IPSModule
 
     private $oauthIdentifer = 'netatmo';
 
+    private static $semaphoreTM = 5 * 1000;
+
     private $ModuleDir;
+    private $SemaphoreID;
 
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
 
         $this->ModuleDir = __DIR__;
+        $this->SemaphoreID = __CLASS__ . '_' . $InstanceID;
     }
 
     public function Create()
@@ -44,6 +48,7 @@ class NetatmoSecurityIO extends IPSModule
         $this->RegisterPropertyInteger('OAuth_Type', self::$CONNECTION_UNDEFINED);
 
         $this->RegisterAttributeString('UpdateInfo', '');
+        $this->RegisterAttributeString('ApiCallStats', json_encode([]));
 
         $this->RegisterAttributeString('ApiRefreshToken', '');
         $this->RegisterAttributeString('AppRefreshToken', '');
@@ -586,9 +591,10 @@ class NetatmoSecurityIO extends IPSModule
                 ],
                 [
                     'type'    => 'Button',
-                    'caption' => 'Clear Token',
+                    'caption' => 'Clear token',
                     'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "ClearToken", "");'
                 ],
+                $this->GetApiCallStatsFormItem(),
             ],
         ];
 
@@ -782,79 +788,6 @@ class NetatmoSecurityIO extends IPSModule
             default:
                 $access_token = false;
                 break;
-        }
-        return $access_token;
-    }
-
-    private function GetAppAccessToken()
-    {
-        $url = 'https://api.netatmo.net/oauth2/token';
-
-        $user = $this->ReadPropertyString('Netatmo_User');
-        $password = $this->ReadPropertyString('Netatmo_Password');
-        $client = $this->ReadPropertyString('Netatmo_Client');
-        $secret = $this->ReadPropertyString('Netatmo_Secret');
-
-        $jtoken = json_decode($this->GetBuffer('AppAccessToken'), true);
-        $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
-        $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
-
-        if ($expiration < time()) {
-            $refresh_token = $this->ReadAttributeString('AppRefreshToken');
-            $auth = 'QXV0aG9yaXphdGlvbjogQmFzaWMgYm1GZlkyeHBaVzUwWDJsdmN6bzFObU5qTmpSaU56azBOak5oT1RrMU9HSTNOREF4TkRjeVpEbGxNREUxT0E9PQ==';
-            $header = [
-                base64_decode($auth)
-            ];
-            if ($refresh_token == '') {
-                $postdata = [
-                    'grant_type'     => 'password',
-                    'username'       => $user,
-                    'password'       => $password,
-                    'scope'          => 'write_camera read_camera access_camera read_presence write_presence access_presence read_station read_smokedetector',
-                    'app_identifier' => 'com.netatmo.camera',
-                ];
-            } else {
-                $postdata = [
-                    'grant_type'    => 'refresh_token',
-                    'refresh_token' => $refresh_token
-                ];
-            }
-
-            $data = '';
-            $err = '';
-            $statuscode = $this->do_HttpRequest($url, $header, $postdata, 'POST', $data, $err);
-            if ($statuscode == 0) {
-                $params = json_decode($data, true);
-                if ($params['access_token'] == '') {
-                    $statuscode = self::$IS_INVALIDDATA;
-                    $err = "no 'access_token' in response";
-                }
-            }
-
-            if ($statuscode) {
-                $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-                $this->SendDebug(__FUNCTION__, $err, 0);
-                $this->MaintainStatus($statuscode);
-                $this->SetMultiBuffer('LastData', '');
-                return false;
-            }
-
-            $access_token = $params['access_token'];
-            $expires_in = $params['expires_in'];
-            $expiration = time() + $expires_in - 60;
-            $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
-            $jtoken = [
-                'access_token'  => $access_token,
-                'expiration'    => $expiration,
-            ];
-            $this->SetBuffer('AppAccessToken', json_encode($jtoken));
-
-            if (isset($params['refresh_token'])) {
-                $refresh_token = $params['refresh_token'];
-                $this->SendDebug(__FUNCTION__, 'new refresh_token=' . $refresh_token, 0);
-                $this->WriteAttributeString('AppRefreshToken', $refresh_token);
-            }
-            $this->MaintainStatus(IS_ACTIVE);
         }
         return $access_token;
     }
@@ -1159,7 +1092,7 @@ class NetatmoSecurityIO extends IPSModule
             return false;
         }
 
-        $access_token = $this->GetAppAccessToken();
+        $access_token = $this->GetApiAccessToken();
         if ($access_token == false) {
             return;
         }
@@ -1193,5 +1126,103 @@ class NetatmoSecurityIO extends IPSModule
         $ret = json_encode(['status' => $status, 'msg' => $msg, 'data' => $data]);
         $this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
         return $ret;
+    }
+
+    private function do_HttpRequest($url, $header, $postdata, $mode, &$data, &$err)
+    {
+        $this->SendDebug(__FUNCTION__, 'http-' . $mode . ': url=' . $url, 0);
+        $time_start = microtime(true);
+
+        if ($header != '') {
+            $this->SendDebug(__FUNCTION__, '    header=' . print_r($header, true), 0);
+        }
+        if ($postdata != '') {
+            $this->SendDebug(__FUNCTION__, '    postdata=' . print_r($postdata, true), 0);
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        if ($header) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        }
+        switch ($mode) {
+            case 'GET':
+                break;
+            case 'POST':
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+                break;
+            case 'PUT':
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
+                break;
+            case 'DELETE':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
+                break;
+        }
+
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $cdata = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+        $this->SendDebug(__FUNCTION__, '    cdata=' . $cdata, 0);
+
+        $statuscode = 0;
+        $err = '';
+        $data = '';
+
+        if ($cerrno) {
+            $statuscode = self::$IS_SERVERERROR;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        } elseif ($httpcode != 200) {
+            if ($httpcode == 401) {
+                $statuscode = self::$IS_UNAUTHORIZED;
+                $err = 'got http-code ' . $httpcode . ' (unauthorized)';
+            } elseif ($httpcode == 403) {
+                $statuscode = self::$IS_FORBIDDEN;
+                $err = 'got http-code ' . $httpcode . ' (forbidden)';
+            } elseif ($httpcode == 406) {
+                if (preg_match('#^https://api.netatmo.net/api/dropwebhook#', $url)) {
+                    $data = $cdata;
+                } else {
+                    $statuscode = self::$IS_HTTPERROR;
+                    $err = 'got http-code ' . $httpcode . ' (not acceptable)';
+                }
+            } elseif ($httpcode == 409) {
+                $data = $cdata;
+            } elseif ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } else {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode;
+            }
+        } elseif ($cdata == '') {
+            $statuscode = self::$IS_NODATA;
+            $err = 'no data';
+        } else {
+            $jdata = json_decode($cdata, true);
+            if ($jdata == '') {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'malformed response';
+            } else {
+                $data = $cdata;
+            }
+        }
+
+        $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+        $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
+
+        $this->ApiCallsCollect($url, $err, $statuscode);
+
+        return $statuscode;
     }
 }

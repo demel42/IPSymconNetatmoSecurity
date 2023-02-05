@@ -563,6 +563,12 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.29 @ 05.02.2023 09:29
+  - Fix: Bug in GetHomeStatus() bei Anmeldung über Symcon-Connect
+  - Neu: Führen einer Statistik der API-Calls im IO-Modul, Anzeige als Popup im Experten-Bereich
+  - Fix: Schreibfehler in Kommentaren in Beispiel-Scripten
+  - update submodule CommonStubs
+
 - 1.28 @ 19.10.2022 17:34
   - Fix: Verbesserung in MessageSink() um VM_UPDATE-Meldungen zu vermeiden
 

@@ -1982,22 +1982,23 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        $data = '';
-        $err = '';
-
         $url = $vpn_url . '/command/ping';
-        $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
-        if ($statuscode == 0) {
-            $response1 = json_decode($data, true);
-            $this->SendDebug(__FUNCTION__, 'response1=' . print_r($response1, true), 0);
-            $local_url1 = $this->GetArrayElem($response1, 'local_url', '');
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGet', 'Url' => $url];
+        $data = $this->SendDataToParent(json_encode($SendData));
+        if ($data != '') {
+            $jdata = json_decode($data, true);
+            $response = json_decode($jdata['data'], true);
+            $this->SendDebug(__FUNCTION__, 'vpn response=' . print_r($response, true), 0);
+            $local_url1 = $this->GetArrayElem($response, 'local_url', '');
 
             $url = $local_url1 . '/command/ping';
-            $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
-            if ($statuscode == 0) {
-                $response2 = json_decode($data, true);
-                $this->SendDebug(__FUNCTION__, 'response2=' . print_r($response2, true), 0);
-                $local_url2 = $this->GetArrayElem($response2, 'local_url', '');
+            $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGet', 'Url' => $url];
+            $data = $this->SendDataToParent(json_encode($SendData));
+            if ($data != '') {
+                $jdata = json_decode($data, true);
+                $response = json_decode($jdata['data'], true);
+                $this->SendDebug(__FUNCTION__, 'local response=' . print_r($response, true), 0);
+                $local_url2 = $this->GetArrayElem($response, 'local_url', '');
                 if ($local_url1 == $local_url2) {
                     $local_url = $local_url1;
                 }
@@ -2005,13 +2006,6 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $this->SetBuffer('local_url', $local_url);
-
-        if ($statuscode) {
-            $this->LogMessage('statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-            $this->SendDebug(__FUNCTION__, $err, 0);
-            $this->MaintainStatus($statuscode);
-            return false;
-        }
 
         return $local_url;
     }

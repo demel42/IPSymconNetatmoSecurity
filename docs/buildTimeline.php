@@ -7,7 +7,7 @@ declare(strict_types=1);
 //
 // Konfiguration (aller Kameras) ergänzen
 // - dieses Script als 'new_event_script' ("neue Ereignisse ... Script") eintragen
-// - das Script '.../docs/processStremURL.php' als 'webhook_script' ("Webhook ... Script") eintragen
+// - das Script '.../docs/processStreamURL.php' als 'webhook_script' ("Webhook ... Script") eintragen
 //
 // die Einstellungen im Script nach Belieben anpassen
 

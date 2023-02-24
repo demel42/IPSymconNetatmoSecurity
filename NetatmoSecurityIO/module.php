@@ -14,6 +14,18 @@ class NetatmoSecurityIO extends IPSModule
 
     private static $semaphoreTM = 5 * 1000;
 
+    private static $scopes = [
+        'read_station', // Wetterstation
+
+        'read_presence', 'write_presence', 'access_presence', // Outdoor-Kamera
+        'read_camera', 'write_camera', 'access_camera', // Indoor-Kamera
+        'read_doorbell', 'access_doorbell', // Türsprechanlage
+        'read_smokedetector', // Rauchmelder
+        'read_carbonmonoxidedetector', // CO-Melder
+
+        'read_homecoach', // Luftqualität-Sensor
+    ];
+
     private $ModuleDir;
     private $SemaphoreID;
 
@@ -733,7 +745,7 @@ class NetatmoSecurityIO extends IPSModule
                             'client_secret' => $secret,
                             'username'      => $user,
                             'password'      => $password,
-                            'scope'         => 'read_presence write_presence access_presence read_camera write_camera access_camera read_smokedetector'
+                            'scope'         => implode(' ', self::$scopes),
                         ];
                     } else {
                         $postdata = [

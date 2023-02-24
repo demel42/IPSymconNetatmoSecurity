@@ -929,16 +929,6 @@ class NetatmoSecurityCamera extends IPSModule
                                             $this->SetValue('PowerStatus', $power_status);
                                         }
                                     }
-                                    /*
-                                        31.10.2021, 14:33:51 |        GetHomeStatus | module=Array
-                                        (
-                                            [type] => NOC
-                                            [siren_monitoring] => off
-                                            [siren_status] => warning
-                                        )
-                                        $siren_status = $this->map_siren_status($this->GetArrayElem($camera, 'siren_status', ''));
-                                        no_sound
-                                     */
 
                                     if ($with_light) {
                                         $s = $this->GetArrayElem($camera, 'light_mode_status', '');
@@ -1422,6 +1412,22 @@ class NetatmoSecurityCamera extends IPSModule
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
                                 break;
+
+case 'NSD-hush': // When the smoke detection is activated or deactivated (0=hush, 1=ready)
+case 'NSD-smoke': // When smoke is detected or smoke is cleared (0=cleared, 1=detected)
+case 'NSD-tampered': // When smoke detector is ready or tampered (0=ready, 1=tampered)
+case 'NSD-wifi_status': // When wifi status is updated (0=error, 1=ok)
+case 'NSD-battery_status': // When battery status is too low (0=low, 1=very low)
+case 'NSD-detection_chamber_status': // When the detection chamber is dusty or clean (0=clean, 1=dusty)
+case 'NSD-sound_test': // Sound test result
+    break;
+
+case 'NCO-co_detected': // When carbon monoxide is detected (0=ok, 1=pre-alarm, 2=alarm)
+case 'NCO-wifi_status': // When wifi status is updated (0=error, 1=ok)
+case 'NCO-battery_status': // When battery status is too low (0=low, 1=very low)
+case 'NCO-sound_test': // Sound test result
+    break;
+
                             case 'connection':
                             case 'disconnection':
                             case 'NACamera-alarm_started':
@@ -1867,7 +1873,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $postdata = [
             'home_id'       => $home_id,
-            'gateway_types' => ['NACamera', 'NOC', 'NSD', 'NDB'],
+            'gateway_types' => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
         ];
         $pdata = json_encode($postdata);
 
@@ -1913,7 +1919,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $postdata = [
             'home_id'       => $home_id,
-            'gateway_types' => ['NACamera', 'NOC', 'NSD', 'NDB'],
+            'gateway_types' => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
         ];
         $pdata = json_encode($postdata);
 
@@ -3191,7 +3197,7 @@ class NetatmoSecurityCamera extends IPSModule
             'on'              => 'on_icon.png',
             'off'             => 'off_icon.png',
             'alarm_started'   => 'alarm_started.png',
-            'person_away'     => 'home_away.png',
+            'home_away'       => 'home_away.png',
             'light_mode'      => 'light.png',
             'boot'            => 'boot_icon.png',
             'connection'      => 'connection_icon.png',

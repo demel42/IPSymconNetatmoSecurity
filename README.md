@@ -563,6 +563,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.30 @ 24.02.2023 17:25
+  - Neu: Vorbereitung zur Übernahme der Daten vom Rauch- und Kohlenmooxidemelder
+
 - 1.29 @ 05.02.2023 09:29
   - Fix: Bug in GetHomeStatus() bei Anmeldung über Symcon-Connect
   - Neu: Führen einer Statistik der API-Calls im IO-Modul, Anzeige als Popup im Experten-Bereich

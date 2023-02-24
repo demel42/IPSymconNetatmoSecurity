@@ -564,7 +564,7 @@ GUIDs
 ## 7. Versions-Historie
 
 - 1.30 @ 24.02.2023 17:25
-  - Neu: Vorbereitung zur Übernahme der Daten vom Rauch- und Kohlenmooxidemelder
+  - Neu: Vorbereitung zur Übernahme der Daten vom Rauch- und Kohlenmonoxidmelder
 
 - 1.29 @ 05.02.2023 09:29
   - Fix: Bug in GetHomeStatus() bei Anmeldung über Symcon-Connect

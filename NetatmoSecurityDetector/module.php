@@ -350,12 +350,126 @@ class NetatmoSecurityDetector extends IPSModule
                         }
                     }
 
+                    $this->GetHomeStatus();
+
                     $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
+
+                    $cur_events = [];
+                    $new_events = [];
+                    $s = $this->GetMediaData('Events');
+                    $prev_events = json_decode((string) $s, true);
+                    $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
+                    $events = $this->GetArrayElem($home, 'events', '');
+                    if ($events != '') {
+                        $this->SendDebug(__FUNCTION__, 'n_prev_events=' . count($events), 0);
+                        foreach ($events as $event) {
+                            if ($product_id != $event['device_id']) {
+                                continue;
+                            }
+                            $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
+
+                            $fnd = false;
+                            if ($prev_events != '') {
+                                foreach ($prev_events as $prev_event) {
+                                    if ($prev_event['id'] == $new_event['id']) {
+                                        $fnd = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if ($fnd == false) {
+                                $new_events[] = $new_event;
+                            }
+                        }
+                    }
+
+                    $n_new_events = count($new_events);
+                    $first_new_ts = false;
+                    if ($cur_events != []) {
+                        usort($cur_events, ['NetatmoSecurityDetector', 'cmp_events']);
+                        $first_new_ts = $cur_events[0]['tstamp'];
+                        $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($cur_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
+                    }
+                    $n_chg_events = 0;
+                    $n_del_events = 0;
+                    if ($prev_events != '') {
+                        foreach ($prev_events as $prev_event) {
+                            if ($prev_event['tstamp'] < $ref_ts) {
+                                $n_del_events++;
+                                $this->SendDebug(__FUNCTION__, 'delete id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
+                                continue;
+                            }
+                            $fnd = false;
+                            if ($cur_events != []) {
+                                foreach ($cur_events as $new_event) {
+                                    if ($new_event['id'] == $prev_event['id']) {
+                                        $fnd = true;
+                                        if (json_encode($new_event) != json_encode($prev_event)) {
+                                            $n_chg_events++;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            if ($fnd) {
+                                continue;
+                            }
+                            if ($first_new_ts && $prev_event['tstamp'] > $first_new_ts && !isset($prev_event['deleted'])) {
+                                $this->SendDebug(__FUNCTION__, 'mark as deleted: id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
+                                $prev_event['deleted'] = true;
+                                $n_chg_events++;
+                            }
+                            $cur_events[] = $prev_event;
+                        }
+                        $this->SendDebug(__FUNCTION__, 'cleanup events: changed=' . $n_chg_events . ', deleted=' . $n_del_events, 0);
+                    }
+
+                    if ($cur_events != []) {
+                        usort($cur_events, ['NetatmoSecurityDetector', 'cmp_events']);
+                        $s = json_encode($cur_events);
+                    } else {
+                        $s = '';
+                    }
+                    $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+
+                    $with_last_event = $this->ReadPropertyBoolean('with_last_event');
+                    if ($with_last_event && $n_new_events > 0) {
+                        $this->SetValue('LastEvent', $now);
+                    }
+
+                    $system_ok = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
+                    $status = $system_ok;
+                    $this->SendDebug(__FUNCTION__, 'states: system=' . $this->bool2str($system_ok) . ' => ' . $this->bool2str($status), 0);
+                    $this->SetValue('Status', $status);
+
+                    $with_last_contact = $this->ReadPropertyBoolean('with_last_contact');
+                    if ($with_last_contact) {
+                        $tstamp = $this->GetArrayElem($jdata, 'time_server', 0);
+                        $this->SetValue('LastContact', $tstamp);
+                    }
 
                     break;
                 case 'EVENT':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
                     $notification = $jdata;
+
+                    $new_notifications = [];
+                    $cur_notifications = [];
+                    $s = $this->GetMediaData('Notifications');
+                    $prev_notifications = json_decode((string) $s, true);
+                    if ($prev_notifications != '') {
+                        foreach ($prev_notifications as $prev_notification) {
+                            if ($prev_notification['tstamp'] < $ref_ts) {
+                                continue;
+                            }
+                            $cur_notifications[] = $prev_notification;
+                        }
+                    }
+
+                    $device_id = $this->GetArrayElem($notification, 'device_id', '');
+                    if ($device_id == '' || $product_id == $device_id) {
+                        $this->SendDebug(__FUNCTION__, 'decode notification=' . print_r($notification, true), 0);
+                    }
 
                     break;
                 default:
@@ -369,19 +483,114 @@ class NetatmoSecurityDetector extends IPSModule
         $this->MaintainStatus(IS_ACTIVE);
     }
 
+    private function GetHomeStatus()
+    {
+        if ($this->HasActiveParent() == false) {
+            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
+            $this->LogMessage('has no active parent instance', KL_WARNING);
+            return false;
+        }
+
+        $home_id = $this->ReadPropertyString('home_id');
+        $product_id = $this->ReadPropertyString('product_id');
+        $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
+
+        $url = 'https://app.netatmo.net/syncapi/v1/homestatus';
+
+        $postdata = [
+            'home_id'       => $home_id,
+            'gateway_types' => ['NSD', 'NCO'],
+        ];
+        $pdata = json_encode($postdata);
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        if ($jdata['status'] == 'ok') {
+            $jdata = json_decode($jdata['data'], true);
+
+            $modules = $this->GetArrayElem($jdata, 'body.home.modules', '');
+            if ($modules != '') {
+                foreach ($modules as $module) {
+                    if ($product_id != $module['id']) {
+                        continue;
+                    }
+                    $this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
+
+                    if ($with_wifi_strength) {
+                        $wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
+                        $this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
+                        $this->SetValue('WifiStrength', $wifi_strength);
+                    }
+                }
+            }
+        }
+    }
+
+    private function GetHomeData()
+    {
+        if ($this->HasActiveParent() == false) {
+            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
+            $this->LogMessage('has no active parent instance', KL_WARNING);
+            return false;
+        }
+
+        $home_id = $this->ReadPropertyString('home_id');
+        $product_id = $this->ReadPropertyString('product_id');
+
+        $url = 'https://app.netatmo.net/api/homesdata';
+
+        $postdata = [
+            'home_id'       => $home_id,
+            'gateway_types' => ['NSD', 'NCO'],
+        ];
+        $pdata = json_encode($postdata);
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        if ($jdata['status'] == 'ok') {
+            $jdata = json_decode($jdata['data'], true);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+
+            $homes = $this->GetArrayElem($jdata, 'body.homes', '');
+            $this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
+            if ($homes != '') {
+                foreach ($homes as $home) {
+                    if ($home_id != $home['id']) {
+                        continue;
+                    }
+                    $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
+
+                    $NOC = $this->GetArrayElem($home, 'NOC', '');
+                    $this->SendDebug(__FUNCTION__, 'NOC=' . print_r($NOC, true), 0);
+                }
+            }
+        }
+    }
+
+    private function cmp_events($a, $b)
+    {
+        $a_tstamp = $a['tstamp'];
+        $b_tstamp = $b['tstamp'];
+        if ($a_tstamp != $b_tstamp) {
+            return ($a_tstamp < $b_tstamp) ? -1 : 1;
+        }
+        $a_id = $a['id'];
+        $b_id = $b['id'];
+        return (strcmp($a_id, $b_id) < 0) ? -1 : 1;
+    }
+
     private function LocalRequestAction($ident, $value)
     {
         $r = true;
         switch ($ident) {
-            case 'doCleanupPath':
-                $this->doCleanupPath();
-                break;
-            case 'doLoadTimelapse':
-                $this->doLoadTimelapse();
-                break;
-            case 'doMotionRelease':
-                $this->doMotionRelease();
-                break;
             default:
                 $r = false;
                 break;

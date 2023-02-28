@@ -108,7 +108,7 @@ class NetatmoSecurityConfig extends IPSModule
                                     break;
                             }
                             if ($guid == '') {
-                                $this->SendDebug(__FUNCTION__, 'ignore camera ' . $camera['id'] . ': unsupported type ' . $camera['type']);
+                                $this->SendDebug(__FUNCTION__, 'ignore camera ' . $camera['id'] . ': unsupported type ' . $camera['type'], 0);
                                 continue;
                             }
 
@@ -159,7 +159,7 @@ class NetatmoSecurityConfig extends IPSModule
                             $product_type = $smokedetector['type'];
                             switch ($product_type) {
                                 case 'NSD':
-                                    $guid = '';
+                                    $guid = '{1E90911D-AB28-5EA7-9134-CCEAF7F48C78}';
                                     $product_category = 'Smoke detector';
                                     break;
                                 default:

@@ -1,0 +1,18 @@
+{
+	"id": "{1E90911D-AB28-5EA7-9134-CCEAF7F48C78}",
+	"name": "NetatmoSecurityDetector",
+	"type": 3,
+	"vendor": "Netatmo",
+	"aliases": [
+		"NetatmoSecurity Melder"
+	],
+	"parentRequirements": [
+		"{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}"
+	],
+	"childRequirements": [],
+	"implemented": [
+		"{5F947426-53FB-4DD9-A725-F95590CBD97C}"
+	],
+	"prefix": "NetatmoSecurity",
+	"url": "https://github.com/demel42/IPSymconNetatmoSecurity/blob/master/README.md"
+}

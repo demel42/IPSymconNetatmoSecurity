@@ -557,11 +557,15 @@ GUIDs
   - NetatmoSecurityConfig: `{C4834515-843B-4B91-A998-6EA29FD9E7A8}`
   - NetatmoSecurityCamera: `{06D589CF-7789-44B1-A0EC-6F51428352E6}`
   - NetatmoSecurityPerson: `{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}`
+  - NetatmoSecurityDetector: `{1E90911D-AB28-5EA7-9134-CCEAF7F48C78}`
 - Nachrichten:
   - `{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}`: an NetatmoSecurityIO
-  - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson
+  - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson, NetatmoSecurityDetector
 
 ## 7. Versions-Historie
+
+- 1.30.2 @ 28.02.2023 12:05
+  - Neu: Prototyp von NetatmoSecurityDetector
 
 - 1.30.1 @ 28.02.2023 10:30
   - Fix: Absturz im Konfigurator bei Rauchmeldern

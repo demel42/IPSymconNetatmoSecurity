@@ -1,0 +1,37 @@
+{
+	"translations": {
+		"de": {
+			"Netatmo smoke detector": "Netatmo Rauchmelder",
+
+			"__function__": "CheckConfiguration",
+			"Product-Type must be specified": "Produkt-Typ muss angegeben sein",
+			"Product-ID must be specified": "Produkt-ID muss angegeben sein",
+			"Home-ID must be specified": "Heim-ID muss angegeben sein",
+
+			"__elements__": "",
+			"Disable instance": "Instanz deaktivieren",
+
+			"Basic configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
+			"Product-Type": "Produkt-Typ",
+			"Product-ID": "Produkt-ID",
+			"Home-ID": "Heim-ID",
+
+			"optional data": "optionale Daten",
+			"last communication with Netatmo": "letzte Kommunikation mit Netatmo",
+			"last event from Netatmo": "letztes Ereignis von Netatmo",
+			"last notification from Netatmo": "letzte Benachrichtigung von Netatmo",
+			"Strength of wifi-signal": "Stärke des Wifi-Signals",
+
+			"__variables__": "",
+
+			"__function__": "ReceiveData",
+
+			"__actions__": "",
+			"internal informations": "interne Informationen",
+			"Type": "Typ",
+			"Value": "Wert",
+
+			"__end__": ""
+		}
+	}
+}

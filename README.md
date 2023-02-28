@@ -563,6 +563,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.30.1 @ 28.02.2023 10:30
+  - Fix: Absturz im Konfigurator bei Rauchmeldern
+
 - 1.30 @ 24.02.2023 17:25
   - Neu: Vorbereitung zur Übernahme der Daten vom Rauch- und Kohlenmonoxidmelder
 

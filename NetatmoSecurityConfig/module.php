@@ -166,7 +166,7 @@ class NetatmoSecurityConfig extends IPSModule
                                     break;
                             }
                             if ($guid == '') {
-                                $this->SendDebug(__FUNCTION__, 'ignore smokedetector ' . $smokedetector['id'] . ': unsupported type ' . $smokedetector['type']);
+                                $this->SendDebug(__FUNCTION__, 'ignore smokedetector ' . $smokedetector['id'] . ': unsupported type ' . $smokedetector['type'], 0);
                                 continue;
                             }
 

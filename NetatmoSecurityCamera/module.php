@@ -959,7 +959,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
                     $events = $this->GetArrayElem($home, 'events', '');
                     if ($events != '') {
-                        $this->SendDebug(__FUNCTION__, 'n_prev_events=' . count($events), 0);
+                        $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
                         foreach ($events as $event) {
                             if ($product_id != $event['camera_id']) {
                                 continue;
@@ -3351,10 +3351,9 @@ case 'NCO-sound_test': // Sound test result
     private function map_wifi_strength($strength)
     {
         if ($strength <= 56) {
-            // "high"
             $val = self::$WIFI_HIGH;
         } elseif ($strength <= 71) {
-            $val = self::$WIFI_BAD;
+            $val = self::$WIFI_GOOD;
         } elseif ($strength <= 86) {
             $val = self::$WIFI_AVERAGE;
         } else {

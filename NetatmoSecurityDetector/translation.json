@@ -23,6 +23,13 @@
 			"Strength of wifi-signal": "Stärke des Wifi-Signals",
 
 			"__variables__": "",
+			"Events": "Ereignisse",
+			"Last communication": "letzte Kommunikation",
+			"Last seen": "zuletzt gesehen",
+			"Last event": "letzes Ereignis",
+			"Last notification": "letzte Benachrichtigung",
+			"Notifications": "Benachrichtigungen",
+			"State": "Status",
 
 			"__function__": "ReceiveData",
 

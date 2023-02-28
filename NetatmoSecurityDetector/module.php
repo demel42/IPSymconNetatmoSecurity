@@ -107,8 +107,11 @@ class NetatmoSecurityDetector extends IPSModule
 
         $this->MaintainVariable('Status', $this->Translate('State'), VARIABLETYPE_BOOLEAN, '~Alert.Reversed', $vpos++, true);
         $this->MaintainVariable('LastContact', $this->Translate('Last communication'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, $with_last_contact);
+        $this->MaintainVariable('LastSeen', $this->Translate('Last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('LastEvent', $this->Translate('Last event'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, $with_last_event);
         $this->MaintainVariable('LastNotification', $this->Translate('Last notification'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, $with_last_notification);
+
+        $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_type = $this->ReadPropertyString('product_type');
@@ -308,6 +311,7 @@ class NetatmoSecurityDetector extends IPSModule
 
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
+        $this->SendDebug(__FUNCTION__, 'home_id=' . $home_id . ', product_id=' . $product_id, 0);
 
         $product_type = $this->ReadPropertyString('product_type');
         switch ($product_type) {
@@ -360,9 +364,11 @@ class NetatmoSecurityDetector extends IPSModule
                     $prev_events = json_decode((string) $s, true);
                     $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
                     $events = $this->GetArrayElem($home, 'events', '');
+                    $this->SendDebug(__FUNCTION__, 'events=' . print_r($events, true), 0);
                     if ($events != '') {
-                        $this->SendDebug(__FUNCTION__, 'n_prev_events=' . count($events), 0);
+                        $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
                         foreach ($events as $event) {
+                            $this->SendDebug(__FUNCTION__, 'event=' . print_r($event, true), 0);
                             if ($product_id != $event['device_id']) {
                                 continue;
                             }
@@ -520,6 +526,9 @@ class NetatmoSecurityDetector extends IPSModule
                     }
                     $this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
 
+                    $tstamp = $this->GetArrayElem($module, 'last_seen', 0);
+                    $this->SetValue('LastSeen', $last_seen);
+
                     if ($with_wifi_strength) {
                         $wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
                         $this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
@@ -612,10 +621,9 @@ class NetatmoSecurityDetector extends IPSModule
     private function map_wifi_strength($strength)
     {
         if ($strength <= 56) {
-            // "high"
             $val = self::$WIFI_HIGH;
         } elseif ($strength <= 71) {
-            $val = self::$WIFI_BAD;
+            $val = self::$WIFI_GOOD;
         } elseif ($strength <= 86) {
             $val = self::$WIFI_AVERAGE;
         } else {

@@ -153,6 +153,7 @@ class NetatmoSecurityConfig extends IPSModule
                     $smokedetectors = $home['smokedetectors'];
                     if ($smokedetectors != '') {
                         foreach ($smokedetectors as $smokedetector) {
+                            $this->SendDebug(__FUNCTION__, 'smokedetector=' . print_r($smokedetector, true), 0);
                             $product_id = $smokedetector['id'];
                             $product_name = $smokedetector['name'];
                             $product_type = $smokedetector['type'];

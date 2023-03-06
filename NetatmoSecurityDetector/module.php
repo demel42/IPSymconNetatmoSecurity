@@ -321,7 +321,6 @@ class NetatmoSecurityDetector extends IPSModule
                 break;
         }
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
-        $with_motion_detection = $this->ReadPropertyBoolean('with_motion_detection');
 
         $event_max_age = $this->ReadPropertyInteger('event_max_age');
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');

@@ -564,6 +564,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.30.5 @ 06.03.2023 06:33
+  - Fix: NetatmoSecurityDetector
+
 - 1.30.4 @ 28.02.2023 18:05
   - Neu: NetatmoSecurityDetector überarbeitet
 

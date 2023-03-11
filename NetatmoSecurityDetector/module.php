@@ -525,7 +525,7 @@ class NetatmoSecurityDetector extends IPSModule
                     }
                     $this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
 
-                    $tstamp = $this->GetArrayElem($module, 'last_seen', 0);
+                    $last_seen = $this->GetArrayElem($module, 'last_seen', 0);
                     $this->SetValue('LastSeen', $last_seen);
 
                     if ($with_wifi_strength) {

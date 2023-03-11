@@ -564,6 +564,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.30.6 @ 11.03.2023 06:34
+  - Fix: NetatmoSecurityDetector (fehlende Variable)
+
 - 1.30.5 @ 06.03.2023 06:33
   - Fix: NetatmoSecurityDetector
 

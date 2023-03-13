@@ -242,7 +242,7 @@ class NetatmoSecurityPerson extends IPSModule
                         }
                     }
                     break;
-                case 'EVENT':
+                case 'PUSH':
                     break;
                 default:
                     $err = 'unknown source "' . $source . '"';

@@ -921,7 +921,7 @@ class NetatmoSecurityIO extends IPSModule
                 die('malformed data!');
             }
             http_response_code(200);
-            $this->SendData($data, 'EVENT');
+            $this->SendData($data, 'PUSH');
             $this->MaintainTimer('UpdateData', 5000);
             return;
         }

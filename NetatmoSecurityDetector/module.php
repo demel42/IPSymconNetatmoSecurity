@@ -399,7 +399,7 @@ class NetatmoSecurityDetector extends IPSModule
                                             break;
                                         case 'sound_test':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'sound_test_failed' : 'sound_test_ok';
+                                            $type = ($sub_type == 1) ? 'sound_test_failed' : 'sound_test_passed';
                                             break;
                                         case 'siren_sounding':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
@@ -513,9 +513,8 @@ class NetatmoSecurityDetector extends IPSModule
                         $tstamp = $this->GetArrayElem($jdata, 'time_server', 0);
                         $this->SetValue('LastContact', $tstamp);
                     }
-
                     break;
-                case 'EVENT':
+                case 'PUSH':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
                     $notification = $jdata;
 
@@ -544,14 +543,19 @@ class NetatmoSecurityDetector extends IPSModule
                         $message = $this->GetArrayElem($notification, 'message', '');
 
                         switch ($push_type) {
-                            case 'NSD-hush': // When the smoke detection is activated or deactivated (0=hush, 1=ready)
+                            case 'NSD-hush':
                                 if ($sub_type) {
                                     $message = $this->Translate('Smoke detection is deactivated');
                                 } else {
                                     $message = $this->Translate('Smoke detection is activated');
                                 }
                                 break;
-                            case 'NSD-smoke': // When smoke is detected or smoke is cleared (0=cleared, 1=detected)
+                            case 'NSD-smoke':
+                                if ($sub_type) {
+                                    $message = $this->Translate('Smoke detected');
+                                } else {
+                                    $message = $this->Translate('Smoke not longer detected');
+                                }
                                 /*
                                 if ($with_motion_detection && $motion_type != self::$MOTION_TYPE_NONE) {
                                     $this->SetValue('MotionType', $motion_type);
@@ -559,15 +563,40 @@ class NetatmoSecurityDetector extends IPSModule
                                 }
                                  */
                                 break;
-                            case 'NSD-tampered': // When smoke detector is ready or tampered (0=ready, 1=tampered)
+                            case 'NSD-tampered':
+                                if ($sub_type) {
+                                    $message = $this->Translate('Smoke detector is tampered');
+                                } else {
+                                    $message = $this->Translate('Smoke detector is ready');
+                                }
                                 break;
-                            case 'NSD-wifi_status': // When wifi status is updated (0=error, 1=ok)
+                            case 'NSD-wifi_status':
+                                if ($sub_type) {
+                                    $message = $this->Translate('Wifi status is ok');
+                                } else {
+                                    $message = $this->Translate('Wifi status is bad');
+                                }
                                 break;
-                            case 'NSD-battery_status': // When battery status is too low (0=low, 1=very low)
+                            case 'NSD-battery_status':
+                                if ($sub_type) {
+                                    $message = $this->Translate('Battery status is very low');
+                                } else {
+                                    $message = $this->Translate('Battery status is low');
+                                }
                                 break;
-                            case 'NSD-detection_chamber_status': // When the detection chamber is dusty or clean (0=clean, 1=dusty)
+                            case 'NSD-detection_chamber_status':
+                                if ($sub_type) {
+                                    $message = $this->Translate('Chamber is dusty');
+                                } else {
+                                    $message = $this->Translate('Chamber is clean');
+                                }
                                 break;
                             case 'NSD-sound_test': // Sound test result
+                                if ($sub_type) {
+                                    $message = $this->Translate('Sound test failed');
+                                } else {
+                                    $message = $this->Translate('Sound test passed');
+                                }
                                 break;
 /*
                             case 'NCO-co_detected': // When carbon monoxide is detected (0=ok, 1=pre-alarm, 2=alarm)
@@ -581,12 +610,12 @@ class NetatmoSecurityDetector extends IPSModule
                         }
 
                         switch ($push_type) {
-                            case 'NSD-hush': // When the smoke detection is activated or deactivated (0=hush, 1=ready)
-                            case 'NSD-smoke': // When smoke is detected or smoke is cleared (0=cleared, 1=detected)
-                            case 'NSD-tampered': // When smoke detector is ready or tampered (0=ready, 1=tampered)
-                            case 'NSD-wifi_status': // When wifi status is updated (0=error, 1=ok)
-                            case 'NSD-battery_status': // When battery status is too low (0=low, 1=very low)
-                            case 'NSD-detection_chamber_status': // When the detection chamber is dusty or clean (0=clean, 1=dusty)
+                            case 'NSD-hush':
+                            case 'NSD-smoke':
+                            case 'NSD-tampered':
+                            case 'NSD-wifi_status':
+                            case 'NSD-battery_status':
+                            case 'NSD-detection_chamber_status':
                                 $cur_notification = [
                                     'tstamp'       => $now,
                                     'id'           => $event_id,

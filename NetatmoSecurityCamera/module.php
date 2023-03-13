@@ -1243,11 +1243,6 @@ class NetatmoSecurityCamera extends IPSModule
                         $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
                         $message = $this->GetArrayElem($notification, 'message', '');
 
-                        $event_id = $this->GetArrayElem($notification, 'event_id', '');
-                        $event_type = $this->GetArrayElem($notification, 'event_type', '');
-                        $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
-                        $message = $this->GetArrayElem($notification, 'message', '');
-
                         switch ($push_type) {
                             case 'NOC-movement':
                             case 'NOC-human':
@@ -1418,22 +1413,6 @@ class NetatmoSecurityCamera extends IPSModule
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
                                 break;
-
-case 'NSD-hush': // When the smoke detection is activated or deactivated (0=hush, 1=ready)
-case 'NSD-smoke': // When smoke is detected or smoke is cleared (0=cleared, 1=detected)
-case 'NSD-tampered': // When smoke detector is ready or tampered (0=ready, 1=tampered)
-case 'NSD-wifi_status': // When wifi status is updated (0=error, 1=ok)
-case 'NSD-battery_status': // When battery status is too low (0=low, 1=very low)
-case 'NSD-detection_chamber_status': // When the detection chamber is dusty or clean (0=clean, 1=dusty)
-case 'NSD-sound_test': // Sound test result
-    break;
-
-case 'NCO-co_detected': // When carbon monoxide is detected (0=ok, 1=pre-alarm, 2=alarm)
-case 'NCO-wifi_status': // When wifi status is updated (0=error, 1=ok)
-case 'NCO-battery_status': // When battery status is too low (0=low, 1=very low)
-case 'NCO-sound_test': // Sound test result
-    break;
-
                             case 'connection':
                             case 'disconnection':
                             case 'NACamera-alarm_started':

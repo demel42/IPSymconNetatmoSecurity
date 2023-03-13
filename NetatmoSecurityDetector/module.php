@@ -350,97 +350,97 @@ class NetatmoSecurityDetector extends IPSModule
                                     $this->SendDebug(__FUNCTION__, 'decode smokedetector=' . print_r($smokedetector, true), 0);
                                 }
                             }
+
+                            $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
+
+                            $cur_events = [];
+                            $new_events = [];
+                            $s = $this->GetMediaData('Events');
+                            $prev_events = json_decode((string) $s, true);
+                            $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
+                            $events = $this->GetArrayElem($home, 'events', '');
+                            $this->SendDebug(__FUNCTION__, 'events=' . print_r($events, true), 0);
+                            if ($events != '') {
+                                $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
+                                foreach ($events as $event) {
+                                    $this->SendDebug(__FUNCTION__, 'event=' . print_r($event, true), 0);
+                                    if ($product_id != $event['device_id']) {
+                                        continue;
+                                    }
+                                    $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
+
+                                    $fnd = false;
+                                    if ($prev_events != '') {
+                                        foreach ($prev_events as $prev_event) {
+                                            if ($prev_event['id'] == $new_event['id']) {
+                                                $fnd = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if ($fnd == false) {
+                                        $new_events[] = $new_event;
+                                    }
+                                }
+                            }
+
+                            $n_new_events = count($new_events);
+                            $first_new_ts = false;
+                            if ($cur_events != []) {
+                                usort($cur_events, ['NetatmoSecurityDetector', 'cmp_events']);
+                                $first_new_ts = $cur_events[0]['tstamp'];
+                                $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($cur_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
+                            }
+                            $n_chg_events = 0;
+                            $n_del_events = 0;
+                            if ($prev_events != '') {
+                                foreach ($prev_events as $prev_event) {
+                                    if ($prev_event['tstamp'] < $ref_ts) {
+                                        $n_del_events++;
+                                        $this->SendDebug(__FUNCTION__, 'delete id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
+                                        continue;
+                                    }
+                                    $fnd = false;
+                                    if ($cur_events != []) {
+                                        foreach ($cur_events as $new_event) {
+                                            if ($new_event['id'] == $prev_event['id']) {
+                                                $fnd = true;
+                                                if (json_encode($new_event) != json_encode($prev_event)) {
+                                                    $n_chg_events++;
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if ($fnd) {
+                                        continue;
+                                    }
+                                    if ($first_new_ts && $prev_event['tstamp'] > $first_new_ts && !isset($prev_event['deleted'])) {
+                                        $this->SendDebug(__FUNCTION__, 'mark as deleted: id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
+                                        $prev_event['deleted'] = true;
+                                        $n_chg_events++;
+                                    }
+                                    $cur_events[] = $prev_event;
+                                }
+                                $this->SendDebug(__FUNCTION__, 'cleanup events: changed=' . $n_chg_events . ', deleted=' . $n_del_events, 0);
+                            }
+
+                            if ($cur_events != []) {
+                                usort($cur_events, ['NetatmoSecurityDetector', 'cmp_events']);
+                                $s = json_encode($cur_events);
+                            } else {
+                                $s = '';
+                            }
+                            $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+
+                            $with_last_event = $this->ReadPropertyBoolean('with_last_event');
+                            if ($with_last_event && $n_new_events > 0) {
+                                $this->SetValue('LastEvent', $now);
+                            }
                         }
                     }
 
                     $this->GetHomeStatus();
-
-                    $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
-
-                    $cur_events = [];
-                    $new_events = [];
-                    $s = $this->GetMediaData('Events');
-                    $prev_events = json_decode((string) $s, true);
-                    $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
-                    $events = $this->GetArrayElem($home, 'events', '');
-                    $this->SendDebug(__FUNCTION__, 'events=' . print_r($events, true), 0);
-                    if ($events != '') {
-                        $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
-                        foreach ($events as $event) {
-                            $this->SendDebug(__FUNCTION__, 'event=' . print_r($event, true), 0);
-                            if ($product_id != $event['device_id']) {
-                                continue;
-                            }
-                            $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
-
-                            $fnd = false;
-                            if ($prev_events != '') {
-                                foreach ($prev_events as $prev_event) {
-                                    if ($prev_event['id'] == $new_event['id']) {
-                                        $fnd = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if ($fnd == false) {
-                                $new_events[] = $new_event;
-                            }
-                        }
-                    }
-
-                    $n_new_events = count($new_events);
-                    $first_new_ts = false;
-                    if ($cur_events != []) {
-                        usort($cur_events, ['NetatmoSecurityDetector', 'cmp_events']);
-                        $first_new_ts = $cur_events[0]['tstamp'];
-                        $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($cur_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
-                    }
-                    $n_chg_events = 0;
-                    $n_del_events = 0;
-                    if ($prev_events != '') {
-                        foreach ($prev_events as $prev_event) {
-                            if ($prev_event['tstamp'] < $ref_ts) {
-                                $n_del_events++;
-                                $this->SendDebug(__FUNCTION__, 'delete id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
-                                continue;
-                            }
-                            $fnd = false;
-                            if ($cur_events != []) {
-                                foreach ($cur_events as $new_event) {
-                                    if ($new_event['id'] == $prev_event['id']) {
-                                        $fnd = true;
-                                        if (json_encode($new_event) != json_encode($prev_event)) {
-                                            $n_chg_events++;
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                            if ($fnd) {
-                                continue;
-                            }
-                            if ($first_new_ts && $prev_event['tstamp'] > $first_new_ts && !isset($prev_event['deleted'])) {
-                                $this->SendDebug(__FUNCTION__, 'mark as deleted: id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
-                                $prev_event['deleted'] = true;
-                                $n_chg_events++;
-                            }
-                            $cur_events[] = $prev_event;
-                        }
-                        $this->SendDebug(__FUNCTION__, 'cleanup events: changed=' . $n_chg_events . ', deleted=' . $n_del_events, 0);
-                    }
-
-                    if ($cur_events != []) {
-                        usort($cur_events, ['NetatmoSecurityDetector', 'cmp_events']);
-                        $s = json_encode($cur_events);
-                    } else {
-                        $s = '';
-                    }
-                    $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
-
-                    $with_last_event = $this->ReadPropertyBoolean('with_last_event');
-                    if ($with_last_event && $n_new_events > 0) {
-                        $this->SetValue('LastEvent', $now);
-                    }
 
                     $system_ok = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
                     $status = $system_ok;

@@ -564,6 +564,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.30.7 @ 13.03.2023 10:01
+  - Fix: Umgang mit Events bei mehr als einem "Home" korrigiert
+  - Neu: erste Schritte zur Auswertung von "NACamDoorTag"
+
 - 1.30.6 @ 11.03.2023 06:34
   - Fix: NetatmoSecurityDetector (fehlende Variable)
 

@@ -946,126 +946,84 @@ class NetatmoSecurityCamera extends IPSModule
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
-
-                    $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
-
-                    $cur_events = [];
-                    $new_events = [];
-                    $s = $this->GetMediaData('Events');
-                    $prev_events = json_decode((string) $s, true);
-                    $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
-                    $events = $this->GetArrayElem($home, 'events', '');
-                    if ($events != '') {
-                        $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
-                        foreach ($events as $event) {
-                            if ($product_id != $event['camera_id']) {
-                                continue;
-                            }
-                            $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
-
-                            $event_id = $this->GetArrayElem($event, 'id', '');
-
-                            if (isset($event['time'])) {
-                                $tstamp = $event['time'];
-                            } else {
-                                $tstamp = $this->GetArrayElem($event, 'event_list.0.time', 0);
+                                $modules = $this->GetArrayElem($camera, 'modules', '');
+                                if ($modules != '') {
+                                    foreach ($modules as $module) {
+                                        $this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
+                                    }
+                                }
                             }
 
-                            $new_event = [
-                                'id'          => $event_id,
-                                'tstamp'      => $tstamp,
-                            ];
+                            $ref_ts = $now - ($event_max_age * 24 * 60 * 60);
 
-                            $video_id = $this->GetArrayElem($event, 'video_id', '');
-                            if ($video_id != '') {
-                                $new_event['video_id'] = $video_id;
-                            }
+                            $cur_events = [];
+                            $new_events = [];
+                            $s = $this->GetMediaData('Events');
+                            $prev_events = json_decode((string) $s, true);
+                            $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
+                            $events = $this->GetArrayElem($home, 'events', '');
+                            if ($events != '') {
+                                $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
+                                foreach ($events as $event) {
+                                    if ($product_id != $event['camera_id']) {
+                                        continue;
+                                    }
+                                    $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
 
-                            $person_id = $this->GetArrayElem($event, 'person_id', '');
-                            if ($person_id != '') {
-                                $new_event['person_id'] = $person_id;
-                            }
+                                    $event_id = $this->GetArrayElem($event, 'id', '');
 
-                            $message = $this->GetArrayElem($event, 'message', '');
-                            if ($message != '') {
-                                $new_event['message'] = $message;
-                            }
+                                    if (isset($event['time'])) {
+                                        $tstamp = $event['time'];
+                                    } else {
+                                        $tstamp = $this->GetArrayElem($event, 'event_list.0.time', 0);
+                                    }
 
-                            $video_status = $this->GetArrayElem($event, 'video_status', '');
-                            if ($video_status != '') {
-                                $new_event['video_status'] = $video_status;
-                            }
-
-                            $is_arrival = $this->GetArrayElem($event, 'is_arrival', '');
-                            if ($is_arrival != '') {
-                                $new_event['is_arrival'] = $is_arrival;
-                            }
-
-                            $type = $this->GetArrayElem($event, 'type', '');
-                            if ($type == 'sd') {
-                                $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                $type = ($sub_type == 4) ? 'sd_ok' : 'sd_nok';
-                            }
-                            if ($type == 'siren_sounding') {
-                                $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                $type = ($sub_type == 1) ? 'siren_sounding' : 'siren_stopped';
-                            }
-                            if ($type != '') {
-                                $new_event['event_type'] = $type;
-                            }
-
-                            $snapshot_id = $this->GetArrayElem($event, 'snapshot.id', '');
-                            $snapshot_key = $this->GetArrayElem($event, 'snapshot.key', '');
-                            $snapshot_filename = $this->GetArrayElem($event, 'snapshot.filename', '');
-                            $snapshot = [];
-                            if ($snapshot_id != '' && $snapshot_key != '') {
-                                $snapshot['id'] = $snapshot_id;
-                                $snapshot['key'] = $snapshot_key;
-                            }
-                            if ($snapshot_filename != '') {
-                                $snapshot['filename'] = $snapshot_filename;
-                            }
-                            if ($snapshot != []) {
-                                $new_event['snapshot'] = $snapshot;
-                            }
-
-                            $vignette_id = $this->GetArrayElem($event, 'vignette.id', '');
-                            $vignette_key = $this->GetArrayElem($event, 'vignette.key', '');
-                            $vignette_filename = $this->GetArrayElem($event, 'vignette.filename', '');
-                            $vignette = [];
-                            if ($vignette_id != '' && $vignette_key != '') {
-                                $vignette['id'] = $vignette_id;
-                                $vignette['key'] = $vignette_key;
-                            }
-                            if ($vignette_filename != '') {
-                                $vignette['filename'] = $vignette_filename;
-                            }
-                            if ($vignette != []) {
-                                $new_event['vignette'] = $vignette;
-                            }
-
-                            $new_subevents = [];
-                            $subevents = $this->GetArrayElem($event, 'event_list', '');
-                            if ($subevents != '') {
-                                foreach ($subevents as $subevent) {
-                                    $event_id = $this->GetArrayElem($subevent, 'id', '');
-                                    $type = $this->GetArrayElem($subevent, 'type', '');
-                                    $ts = $this->GetArrayElem($subevent, 'time', 0);
-                                    $message = $this->GetArrayElem($subevent, 'message', '');
-
-                                    $new_subevent = [
-                                        'id'         => $event_id,
-                                        'tstamp'     => $ts,
-                                        'event_type' => $type,
-                                        'message'    => $message,
+                                    $new_event = [
+                                        'id'          => $event_id,
+                                        'tstamp'      => $tstamp,
                                     ];
 
-                                    $snapshot_id = $this->GetArrayElem($subevent, 'snapshot.id', '');
-                                    $snapshot_key = $this->GetArrayElem($subevent, 'snapshot.key', '');
-                                    $snapshot_filename = $this->GetArrayElem($subevent, 'snapshot.filename', '');
+                                    $video_id = $this->GetArrayElem($event, 'video_id', '');
+                                    if ($video_id != '') {
+                                        $new_event['video_id'] = $video_id;
+                                    }
+
+                                    $person_id = $this->GetArrayElem($event, 'person_id', '');
+                                    if ($person_id != '') {
+                                        $new_event['person_id'] = $person_id;
+                                    }
+
+                                    $message = $this->GetArrayElem($event, 'message', '');
+                                    if ($message != '') {
+                                        $new_event['message'] = $message;
+                                    }
+
+                                    $video_status = $this->GetArrayElem($event, 'video_status', '');
+                                    if ($video_status != '') {
+                                        $new_event['video_status'] = $video_status;
+                                    }
+
+                                    $is_arrival = $this->GetArrayElem($event, 'is_arrival', '');
+                                    if ($is_arrival != '') {
+                                        $new_event['is_arrival'] = $is_arrival;
+                                    }
+
+                                    $type = $this->GetArrayElem($event, 'type', '');
+                                    if ($type == 'sd') {
+                                        $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                        $type = ($sub_type == 4) ? 'sd_ok' : 'sd_nok';
+                                    }
+                                    if ($type == 'siren_sounding') {
+                                        $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                        $type = ($sub_type == 1) ? 'siren_sounding' : 'siren_stopped';
+                                    }
+                                    if ($type != '') {
+                                        $new_event['event_type'] = $type;
+                                    }
+
+                                    $snapshot_id = $this->GetArrayElem($event, 'snapshot.id', '');
+                                    $snapshot_key = $this->GetArrayElem($event, 'snapshot.key', '');
+                                    $snapshot_filename = $this->GetArrayElem($event, 'snapshot.filename', '');
                                     $snapshot = [];
                                     if ($snapshot_id != '' && $snapshot_key != '') {
                                         $snapshot['id'] = $snapshot_id;
@@ -1075,12 +1033,12 @@ class NetatmoSecurityCamera extends IPSModule
                                         $snapshot['filename'] = $snapshot_filename;
                                     }
                                     if ($snapshot != []) {
-                                        $new_subevent['snapshot'] = $snapshot;
+                                        $new_event['snapshot'] = $snapshot;
                                     }
 
-                                    $vignette_id = $this->GetArrayElem($subevent, 'vignette.id', '');
-                                    $vignette_key = $this->GetArrayElem($subevent, 'vignette.key', '');
-                                    $vignette_filename = $this->GetArrayElem($subevent, 'vignette.filename', '');
+                                    $vignette_id = $this->GetArrayElem($event, 'vignette.id', '');
+                                    $vignette_key = $this->GetArrayElem($event, 'vignette.key', '');
+                                    $vignette_filename = $this->GetArrayElem($event, 'vignette.filename', '');
                                     $vignette = [];
                                     if ($vignette_id != '' && $vignette_key != '') {
                                         $vignette['id'] = $vignette_id;
@@ -1090,84 +1048,132 @@ class NetatmoSecurityCamera extends IPSModule
                                         $vignette['filename'] = $vignette_filename;
                                     }
                                     if ($vignette != []) {
-                                        $new_subevent['vignette'] = $vignette;
+                                        $new_event['vignette'] = $vignette;
                                     }
 
-                                    $new_subevents[] = $new_subevent;
+                                    $new_subevents = [];
+                                    $subevents = $this->GetArrayElem($event, 'event_list', '');
+                                    if ($subevents != '') {
+                                        foreach ($subevents as $subevent) {
+                                            $event_id = $this->GetArrayElem($subevent, 'id', '');
+                                            $type = $this->GetArrayElem($subevent, 'type', '');
+                                            $ts = $this->GetArrayElem($subevent, 'time', 0);
+                                            $message = $this->GetArrayElem($subevent, 'message', '');
+
+                                            $new_subevent = [
+                                                'id'         => $event_id,
+                                                'tstamp'     => $ts,
+                                                'event_type' => $type,
+                                                'message'    => $message,
+                                            ];
+
+                                            $snapshot_id = $this->GetArrayElem($subevent, 'snapshot.id', '');
+                                            $snapshot_key = $this->GetArrayElem($subevent, 'snapshot.key', '');
+                                            $snapshot_filename = $this->GetArrayElem($subevent, 'snapshot.filename', '');
+                                            $snapshot = [];
+                                            if ($snapshot_id != '' && $snapshot_key != '') {
+                                                $snapshot['id'] = $snapshot_id;
+                                                $snapshot['key'] = $snapshot_key;
+                                            }
+                                            if ($snapshot_filename != '') {
+                                                $snapshot['filename'] = $snapshot_filename;
+                                            }
+                                            if ($snapshot != []) {
+                                                $new_subevent['snapshot'] = $snapshot;
+                                            }
+
+                                            $vignette_id = $this->GetArrayElem($subevent, 'vignette.id', '');
+                                            $vignette_key = $this->GetArrayElem($subevent, 'vignette.key', '');
+                                            $vignette_filename = $this->GetArrayElem($subevent, 'vignette.filename', '');
+                                            $vignette = [];
+                                            if ($vignette_id != '' && $vignette_key != '') {
+                                                $vignette['id'] = $vignette_id;
+                                                $vignette['key'] = $vignette_key;
+                                            }
+                                            if ($vignette_filename != '') {
+                                                $vignette['filename'] = $vignette_filename;
+                                            }
+                                            if ($vignette != []) {
+                                                $new_subevent['vignette'] = $vignette;
+                                            }
+
+                                            $new_subevents[] = $new_subevent;
+                                        }
+                                        $new_event['subevents'] = $new_subevents;
+                                    }
+
+                                    // $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
+                                    $cur_events[] = $new_event;
+
+                                    $fnd = false;
+                                    if ($prev_events != '') {
+                                        foreach ($prev_events as $prev_event) {
+                                            if ($prev_event['id'] == $new_event['id']) {
+                                                $fnd = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if ($fnd == false) {
+                                        $new_events[] = $new_event;
+                                    }
                                 }
-                                $new_event['subevents'] = $new_subevents;
                             }
 
-                            // $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
-                            $cur_events[] = $new_event;
-
-                            $fnd = false;
+                            $n_new_events = count($new_events);
+                            $first_new_ts = false;
+                            if ($cur_events != []) {
+                                usort($cur_events, ['NetatmoSecurityCamera', 'cmp_events']);
+                                $first_new_ts = $cur_events[0]['tstamp'];
+                                $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($cur_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
+                            }
+                            $n_chg_events = 0;
+                            $n_del_events = 0;
                             if ($prev_events != '') {
                                 foreach ($prev_events as $prev_event) {
-                                    if ($prev_event['id'] == $new_event['id']) {
-                                        $fnd = true;
-                                        break;
+                                    if ($prev_event['tstamp'] < $ref_ts) {
+                                        $n_del_events++;
+                                        $this->SendDebug(__FUNCTION__, 'delete id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
+                                        continue;
                                     }
-                                }
-                            }
-                            if ($fnd == false) {
-                                $new_events[] = $new_event;
-                            }
-                        }
-                    }
-
-                    $n_new_events = count($new_events);
-                    $first_new_ts = false;
-                    if ($cur_events != []) {
-                        usort($cur_events, ['NetatmoSecurityCamera', 'cmp_events']);
-                        $first_new_ts = $cur_events[0]['tstamp'];
-                        $this->SendDebug(__FUNCTION__, 'found events: new=' . $n_new_events . ', total=' . count($cur_events) . ', first=' . date('d.m.Y H:i:s', $first_new_ts), 0);
-                    }
-                    $n_chg_events = 0;
-                    $n_del_events = 0;
-                    if ($prev_events != '') {
-                        foreach ($prev_events as $prev_event) {
-                            if ($prev_event['tstamp'] < $ref_ts) {
-                                $n_del_events++;
-                                $this->SendDebug(__FUNCTION__, 'delete id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
-                                continue;
-                            }
-                            $fnd = false;
-                            if ($cur_events != []) {
-                                foreach ($cur_events as $new_event) {
-                                    if ($new_event['id'] == $prev_event['id']) {
-                                        $fnd = true;
-                                        if (json_encode($new_event) != json_encode($prev_event)) {
-                                            $n_chg_events++;
+                                    $fnd = false;
+                                    if ($cur_events != []) {
+                                        foreach ($cur_events as $new_event) {
+                                            if ($new_event['id'] == $prev_event['id']) {
+                                                $fnd = true;
+                                                if (json_encode($new_event) != json_encode($prev_event)) {
+                                                    $n_chg_events++;
+                                                }
+                                                break;
+                                            }
                                         }
-                                        break;
                                     }
+                                    if ($fnd) {
+                                        continue;
+                                    }
+                                    if ($first_new_ts && $prev_event['tstamp'] > $first_new_ts && !isset($prev_event['deleted'])) {
+                                        $this->SendDebug(__FUNCTION__, 'mark as deleted: id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
+                                        $prev_event['deleted'] = true;
+                                        $n_chg_events++;
+                                    }
+                                    $cur_events[] = $prev_event;
                                 }
+                                $this->SendDebug(__FUNCTION__, 'cleanup events: changed=' . $n_chg_events . ', deleted=' . $n_del_events, 0);
                             }
-                            if ($fnd) {
-                                continue;
+
+                            if ($cur_events != []) {
+                                usort($cur_events, ['NetatmoSecurityCamera', 'cmp_events']);
+                                $s = json_encode($cur_events);
+                            } else {
+                                $s = '';
                             }
-                            if ($first_new_ts && $prev_event['tstamp'] > $first_new_ts && !isset($prev_event['deleted'])) {
-                                $this->SendDebug(__FUNCTION__, 'mark as deleted: id=' . $prev_event['id'] . ', ts=' . date('d.m.Y H:i:s', $prev_event['tstamp']), 0);
-                                $prev_event['deleted'] = true;
-                                $n_chg_events++;
+                            $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+
+                            $with_last_event = $this->ReadPropertyBoolean('with_last_event');
+                            if ($with_last_event && $n_new_events > 0) {
+                                $this->SetValue('LastEvent', $now);
                             }
-                            $cur_events[] = $prev_event;
                         }
-                        $this->SendDebug(__FUNCTION__, 'cleanup events: changed=' . $n_chg_events . ', deleted=' . $n_del_events, 0);
-                    }
-
-                    if ($cur_events != []) {
-                        usort($cur_events, ['NetatmoSecurityCamera', 'cmp_events']);
-                        $s = json_encode($cur_events);
-                    } else {
-                        $s = '';
-                    }
-                    $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
-
-                    $with_last_event = $this->ReadPropertyBoolean('with_last_event');
-                    if ($with_last_event && $n_new_events > 0) {
-                        $this->SetValue('LastEvent', $now);
                     }
 
                     $system_ok = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;

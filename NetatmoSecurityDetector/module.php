@@ -369,6 +369,67 @@ class NetatmoSecurityDetector extends IPSModule
                                     }
                                     $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
 
+                                    $event_id = $this->GetArrayElem($event, 'id', '');
+
+                                    if (isset($event['time'])) {
+                                        $tstamp = $event['time'];
+                                    } else {
+                                        $tstamp = $this->GetArrayElem($event, 'event_list.0.time', 0);
+                                    }
+
+                                    $new_event = [
+                                        'id'          => $event_id,
+                                        'tstamp'      => $tstamp,
+                                    ];
+
+                                    $message = $this->GetArrayElem($event, 'message', '');
+                                    if ($message != '') {
+                                        $new_event['message'] = $message;
+                                    }
+
+                                    $type = $this->GetArrayElem($event, 'type', '');
+                                    switch ($type) {
+                                        case 'hush':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'detection_active' : 'detection_inactive';
+                                            break;
+                                        case 'smoke':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'smoke_detected' : 'smoke_not_detected';
+                                            break;
+                                        case 'sound_test':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'sound_test_failed' : 'sound_test_ok';
+                                            break;
+                                        case 'siren_sounding':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'siren_sounding' : 'siren_stopped';
+                                            break;
+                                        case 'chamber_status':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'chamber_dusty' : 'chamber_clean';
+                                            break;
+                                        case 'tampered':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'detector_tampered' : 'detector_ready';
+                                            break;
+                                        case 'wifi_status':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'wifi_error' : 'wifi_ok';
+                                            break;
+                                        case 'battery_status':
+                                            $sub_type = $this->GetArrayElem($event, 'sub_type', '');
+                                            $type = ($sub_type == 1) ? 'battery_low' : 'battery_very_low';
+                                            break;
+                                        default:
+                                            $this->SendDebug(__FUNCTION__, 'unsupported type=' . $type, 0);
+                                            break;
+
+                                    }
+                                    if ($type != '') {
+                                        $new_event['event_type'] = $type;
+                                    }
+
                                     $fnd = false;
                                     if ($prev_events != '') {
                                         foreach ($prev_events as $prev_event) {
@@ -474,8 +535,109 @@ class NetatmoSecurityDetector extends IPSModule
                     $device_id = $this->GetArrayElem($notification, 'device_id', '');
                     if ($device_id == '' || $product_id == $device_id) {
                         $this->SendDebug(__FUNCTION__, 'decode notification=' . print_r($notification, true), 0);
+
+                        $push_type = $this->GetArrayElem($notification, 'push_type', '');
+
+                        $event_id = $this->GetArrayElem($notification, 'event_id', '');
+                        $event_type = $this->GetArrayElem($notification, 'event_type', '');
+                        $sub_type = $this->GetArrayElem($notification, 'sub_type', '');
+                        $message = $this->GetArrayElem($notification, 'message', '');
+
+                        switch ($push_type) {
+                            case 'NSD-hush': // When the smoke detection is activated or deactivated (0=hush, 1=ready)
+                                if ($sub_type) {
+                                    $message = $this->Translate('Smoke detection is deactivated');
+                                } else {
+                                    $message = $this->Translate('Smoke detection is activated');
+                                }
+                                break;
+                            case 'NSD-smoke': // When smoke is detected or smoke is cleared (0=cleared, 1=detected)
+                                /*
+                                if ($with_motion_detection && $motion_type != self::$MOTION_TYPE_NONE) {
+                                    $this->SetValue('MotionType', $motion_type);
+                                    $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
+                                }
+                                 */
+                                break;
+                            case 'NSD-tampered': // When smoke detector is ready or tampered (0=ready, 1=tampered)
+                                break;
+                            case 'NSD-wifi_status': // When wifi status is updated (0=error, 1=ok)
+                                break;
+                            case 'NSD-battery_status': // When battery status is too low (0=low, 1=very low)
+                                break;
+                            case 'NSD-detection_chamber_status': // When the detection chamber is dusty or clean (0=clean, 1=dusty)
+                                break;
+                            case 'NSD-sound_test': // Sound test result
+                                break;
+/*
+                            case 'NCO-co_detected': // When carbon monoxide is detected (0=ok, 1=pre-alarm, 2=alarm)
+                            case 'NCO-wifi_status': // When wifi status is updated (0=error, 1=ok)
+                            case 'NCO-battery_status': // When battery status is too low (0=low, 1=very low)
+                            case 'NCO-sound_test': // Sound test result
+                                break;
+ */
+                            default:
+                                break;
+                        }
+
+                        switch ($push_type) {
+                            case 'NSD-hush': // When the smoke detection is activated or deactivated (0=hush, 1=ready)
+                            case 'NSD-smoke': // When smoke is detected or smoke is cleared (0=cleared, 1=detected)
+                            case 'NSD-tampered': // When smoke detector is ready or tampered (0=ready, 1=tampered)
+                            case 'NSD-wifi_status': // When wifi status is updated (0=error, 1=ok)
+                            case 'NSD-battery_status': // When battery status is too low (0=low, 1=very low)
+                            case 'NSD-detection_chamber_status': // When the detection chamber is dusty or clean (0=clean, 1=dusty)
+                                $cur_notification = [
+                                    'tstamp'       => $now,
+                                    'id'           => $event_id,
+                                    'push_type'    => $push_type,
+                                    'event_type'   => $event_type,
+                                    'message'      => $message,
+                                ];
+
+                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type . ' => ' . print_r($cur_notification, true), 0);
+
+                                $cur_notifications[] = $cur_notification;
+                                $new_notifications[] = $cur_notification;
+                                break;
+                            case 'XXXX':
+                                $err = 'ignore push_type "' . $push_type . '", data=' . print_r($notification, true);
+                                $this->SendDebug(__FUNCTION__, $err, 0);
+                                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_MESSAGE);
+                                break;
+                            default:
+                                $err = 'unknown push_type "' . $push_type . '", data=' . print_r($notification, true);
+                                $this->SendDebug(__FUNCTION__, $err, 0);
+                                $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
+                                break;
+                        }
                     }
 
+                    if ($cur_notifications != []) {
+                        usort($cur_notifications, ['NetatmoSecurityDetector', 'cmp_events']);
+                        $s = json_encode($cur_notifications);
+                    } else {
+                        $s = '';
+                    }
+                    $this->SetMediaData('Notifications', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+
+                    $n_new_notifications = count($new_notifications);
+
+                    if ($n_new_notifications > 0) {
+                        $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
+                        if ($with_last_notification) {
+                            $this->SetValue('LastNotification', $now);
+                        }
+                        $notify_script = $this->ReadPropertyInteger('notify_script');
+                        if (IPS_ScriptExists($notify_script)) {
+                            $opts = [
+                                'InstanceID'        => $this->InstanceID,
+                                'new_notifications' => json_encode($new_notifications)
+                            ];
+                            $r = IPS_RunScriptWaitEx($notify_script, $opts);
+                            $this->SendDebug(__FUNCTION__, 'notify_script=' . IPS_GetName($notify_script) . ', ret=' . $r, 0);
+                        }
+                    }
                     break;
                 default:
                     $err = 'unknown source "' . $source . '"';

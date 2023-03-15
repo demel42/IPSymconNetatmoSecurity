@@ -950,6 +950,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 if ($modules != '') {
                                     foreach ($modules as $module) {
                                         $this->SendDebug(__FUNCTION__, 'module=' . print_r($module, true), 0);
+                                        // $module['id'] -> $notification['module_id']
                                     }
                                 }
                             }
@@ -1019,6 +1020,11 @@ class NetatmoSecurityCamera extends IPSModule
                                     }
                                     if ($type != '') {
                                         $new_event['event_type'] = $type;
+                                    }
+
+                                    $module_id = $this->GetArrayElem($event, 'module_id', '');
+                                    if ($module_id != '') {
+                                        $new_event['module_id'] = $module_id;
                                     }
 
                                     $snapshot_id = $this->GetArrayElem($event, 'snapshot.id', '');
@@ -1215,7 +1221,7 @@ class NetatmoSecurityCamera extends IPSModule
                     }
 
                     break;
-                case 'EVENT':
+                case 'PUSH':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
                     $notification = $jdata;
 
@@ -1409,6 +1415,36 @@ class NetatmoSecurityCamera extends IPSModule
                                 }
 
                                 $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ', sub_type=' . $sub_type . ' => ' . print_r($cur_notification, true), 0);
+
+                                $cur_notifications[] = $cur_notification;
+                                $new_notifications[] = $cur_notification;
+                                break;
+                            case 'NACamera-tag_big_move':
+                            case 'NACamera-tag_small_move':
+                                $cur_notification = [
+                                    'tstamp'       => $now,
+                                    'id'           => $event_id,
+                                    'push_type'    => $push_type,
+                                    'event_type'   => $event_type,
+                                    'message'      => $message,
+                                ];
+
+                                $module_id = $this->GetArrayElem($notification, 'module_id', '');
+                                if ($module_id != '') {
+                                    $cur_notification['module_id'] = $module_id;
+                                }
+
+                                $snapshot_id = $this->GetArrayElem($notification, 'snapshot_id', '');
+                                $snapshot_key = $this->GetArrayElem($notification, 'snapshot_key', '');
+                                if ($snapshot_id != '' && $snapshot_key != '') {
+                                    $snapshot = [
+                                        'id'  => $snapshot_id,
+                                        'key' => $snapshot_key,
+                                    ];
+                                    $cur_notification['snapshot'] = $snapshot;
+                                }
+
+                                $this->SendDebug(__FUNCTION__, 'push_type=' . $push_type . ', event_type=' . $event_type . ' => ' . print_r($cur_notification, true), 0);
 
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;

@@ -475,8 +475,8 @@ NetatmoSecurity.SDCardStatus,
 
 #### Ereignisse (Events)
 
-| Variable          | Datenty        | optional | Bedeutung |
-| :-----------      | :------------- | :------- | :-------- |
+| Variable          | Datentyp       | optional | Bedeutung |
+| :---------------- | :------------- | :------- | :-------- |
 | id                | string         | nein     | ID de Ereignisses |
 | tstamp            | UNIX-Timestamp | nein     | Zeitpunkt des Ereignisses |
 | message           | string         | nein     | Nachrichtentext |
@@ -485,13 +485,14 @@ NetatmoSecurity.SDCardStatus,
 | video_status      | string         | ja       | Ausprägungen: recording, available, deleted |
 | person_id         | string         | ja       | |
 | is_arrival        | boolean        | ja       | |
+| module_id         | string         | ja       | ID eines zugeordneten Moduls (z.B. DoorTag) |
 | subevents         | Objekt-Liste   | ja       | Liste der Einzel-Ereignisse |
 |                   |                |          | |
 | event_type        | String-Array   | ja       | Zusammnefassung der _event_typ_ der Sub-Events (nur bei _GetTimeline()_) |
 
 #### Einzel-Ereignisse (Sub-Events)
 
-| Variable          | Datenty        | optional | Bedeutung |
+| Variable          | Datentyp       | optional | Bedeutung |
 | :---------------- | :------------- | :------- | :-------- |
 | id                | string         | ja       | ID des Einzel-Erignisses (siehe Events) |
 | tstamp            | UNIX-Timestamp | nein     | Zeitpunkt des Ereignisses |
@@ -509,27 +510,28 @@ NetatmoSecurity.SDCardStatus,
 
 #### Benachrichtigungen (Notifications)
 
-| Variable     | Datenty        | optional | Bedeutung |
-| :----------- | :------------- | :------- | :-------- |
-| id           | string         | nein     | ID der Benachrichtigung |
-| tstamp       | UNIX-Timestamp | nein     | Zeitpunkt der Benachrichtigung |
-| push_type    | string         | nein     | Art der Benachrichtigung |
-| event_type   | string         | nein     | Art des Ereignisses |
-| message      | string         | nein     | Nachrichtentext |
-| subevent_id  | string         | ja       | ID des Einzel-Erignisses (siehe _Sub-Events_) |
-| snapshot.id  | string         | ja       | siehe _Sub-Events_ |
-| snapshot.key | string         | ja       | siehe _Sub-Events_ |
-| vignette.id  | string         | ja       | siehe _Sub-Events_ |
-| vignette.key | string         | ja       | siehe _Sub-Events_ |
-| persons      | Objekt-Liste   | ja       | Liste der Personen |
+| Variable          | Datentyp       | optional | Bedeutung |
+| :---------------- | :------------- | :------- | :-------- |
+| id                | string         | nein     | ID der Benachrichtigung |
+| tstamp            | UNIX-Timestamp | nein     | Zeitpunkt der Benachrichtigung |
+| push_type         | string         | nein     | Art der Benachrichtigung |
+| event_type        | string         | nein     | Art des Ereignisses |
+| message           | string         | nein     | Nachrichtentext |
+| subevent_id       | string         | ja       | ID des Einzel-Erignisses (siehe _Sub-Events_) |
+| snapshot.id       | string         | ja       | siehe _Sub-Events_ |
+| snapshot.key      | string         | ja       | siehe _Sub-Events_ |
+| vignette.id       | string         | ja       | siehe _Sub-Events_ |
+| vignette.key      | string         | ja       | siehe _Sub-Events_ |
+| module_id         | string         | ja       | ID eines zugeordneten Moduls (z.B. DoorTag) |
+| persons           | Objekt-Liste   | ja       | Liste der Personen |
 
 #### Person
 
-| Variable     | Datenty        | optional | Bedeutung |
-| :----------- | :------------- | :------- | :-------- |
-| person_id    | string         | nein     | ID der Person |
-| is_known     | boolean        | ja       | Person ist bekannt |
-| face_url     | string         | ja       | URL zu dem Abbild der Person |
+| Variable          | Datentyp       | optional | Bedeutung |
+| :---------------- | :------------- | :------- | :-------- |
+| person_id         | string         | nein     | ID der Person |
+| is_known          | boolean        | ja       | Person ist bekannt |
+| face_url          | string         | ja       | URL zu dem Abbild der Person |
 
 - _push_type_:
   - Benachrichtigung mit _Event_ oder _Sub-Event_<br>
@@ -545,6 +547,7 @@ NetatmoSecurity.SDCardStatus,
     NOC-light_mode,<br>
     NOC-ftp, ftp-ok, ftp-nok,<br>
     NACamera-alarm_started<br>
+    NACamera-tag_big_move, NACamera-tag_small_move,<br>
   - ignorierte Benachrichtigung:<br>
     daily_summary, topology_changed, webhook_activation<br>
 
@@ -563,6 +566,9 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson, NetatmoSecurityDetector
 
 ## 7. Versions-Historie
+
+- 1.30.8 @ 15.03.2023 09:41
+  - Neu: die Events zu "NACamDoorTag" (tag_big_move, tag_small_move) werden nun übernommen und stehen damit in den Notifications und Events zur Verfügung
 
 - 1.30.7 @ 13.03.2023 10:50
   - Fix: Umgang mit Events bei mehr als einem "Home" korrigiert

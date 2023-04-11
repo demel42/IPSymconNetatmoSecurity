@@ -104,6 +104,12 @@ trait NetatmoSecurityLocalLib
         }
 
         $associations = [
+            ['Wert' => false, 'Name' => $this->Translate('no'), 'Farbe' => -1],
+            ['Wert' => true, 'Name' => $this->Translate('yes'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.YesNo', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
             ['Wert' => self::$CAMERA_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000],
             ['Wert' => self::$CAMERA_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => 0xEE0000],
             ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1],

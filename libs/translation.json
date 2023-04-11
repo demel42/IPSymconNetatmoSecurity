@@ -1,6 +1,10 @@
 {
 	"translations": {
 		"de": {
+			"__variableprofile__": "NetatmoSecurity.YesNo",
+			"no": "nein",
+			"yes": "ja",
+
 			"__variableprofile__": "NetatmoSecurity.CameraStatus",
 			"unknown": "unbekannt",
 			"off": "aus",

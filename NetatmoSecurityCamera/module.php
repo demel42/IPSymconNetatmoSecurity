@@ -35,6 +35,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyBoolean('with_last_event', false);
         $this->RegisterPropertyBoolean('with_last_notification', false);
         $this->RegisterPropertyBoolean('with_wifi_strength', false);
+        $this->RegisterPropertyBoolean('with_local_detection', false);
 
         $this->RegisterPropertyBoolean('with_motion_detection', false);
 
@@ -191,6 +192,7 @@ class NetatmoSecurityCamera extends IPSModule
         $with_last_event = $this->ReadPropertyBoolean('with_last_event');
         $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
+        $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
         $with_motion_detection = $this->ReadPropertyBoolean('with_motion_detection');
 
         $product_type = $this->ReadPropertyString('product_type');
@@ -232,6 +234,7 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
+        $this->MaintainVariable('InLocalNetwork', $this->Translate('Connected to local network'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, $with_local_detection);
 
         $this->MaintainVariable('MotionType', $this->Translate('Motion detected'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.MotionType', $vpos++, $with_motion_detection);
 
@@ -545,6 +548,11 @@ class NetatmoSecurityCamera extends IPSModule
                     'type'    => 'CheckBox',
                     'name'    => 'with_wifi_strength',
                     'caption' => 'Strength of wifi-signal'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_local_detection',
+                    'caption' => 'Detection whether the camera is connected to local network'
                 ],
                 [
                     'type'    => 'CheckBox',
@@ -1993,13 +2001,25 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $is_local = $this->GetBuffer('is_local');
         $this->SendDebug(__FUNCTION__, 'is_local=' . $is_local, 0);
-        if (!$is_local) {
+        if ($is_local == false) {
+            $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
+            if ($with_local_detection) {
+                if ($this->GetValue('InLocalNetwork') != false) {
+                    $this->SetValue('InLocalNetwork', false);
+                }
+            }
             return false;
         }
 
         $local_url = $this->GetBuffer('local_url');
         $this->SendDebug(__FUNCTION__, 'local_url=' . $local_url, 0);
         if ($local_url != '') {
+            $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
+            if ($with_local_detection) {
+                if ($this->GetValue('InLocalNetwork') != true) {
+                    $this->SetValue('InLocalNetwork', true);
+                }
+            }
             return $local_url;
         }
 
@@ -2033,6 +2053,11 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $this->SetBuffer('local_url', $local_url);
+
+        $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
+        if ($with_local_detection) {
+            $this->SetValue('InLocalNetwork', $local_url != '');
+        }
 
         return $local_url;
     }

@@ -459,7 +459,8 @@ Wert wird nach 30 Sekunden auf *keine Bewegung* zurücќ gesetzt
 
 Es werden folgende Variablenprofile angelegt:
 * Boolean<br>
-NetatmoSecurity.Presence
+NetatmoSecurity.Presence,
+NetatmoSecurity.YesNo
 
 * Integer<br>
 NetatmoSecurity.CameraAction,
@@ -566,6 +567,9 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson, NetatmoSecurityDetector
 
 ## 7. Versions-Historie
+
+- 1.30.9 @ 11.04.2023 09:34
+  - Neu: optionale Anzeige, ob die Kamera mit dem lokalen Netzwerk verbunden ist
 
 - 1.30.8 @ 15.03.2023 09:41
   - Neu: die Events zu "NACamDoorTag" (tag_big_move, tag_small_move) werden nun übernommen und stehen damit in den Notifications und Events zur Verfügung

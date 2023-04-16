@@ -12,7 +12,7 @@ class NetatmoSecurityDetector extends IPSModule
 
     private $ModuleDir;
 
-    public static $MOTION_RELEASE = 60; // Sekunden
+    public static $MUTE_RELEASE = 15 * 60; // 15 Minuten
 
     public function __construct(string $InstanceID)
     {
@@ -47,6 +47,8 @@ class NetatmoSecurityDetector extends IPSModule
         $this->InstallVarProfiles(false);
 
         $this->ConnectParent('{DB1D3629-EF42-4E5E-92E3-696F3AAB0740}');
+
+        $this->RegisterTimer('MuteRelease', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doMuteRelease", "");');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
@@ -112,6 +114,13 @@ class NetatmoSecurityDetector extends IPSModule
         $this->MaintainVariable('LastNotification', $this->Translate('Last notification'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, $with_last_notification);
 
         $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
+
+        $this->MaintainVariable('Alarm', $this->Translate('Smoke detected'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+        $this->MaintainVariable('Muted', $this->Translate('Smoke detector is muted'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+        $this->MaintainVariable('Tampered', $this->Translate('Smoke detector is tampered'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+        $this->MaintainVariable('Dusty', $this->Translate('Smoke chamber is dusty'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+        $this->MaintainVariable('SoundTest', $this->Translate('Sound test'), VARIABLETYPE_BOOLEAN, '~Alert', $vpos++, true);
+        $this->MaintainVariable('WifiStatus', $this->Translate('Wifi status'), VARIABLETYPE_BOOLEAN, '~Alert', $vpos++, true);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_type = $this->ReadPropertyString('product_type');
@@ -279,6 +288,7 @@ class NetatmoSecurityDetector extends IPSModule
             ],
         ];
 
+        /*
         $formActions[] = [
             'type'      => 'ExpansionPanel',
             'caption'   => 'Test area',
@@ -289,6 +299,7 @@ class NetatmoSecurityDetector extends IPSModule
                 ],
             ]
         ];
+         */
 
         $formActions[] = $this->GetInformationFormAction();
         $formActions[] = $this->GetReferencesFormAction();
@@ -391,7 +402,7 @@ class NetatmoSecurityDetector extends IPSModule
                                     switch ($type) {
                                         case 'hush':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'detection_active' : 'detection_inactive';
+                                            $type = ($sub_type == 1) ? 'detector_muted' : 'detector_armed';
                                             break;
                                         case 'smoke':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
@@ -421,14 +432,30 @@ class NetatmoSecurityDetector extends IPSModule
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
                                             $type = ($sub_type == 1) ? 'battery_low' : 'battery_very_low';
                                             break;
+                                        case 'new_device':
+                                            /*
+                                            11.04.2023, 10:21:48 |          ReceiveData | decode event=Array
+                                            (
+                                                [id] => 6435140d7ef077b8e405e7d4
+                                                [type] => new_device
+                                                [time] => 1681200141
+                                                [camera_id] => 70:ee:50:9f:1a:d8
+                                                [device_id] => 70:ee:50:9f:1a:d8
+                                                [message] => Smart Smoke Alarm: wurde Ihrem Zuhause hinzugefügt
+                                            )
+                                             */
+                                            $sub_type = '';
+                                            break;
                                         default:
                                             $this->SendDebug(__FUNCTION__, 'unsupported type=' . $type, 0);
                                             break;
-
                                     }
                                     if ($type != '') {
                                         $new_event['event_type'] = $type;
                                     }
+
+                                    $this->SendDebug(__FUNCTION__, 'new_event=' . print_r($new_event, true), 0);
+                                    $cur_events[] = $new_event;
 
                                     $fnd = false;
                                     if ($prev_events != '') {
@@ -441,11 +468,13 @@ class NetatmoSecurityDetector extends IPSModule
                                     }
                                     if ($fnd == false) {
                                         $new_events[] = $new_event;
+                                        $this->SendDebug(__FUNCTION__, 'new_events=' . print_r($new_events, true), 0);
                                     }
                                 }
                             }
 
                             $n_new_events = count($new_events);
+                            $this->SendDebug(__FUNCTION__, 'n_new_events=' . $n_new_events, 0);
                             $first_new_ts = false;
                             if ($cur_events != []) {
                                 usort($cur_events, ['NetatmoSecurityDetector', 'cmp_events']);
@@ -513,6 +542,19 @@ class NetatmoSecurityDetector extends IPSModule
                         $tstamp = $this->GetArrayElem($jdata, 'time_server', 0);
                         $this->SetValue('LastContact', $tstamp);
                     }
+
+                    if ($n_new_events > 0 || $n_chg_events > 0 || $n_del_events > 0) {
+                        $new_event_script = $this->ReadPropertyInteger('new_event_script');
+                        if (IPS_ScriptExists($new_event_script)) {
+                            $opts = [
+                                'InstanceID'  => $this->InstanceID,
+                                'new_events'  => json_encode($new_events)
+                            ];
+                            $r = IPS_RunScriptWaitEx($new_event_script, $opts);
+                            $this->SendDebug(__FUNCTION__, 'new_event_script=' . IPS_GetName($new_event_script) . ', ret=' . $r, 0);
+                        }
+                    }
+
                     break;
                 case 'PUSH':
                     $ref_ts = $now - ($notification_max_age * 24 * 60 * 60);
@@ -545,36 +587,40 @@ class NetatmoSecurityDetector extends IPSModule
                         switch ($push_type) {
                             case 'NSD-hush':
                                 if ($sub_type) {
-                                    $message = $this->Translate('Smoke detection is deactivated');
+                                    $message = $this->Translate('Smoke detector is muted');
+                                    $this->SetValue('Muted', true);
+                                    $this->MaintainTimer('MuteRelease', self::$MUTE_RELEASE * 1000);
                                 } else {
-                                    $message = $this->Translate('Smoke detection is activated');
+                                    $message = $this->Translate('Smoke detector is armed');
+                                    $this->SetValue('Muted', false);
+                                    $this->MaintainTimer('MuteRelease', 0);
                                 }
                                 break;
                             case 'NSD-smoke':
                                 if ($sub_type) {
                                     $message = $this->Translate('Smoke detected');
+                                    $this->SetValue('Alarm', true);
                                 } else {
                                     $message = $this->Translate('Smoke not longer detected');
+                                    $this->SetValue('Alarm', false);
                                 }
-                                /*
-                                if ($with_motion_detection && $motion_type != self::$MOTION_TYPE_NONE) {
-                                    $this->SetValue('MotionType', $motion_type);
-                                    $this->MaintainTimer('MotionRelease', self::$MOTION_RELEASE * 1000);
-                                }
-                                 */
                                 break;
                             case 'NSD-tampered':
                                 if ($sub_type) {
                                     $message = $this->Translate('Smoke detector is tampered');
+                                    $this->SetValue('Tampered', true);
                                 } else {
                                     $message = $this->Translate('Smoke detector is ready');
+                                    $this->SetValue('Tampered', false);
                                 }
                                 break;
                             case 'NSD-wifi_status':
                                 if ($sub_type) {
                                     $message = $this->Translate('Wifi status is ok');
+                                    $this->SetValue('WifiStatus', true);
                                 } else {
                                     $message = $this->Translate('Wifi status is bad');
+                                    $this->SetValue('WifiStatus', false);
                                 }
                                 break;
                             case 'NSD-battery_status':
@@ -586,23 +632,26 @@ class NetatmoSecurityDetector extends IPSModule
                                 break;
                             case 'NSD-detection_chamber_status':
                                 if ($sub_type) {
-                                    $message = $this->Translate('Chamber is dusty');
+                                    $message = $this->Translate('Smoke chamber is dusty');
+                                    $this->SetValue('Dusty', true);
                                 } else {
-                                    $message = $this->Translate('Chamber is clean');
+                                    $message = $this->Translate('Smoke chamber is clean');
+                                    $this->SetValue('Dusty', false);
                                 }
                                 break;
                             case 'NSD-sound_test': // Sound test result
                                 if ($sub_type) {
                                     $message = $this->Translate('Sound test failed');
+                                    $this->SetValue('SoundTest', false);
                                 } else {
                                     $message = $this->Translate('Sound test passed');
+                                    $this->SetValue('SoundTest', false);
                                 }
                                 break;
 /*
                             case 'NCO-co_detected': // When carbon monoxide is detected (0=ok, 1=pre-alarm, 2=alarm)
                             case 'NCO-wifi_status': // When wifi status is updated (0=error, 1=ok)
                             case 'NCO-battery_status': // When battery status is too low (0=low, 1=very low)
-                            case 'NCO-sound_test': // Sound test result
                                 break;
  */
                             default:
@@ -615,6 +664,7 @@ class NetatmoSecurityDetector extends IPSModule
                             case 'NSD-tampered':
                             case 'NSD-wifi_status':
                             case 'NSD-battery_status':
+                            case 'NSD-sound_test':
                             case 'NSD-detection_chamber_status':
                                 $cur_notification = [
                                     'tstamp'       => $now,
@@ -629,7 +679,10 @@ class NetatmoSecurityDetector extends IPSModule
                                 $cur_notifications[] = $cur_notification;
                                 $new_notifications[] = $cur_notification;
                                 break;
-                            case 'XXXX':
+                            case 'alert':
+                            case 'daily_summary':
+                            case 'topology_changed':
+                            case 'webhook_activation':
                                 $err = 'ignore push_type "' . $push_type . '", data=' . print_r($notification, true);
                                 $this->SendDebug(__FUNCTION__, $err, 0);
                                 $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_MESSAGE);
@@ -677,6 +730,67 @@ class NetatmoSecurityDetector extends IPSModule
         }
 
         $this->MaintainStatus(IS_ACTIVE);
+    }
+
+    public function DeleteEvent(string $event_id)
+    {
+        if ($this->HasActiveParent() == false) {
+            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
+            $this->LogMessage('has no active parent instance', KL_WARNING);
+            return false;
+        }
+
+        $product_id = $this->ReadPropertyString('product_id');
+        $home_id = $this->ReadPropertyString('home_id');
+
+        $event = false;
+        $data = $this->GetEvents();
+        $events = json_decode($data, true);
+        foreach ($events as $e) {
+            if ($event_id == $e['id']) {
+                $event = $e;
+                break;
+            }
+        }
+
+        if ($event == false) {
+            $this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' not found', 0);
+            return false;
+        }
+        if (isset($event['deleted']) && $event['deleted']) {
+            $this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' found but deleted', 0);
+            return false;
+        }
+
+        $url = 'https://api.netatmo.com/api/deleteevent';
+
+        $postdata = [
+            'home_id'   => $home_id,
+            'device_id' => $product_id,
+            'event_id'  => $event_id,
+        ];
+        $pdata = json_encode($postdata);
+
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
+        $data = $this->SendDataToParent(json_encode($SendData));
+
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
+
+        $jdata = json_decode($data, true);
+        $status = isset($jdata['status']) ? $jdata['status'] : 'error';
+        $this->SendDebug(__FUNCTION__, 'event_id ' . $event_id . ' deleted => ' . $status, 0);
+
+        if ($status == 'ok') {
+            for ($i = 0; $i < count($events); $i++) {
+                if ($events[$i]['id'] == $event_id) {
+                    $events[$i]['deleted'] = true;
+                    break;
+                }
+            }
+            $this->SetMediaData('Events', json_encode($events), MEDIATYPE_DOCUMENT, '.dat', false);
+        }
+
+        return $status == 'ok';
     }
 
     private function GetHomeStatus()
@@ -774,6 +888,18 @@ class NetatmoSecurityDetector extends IPSModule
         }
     }
 
+    public function GetEvents()
+    {
+        $data = $this->GetMediaData('Events');
+        return $data;
+    }
+
+    public function GetNotifications()
+    {
+        $data = $this->GetMediaData('Notifications');
+        return $data;
+    }
+
     private function cmp_events($a, $b)
     {
         $a_tstamp = $a['tstamp'];
@@ -790,11 +916,20 @@ class NetatmoSecurityDetector extends IPSModule
     {
         $r = true;
         switch ($ident) {
+            case 'doMuteRelease':
+                $this->doMuteRelease();
+                break;
             default:
                 $r = false;
                 break;
         }
         return $r;
+    }
+
+    private function doMuteRelease()
+    {
+        $this->SetValue('Muted', false);
+        $this->MaintainTimer('MuteRelease', 0);
     }
 
     public function RequestAction($ident, $value)

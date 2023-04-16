@@ -569,7 +569,7 @@ GUIDs
 ## 7. Versions-Historie
 
 - 1.30.10 @ 16.04.2023 11:35
-  - Neu: diverse Variablen um den Status von PUSH-Nachrichten auszuwerten
+  - Neu: diverse Variablen in NetatmoSecurityDetector um den Status von PUSH-Nachrichten auszuwerten
 
 - 1.30.9 @ 11.04.2023 09:34
   - Neu: optionale Anzeige, ob die Kamera mit dem lokalen Netzwerk verbunden ist

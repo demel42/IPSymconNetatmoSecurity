@@ -120,7 +120,7 @@ class NetatmoSecurityDetector extends IPSModule
         $this->MaintainVariable('Tampered', $this->Translate('Smoke detector is tampered'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
         $this->MaintainVariable('Dusty', $this->Translate('Smoke chamber is dusty'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
         $this->MaintainVariable('SoundTest', $this->Translate('Sound test'), VARIABLETYPE_BOOLEAN, '~Alert', $vpos++, true);
-        $this->MaintainVariable('WifiStatus', $this->Translate('Wifi status'), VARIABLETYPE_BOOLEAN, '~Alert', $vpos++, true);
+        $this->MaintainVariable('WifiStatus', $this->Translate('Wifi status'), VARIABLETYPE_BOOLEAN, '~Alert.Reversed', $vpos++, true);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_type = $this->ReadPropertyString('product_type');
@@ -426,7 +426,7 @@ class NetatmoSecurityDetector extends IPSModule
                                             break;
                                         case 'wifi_status':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'wifi_error' : 'wifi_ok';
+                                            $type = ($sub_type == 1) ? 'wifi_ok' : 'wifi_error';
                                             break;
                                         case 'battery_status':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');

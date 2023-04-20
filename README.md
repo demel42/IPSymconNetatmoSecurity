@@ -568,6 +568,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.30.11 @ 20.04.2023 10:39
+  - Fix: Variable "WifiStatus" wurde verkehrt ausgewertet
+
 - 1.30.10 @ 16.04.2023 11:35
   - Neu: diverse Variablen in NetatmoSecurityDetector um den Status von PUSH-Nachrichten auszuwerten
 

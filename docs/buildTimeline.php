@@ -47,17 +47,37 @@ $icon_width = 40;
 $icon_height = 40;
 
 $scriptName = IPS_GetName($_IPS['SELF']) . '(' . $_IPS['SELF'] . ')';
-IPS_LogMessage($scriptName, '_IPS=' . print_r($_IPS, true));
+$scriptInfo = IPS_GetName(IPS_GetParent($_IPS['SELF'])) . '\\' . IPS_GetName($_IPS['SELF']);
 
-$instID = $_IPS['InstanceID'];
+// IPS_LogMessage($scriptName, $scriptInfo . ': _IPS=' . print_r($_IPS, true));
 
-$base_url = NetatmoSecurity_GetServerUrl($instID);
-IPS_LogMessage($scriptName, 'base_url=' . $base_url);
+// Ermitteln der Personen
+$personID2Face = [];
+$personID2Pseudo = [];
+$instIDs = IPS_GetInstanceListByModuleID('{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}'); // NetatmoSecurityPerson
+foreach ($instIDs as $instID) {
+    $personID = IPS_GetProperty($instID, 'person_id');
+    $personID2Face[$personID] = NetatmoSecurity_GetPersonFaceUrl($instID);
+    $personID2Pseudo[$personID] = IPS_GetProperty($instID, 'pseudo');
+}
+
+$instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}'); // NetatmoSecurityCamera
+
+// Basis-URL ermitteln
+$instID = false;
+if (isset($_IPS['InstanceID']) && in_array($_IPS['InstanceID'], $instIDs)) {
+    $instID = $_IPS['InstanceID'];
+}
+if ($instID == false) {
+    $instID = $instIDs[0];
+}
+$base_url = $instID ? NetatmoSecurity_GetServerUrl($instID) : false;
+
+// IPS_LogMessage($scriptName, $scriptInfo . ': instID=' . $instID . ', base_url=' . $base_url);
 
 /* Löschen unerwünschter Events */
-
 /*
-$events = json_decode($_IPS['new_events'], true);
+$events = isset($_IPS['new_events']) ? json_decode($_IPS['new_events'], true) : [];
 foreach ($events as $event) {
     $event_id = $event['id'];
     $event_types = [];
@@ -74,14 +94,13 @@ foreach ($events as $event) {
     // Keine Fahrzeuge im Garten melden
     if ($event_type == 'vehicle' && $instID == xx) {
         $r = NetatmoSecurity_DeleteEvent($instID, $event_id);
-        IPS_LogMessage($scriptName, 'delete event ' . $event_id . ' => ' . ($r ? 'ok' : 'fail'));
+        IPS_LogMessage($scriptName, $scriptInfo . ': delete event ' . $event_id . ' => ' . ($r ? 'ok' : 'fail'));
     }
 }
  */
 
 // Auslesen der Timelines aller aktiven Kameras
 $timeline = '';
-$instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}');
 foreach ($instIDs as $instID) {
     if (IPS_GetInstance($instID)['InstanceStatus'] != 102) {
         continue;
@@ -155,7 +174,7 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
     $instID = $item['tag'];
     $hook = IPS_GetProperty($instID, 'hook');
     $img_path = $hook . '/imgs/';
-    $hook_url = $base_url . $hook;
+    $hook_url = $base_url ? ($base_url . $hook) : '';
 
     $instName = IPS_GetName($instID);
 
@@ -179,7 +198,7 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
         $html .= '</td>' . PHP_EOL;
 
         $hasMsg = false;
-        if ($event_id != '') {
+        if ($event_id != '' && $hook_url) {
             $vignette_url = NetatmoSecurity_GetVignetteUrl4Notification($instID, $event_id, false);
             if ($vignette_url == false) {
                 $vignette_url = NetatmoSecurity_GetSnapshotUrl4Notification($instID, $event_id, false);
@@ -199,14 +218,33 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
         }
     } else {
         // Ereignisse
-
         $html .= '<td>';
         if (isset($item['event_types'])) {
             $event_types = $item['event_types'];
             foreach ($event_types as $event_type) {
-                $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
-                if ($event_type_icon != '') {
+                $event_type_icon = '';
+                $event_type_text = '';
+                if (in_array($event_type, ['person_away', 'person_home'])) {
+                    if (isset($item['person_id'])) {
+                        $person_id = $item['person_id'];
+                        if (isset($personID2Pseudo[$person_id]) && isset($personID2Face[$person_id])) {
+                            $pseudo = $personID2Pseudo[$person_id];
+                            $message = preg_replace(['/<personname>/'], [$pseudo], $message);
+                            $event_type_icon = $personID2Face[$person_id];
+                            $event_type_text = $pseudo;
+                        }
+                    }
+                    $message = preg_replace(['/^[^ ]* definiert /'], [''], $message);
+                    $message = preg_replace(['/als „Zu Hause“/', '/als „Abwesend“/'], ['ist zuhause', 'ist abwesend'], $message);
+                }
+                if ($event_type == 'home_away') {
+                    $message = 'alle sind abwesend';
+                }
+                if ($event_type_icon == '') {
+                    $event_type_icon = NetatmoSecurity_EventType2Icon($instID, $event_type, true);
                     $event_type_text = NetatmoSecurity_EventType2Text($instID, $event_type);
+                }
+                if ($event_type_icon != '') {
                     $html .= '<img src=' . $event_type_icon . ' width="' . $icon_width . '" height="' . $icon_height . '" title="' . $event_type_text . '">';
                     $html .= '&nbsp;';
                 }
@@ -215,7 +253,7 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
             $html .= '&nbsp;';
         }
         $html .= '</td>' . PHP_EOL;
-        if (isset($item['video_id'])) {
+        if (isset($item['video_id']) && $hook_url) {
             $video_status = isset($item['video_status']) ? $item['video_status'] : 'available';
             switch ($video_status) {
                 case 'recording':
@@ -276,7 +314,7 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
                     $html .= '</td>' . PHP_EOL;
                     break;
             }
-        } elseif (isset($item['snapshot'])) {
+        } elseif (isset($item['snapshot']) && $hook_url) {
             $snapshot_url = $hook_url . '/snapshot?event_id=' . $id . '&result=custom';
             $snapshot_url .= '&refresh=0';
             $snapshot_url .= '&width=' . $video_player_width;

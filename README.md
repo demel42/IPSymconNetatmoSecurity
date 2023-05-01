@@ -568,6 +568,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.30.12 @ 01.05.2023 10:26
+  - Fix: buildTimeline.php angepasst (Beispiel-Script für ˝ProcessEvents") wegen der Einführung von Rauchmeldern
+
 - 1.30.11 @ 20.04.2023 10:39
   - Fix: Variable "WifiStatus" wurde verkehrt ausgewertet
 

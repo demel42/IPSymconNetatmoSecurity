@@ -123,6 +123,26 @@ _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt 
 
 `NetatmoSecurity_GetPictureUrl(int $InstanzID, string $id, string $key)`<br>
 liefert die URL eines gespeicherten Bildes (_Snapshot_ oder _Vignette_) zurück oder _false_, wenn nicht vorhanden
+**Achtung: Funktionalität wird von der Netatmo-API nicht mehr unterstützt!**
+
+
+`NetatmoSecurity_GetSnapshotFilename4Event(int $InstanzID, string $event_id)`<br>
+liefert den Dateiname eines Snapschusses eines Events zurück oder _false_, wenn nicht vorhanden.
+
+`NetatmoSecurity_GetVignetteFilename4Event(int $InstanzID, string $event_id)`<br>
+liefert den Dateiname einer Vignette eines Events zurück oder _false_, wenn nicht vorhanden.
+
+`NetatmoSecurity_GetSnapshotFilename4Subevent(int $InstanzID, string $subevent_id)`<br>
+liefert den Dateiname eines Snapschusses eines Sub-Events zurück oder _false_, wenn nicht vorhanden.
+
+`NetatmoSecurity_GetVignetteFilename4Subevent(int $InstanzID, string $subevent_id)`<br>
+liefert den Dateiname einer Vignette eines Sub-Events zurück oder _false_, wenn nicht vorhanden.
+
+`NetatmoSecurity_GetSnapshotFilename4Notification(int $InstanzID, string $notification_id)`<br>
+liefert den Dateiname eines Snapschusses einer Benachrichtigungen zurück oder _false_, wenn nicht vorhanden.
+
+`NetatmoSecurity_GetVignetteFilename4Notification(int $InstanzID, string $notification_id)`<br>
+liefert den Dateiname einer Vignette einer Benachrichtigungen zurück oder _false_, wenn nicht vorhanden.
 
 
 `NetatmoSecurity_GetVideoFilename(int $InstanzID, string $video_id, int $tstamp)`<br>
@@ -187,6 +207,15 @@ Liefert die URL der Vignette zu einer bestimmten Notification.
 _preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
 
 
+`NetatmoSecurity_GetPersonUrl(int $InstanzID, string $person_id, bool $preferLocal)`<br>
+Liefert die URL zum Portait einer _Person_.
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
+
+`NetatmoSecurity_GetFaceUrl(int $InstanzID, string $face_id, bool $preferLocal)`<br>
+Liefert die URL zum Abbild eines (unbekannten) Gesichts (der Innenkamera).
+_preferLocal_ besagt, ob die lokale oder die öffentliche IP der Kamera benutzt werden soll
+
+
 `NetatmoSecurity_EventType2Icon(int $InstanzID, string $event_type, bool $asPath)`<br>
 liefert das zu einem Ereignistyp passende Icon; mit _asPath_ steuert man, ob der Datenname ist oder der korrekte Pfad geliefert wird.
 Beispiel siehe [docs/buildTimeline.php](docs/buildTimeline.php).
@@ -232,11 +261,11 @@ stellt die Intensität das Lichtes ein (0..100%). <br>
 
 
 `NetatmoSecurity_LoadTimelapse(int $InstanzID)`<br>
-Herstellt und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h.
+Fordert an und lädt die Netatmo-Zeitraffer-Darstellung für die zurückliegenden 24h.
 Als Bezugszeitpunkt (für die Suche danach) gilt immer der Tag, ab dem die 24h beginnen.
 D.h. das Video wird immer unter dem Datum des Vortags gespeichert.
 
-`NetatmoSecurity_GetTimelapseFilenamel(int $InstanzID, int $refdate = 0)`<br>
+`NetatmoSecurity_GetTimelapseFilename(int $InstanzID, int $refdate = 0)`<br>
 Ermittlung der Datei mit der Zeitrafferdarstellung des angegebenen Referenzdatums
 
 `NetatmoSecurity_GetTimelapseUrl(int $InstanzID, int $refdate = 0, bool $preferLocal)`<br>
@@ -256,10 +285,6 @@ markiert die Person dieser Instanz als _abwesend_
 
 `NetatmoSecurity_SetPersonAllAway(int $InstanzID)`<br>
 markiert die Personen der _Heim-ID_ dieser Instalz als _abwesend_
-
-`NetatmoSecurity_GetPersonFaceData(int $InstanzID)`<br>
-gibt die _Face_-Daten zurück (Elemente _id_, _key_, _url_).
-Hinweis: die Daten stehen erst nach dem ersten Datenabruf zur Verfügung, im Fehlerfall wird _false_ geliefert.
 
 `NetatmoSecurity_GetPersonFaceUrl(int $InstanzID)`<br>
 gibt die Url zu dem Bild der Person zurück.
@@ -568,8 +593,15 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.31 @ 05.07.2023 11:56
+  - Neu: Anpassung an die geänderte Netatmo-API
+  - Neu: Schalter, um die Meldung eines inaktiven Gateway zu steuern
+  - Vorbereitung auf IPS 7 / PHP 8.2
+  - update submodule CommonStubs
+    - Absicherung bei Zugriff auf Objekte und Inhalte
+
 - 1.30.12 @ 01.05.2023 10:26
-  - Fix: buildTimeline.php angepasst (Beispiel-Script für ˝ProcessEvents") wegen der Einführung von Rauchmeldern
+  - Fix: buildTimeline.php angepasst (Beispiel-Script für "ProcessEvents") wegen der Einführung von Rauchmeldern
 
 - 1.30.11 @ 20.04.2023 10:39
   - Fix: Variable "WifiStatus" wurde verkehrt ausgewertet

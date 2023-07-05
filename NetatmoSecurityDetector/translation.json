@@ -27,6 +27,11 @@
 			"maximum age until deletion": "maximales Alter bis zum Löschen",
 			"days": "Tage",
 
+			"Generate message when the gateway is inactive": "Meldung erzeugen wenn der Gateway inaktiv ist",
+
+			"__messages__": "",
+			"Instance has no active gateway": "Instanz hat keinen aktiven Gateway",
+
 			"__variables__": "",
 			"Events": "Ereignisse",
 			"Last communication": "letzte Kommunikation",

@@ -52,12 +52,12 @@ $scriptInfo = IPS_GetName(IPS_GetParent($_IPS['SELF'])) . '\\' . IPS_GetName($_I
 // IPS_LogMessage($scriptName, $scriptInfo . ': _IPS=' . print_r($_IPS, true));
 
 // Ermitteln der Personen
-$personID2Face = [];
+$personIDs = [];
 $personID2Pseudo = [];
 $instIDs = IPS_GetInstanceListByModuleID('{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}'); // NetatmoSecurityPerson
 foreach ($instIDs as $instID) {
     $personID = IPS_GetProperty($instID, 'person_id');
-    $personID2Face[$personID] = NetatmoSecurity_GetPersonFaceUrl($instID);
+    $personIDs[] = $personID;
     $personID2Pseudo[$personID] = IPS_GetProperty($instID, 'pseudo');
 }
 
@@ -227,10 +227,10 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
                 if (in_array($event_type, ['person_away', 'person_home'])) {
                     if (isset($item['person_id'])) {
                         $person_id = $item['person_id'];
-                        if (isset($personID2Pseudo[$person_id]) && isset($personID2Face[$person_id])) {
+                        if (isset($personID2Pseudo[$person_id])) {
                             $pseudo = $personID2Pseudo[$person_id];
                             $message = preg_replace(['/<personname>/'], [$pseudo], $message);
-                            $event_type_icon = $personID2Face[$person_id];
+                            $event_type_icon = NetatmoSecurity_GetPersonUrl($instID, $person_id, false);
                             $event_type_text = $pseudo;
                         }
                     }
@@ -315,14 +315,14 @@ for ($n = 0, $i = $n_timeline - 1; $n < $max_lines && $i >= 0; $i--) {
                     break;
             }
         } elseif (isset($item['snapshot']) && $hook_url) {
-            $snapshot_url = $hook_url . '/snapshot?event_id=' . $id . '&result=custom';
+            $snapshot_url = $hook_url . '/snapshot?event_id=' . $event_id . '&result=custom';
             $snapshot_url .= '&refresh=0';
             $snapshot_url .= '&width=' . $video_player_width;
             $snapshot_url .= '&height=' . $video_player_height;
             $html .= '<td onclick="set_video(\'' . $snapshot_url . '\')">' . PHP_EOL;
 
             $vignette_url = NetatmoSecurity_GetVignetteUrl4Event($instID, $event_id, false);
-            if ($vignette_url != false) {
+            if ($vignette_url == false) {
                 $vignette_url = NetatmoSecurity_GetSnapshotUrl4Event($instID, $event_id, false);
             }
             if ($vignette_url != false) {

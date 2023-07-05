@@ -5,6 +5,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';
 require_once __DIR__ . '/../libs/local.php';
 
+if (defined('OLD_API') == false) {
+    define('OLD_API', false);
+}
+
 class NetatmoSecurityIO extends IPSModule
 {
     use NetatmoSecurity\StubsCommonLib;
@@ -830,63 +834,218 @@ class NetatmoSecurityIO extends IPSModule
 
         $sync_event_count = $this->ReadPropertyInteger('sync_event_count');
 
-        // Anfrage mit Token
-        $url = 'https://api.netatmo.net/api/gethomedata';
-        $url .= '?access_token=' . $access_token;
-        $url .= '&size=' . $sync_event_count;
+        if (OLD_API) {
+            // Anfrage mit Token
+            $url = 'https://api.netatmo.net/api/gethomedata';
+            $url .= '?access_token=' . $access_token;
+            $url .= '&size=' . $sync_event_count;
 
-        $data = '';
-        $err = '';
-        $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
-        if ($statuscode == 0) {
-            $jdata = json_decode($data, true);
-            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
-            $status = $jdata['status'];
-            if ($status != 'ok') {
-                $err = 'got status "' . $status . '"';
-                $statuscode = self::$IS_INVALIDDATA;
-            } else {
-                $empty = true;
-                if (isset($jdata['body']['homes'])) {
-                    $homes = $jdata['body']['homes'];
-                    $this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
-                    foreach ($homes as $home) {
-                        if (isset($home['cameras'])) {
-                            $cameras = $home['cameras'];
-                            if ($cameras != '' && count($cameras)) {
-                                $empty = false;
+            $data = '';
+            $err = '';
+            $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+            if ($statuscode == 0) {
+                $jdata = json_decode($data, true);
+                $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+                $status = $jdata['status'];
+                if ($status != 'ok') {
+                    $err = 'got status "' . $status . '"';
+                    $statuscode = self::$IS_INVALIDDATA;
+                } else {
+                    $empty = true;
+                    if (isset($jdata['body']['homes'])) {
+                        $homes = $jdata['body']['homes'];
+                        $this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
+                        foreach ($homes as $home) {
+                            if (isset($home['cameras'])) {
+                                $cameras = $home['cameras'];
+                                if ($cameras != '' && count($cameras)) {
+                                    $empty = false;
+                                }
                             }
-                        }
-                        if (isset($home['smokedetectors'])) {
-                            $smokedetectors = $home['smokedetectors'];
-                            if ($smokedetectors != '' && count($smokedetectors)) {
-                                $empty = false;
+                            if (isset($home['smokedetectors'])) {
+                                $smokedetectors = $home['smokedetectors'];
+                                if ($smokedetectors != '' && count($smokedetectors)) {
+                                    $empty = false;
+                                }
                             }
                         }
                     }
-                }
-                if ($empty) {
-                    $err = 'data contains no cameras or smokedetectors';
-                    $statuscode = self::$IS_NOPRODUCT;
+                    if ($empty) {
+                        $err = 'data contains no cameras or smokedetectors';
+                        $statuscode = self::$IS_NOPRODUCT;
+                    }
                 }
             }
-        }
 
-        if ($statuscode) {
-            if ($statuscode == self::$IS_FORBIDDEN) {
-                $err .= ' => 15min pause';
-                $this->MaintainTimer('UpdateData', 15 * 60 * 1000);
-                $this->SetBuffer('ApiAccessToken', '');
-            } else {
-                $this->SetUpdateInterval();
+            if ($statuscode) {
+                if ($statuscode == self::$IS_FORBIDDEN) {
+                    $err .= ' => 15min pause';
+                    $this->MaintainTimer('UpdateData', 15 * 60 * 1000);
+                    $this->SetBuffer('ApiAccessToken', '');
+                } else {
+                    $this->SetUpdateInterval();
+                }
+
+                $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->SetMultiBuffer('LastData', '');
+
+                $this->MaintainStatus($statuscode);
+                return;
+            }
+        } else {
+            $url = 'https://app.netatmo.net/api/homesdata';
+
+            $postdata = [
+                'gateway_types' => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
+            ];
+            $pdata = json_encode($postdata);
+
+            $header = [
+                'Accept: application/json; charset=utf-8',
+                'Authorization: Bearer ' . $access_token,
+                'Content-Type: application/json;charset=utf-8',
+                'Content-Length: ' . strlen($pdata),
+            ];
+
+            $data = '';
+            $err = '';
+            $statuscode = $this->do_HttpRequest($url, $header, $pdata, 'POST', $data, $err);
+            $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
+            if ($statuscode == 0) {
+                $jconfig = json_decode($data, true);
+                $this->SendDebug(__FUNCTION__, 'jconfig=' . print_r($jconfig, true), 0);
+                $status = $jconfig['status'];
+                if ($status != 'ok') {
+                    $err = 'got status "' . $status . '"';
+                    $statuscode = self::$IS_INVALIDDATA;
+                }
+            }
+            if ($statuscode) {
+                if ($statuscode == self::$IS_FORBIDDEN) {
+                    $err .= ' => 15min pause';
+                    $this->MaintainTimer('UpdateData', 15 * 60 * 1000);
+                    $this->SetBuffer('ApiAccessToken', '');
+                } else {
+                    $this->SetUpdateInterval();
+                }
+
+                $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                $this->SendDebug(__FUNCTION__, $err, 0);
+                $this->SetMultiBuffer('LastData', '');
+
+                $this->MaintainStatus($statuscode);
+                return;
             }
 
-            $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
-            $this->SendDebug(__FUNCTION__, $err, 0);
-            $this->SetMultiBuffer('LastData', '');
+            $jdata_states = [
+                'homes' => [],
+            ];
+            $jdata_events = [
+                'homes' => [],
+            ];
 
-            $this->MaintainStatus($statuscode);
-            return;
+            if (isset($jconfig['body']['homes'])) {
+                $homes = $jconfig['body']['homes'];
+                foreach ($homes as $home) {
+                    $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
+
+                    $url = 'https://app.netatmo.net/syncapi/v1/homestatus';
+
+                    $postdata = [
+                        'home_id'      => $home['id'],
+                        'device_types' => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
+                    ];
+                    $pdata = json_encode($postdata);
+
+                    $header = [
+                        'Accept: application/json; charset=utf-8',
+                        'Authorization: Bearer ' . $access_token,
+                        'Content-Type: application/json;charset=utf-8',
+                        'Content-Length: ' . strlen($pdata),
+                    ];
+
+                    $data = '';
+                    $err = '';
+                    $statuscode = $this->do_HttpRequest($url, $header, $pdata, 'POST', $data, $err);
+                    $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
+                    if ($statuscode == 0) {
+                        $jstates = json_decode($data, true);
+                        $this->SendDebug(__FUNCTION__, 'jstates=' . print_r($jstates, true), 0);
+                    }
+                    if ($statuscode) {
+                        if ($statuscode == self::$IS_FORBIDDEN) {
+                            $err .= ' => 15min pause';
+                            $this->MaintainTimer('UpdateData', 15 * 60 * 1000);
+                            $this->SetBuffer('ApiAccessToken', '');
+                        } else {
+                            $this->SetUpdateInterval();
+                        }
+
+                        $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                        $this->SendDebug(__FUNCTION__, $err, 0);
+                        $this->SetMultiBuffer('LastData', '');
+
+                        $this->MaintainStatus($statuscode);
+                        return;
+                    }
+
+                    $url = 'https://api.netatmo.com/api/getevents';
+                    $url .= '?home_id=' . $home['id'];
+                    $url .= '&size=' . $sync_event_count;
+                    // $url .= '&device_types=NACamera&device_types=NOC&device_types=NSD&device_types=NCO';
+
+                    $header = [
+                        'Accept: application/json; charset=utf-8',
+                        'Authorization: Bearer ' . $access_token,
+                    ];
+
+                    $data = '';
+                    $err = '';
+                    $statuscode = $this->do_HttpRequest($url, $header, '', 'GET', $data, $err);
+                    $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
+                    if ($statuscode == 0) {
+                        $jevents = json_decode($data, true);
+                        $this->SendDebug(__FUNCTION__, 'jevents=' . print_r($jevents, true), 0);
+                    }
+                    if ($statuscode) {
+                        if ($statuscode == self::$IS_FORBIDDEN) {
+                            $err .= ' => 15min pause';
+                            $this->MaintainTimer('UpdateData', 15 * 60 * 1000);
+                            $this->SetBuffer('ApiAccessToken', '');
+                        } else {
+                            $this->SetUpdateInterval();
+                        }
+
+                        $this->LogMessage('url=' . $url . ', statuscode=' . $statuscode . ', err=' . $err, KL_WARNING);
+                        $this->SendDebug(__FUNCTION__, $err, 0);
+                        $this->SetMultiBuffer('LastData', '');
+
+                        $this->MaintainStatus($statuscode);
+                        return;
+                    }
+
+                    if (isset($jevents['body']['home']['events'])) {
+                        $jstates['body']['home']['events'] = $jevents['body']['home']['events'];
+                    }
+                    if (isset($jstates['body']['home'])) {
+                        $jdata_states_homes = $jdata_states['homes'];
+                        $jdata_states_homes[] = $jstates['body']['home'];
+                        $jdata_states['homes'] = $jdata_states_homes;
+                    }
+                }
+            }
+
+            $jdata = [
+                'status'      => $jconfig['status'],
+                'time_exec'   => $jconfig['time_exec'],
+                'time_server' => $jconfig['time_server'],
+                'config'      => $jconfig['body'],
+                'states'      => $jdata_states,
+                'events'      => $jdata_events,
+            ];
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            $data = json_encode($jdata);
         }
         $this->SendData($data, 'QUERY');
         $this->SetMultiBuffer('LastData', $data);

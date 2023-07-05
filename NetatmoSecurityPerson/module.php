@@ -5,6 +5,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';
 require_once __DIR__ . '/../libs/local.php';
 
+if (defined('OLD_API') == false) {
+    define('OLD_API', false);
+}
+
 class NetatmoSecurityPerson extends IPSModule
 {
     use NetatmoSecurity\StubsCommonLib;
@@ -28,6 +32,8 @@ class NetatmoSecurityPerson extends IPSModule
         $this->RegisterPropertyString('person_id', '');
         $this->RegisterPropertyString('home_id', '');
         $this->RegisterPropertyString('pseudo', '');
+
+        $this->RegisterAttributeString('face_url', '');
 
         $this->RegisterAttributeString('UpdateInfo', '');
 
@@ -214,7 +220,11 @@ class NetatmoSecurityPerson extends IPSModule
 
             switch ($source) {
                 case 'QUERY':
-                    $homes = $this->GetArrayElem($jdata, 'body.homes', '');
+                    if (OLD_API) {
+                        $homes = $this->GetArrayElem($jdata, 'body.homes', '');
+                    } else {
+                        $homes = $this->GetArrayElem($jdata, 'states.homes', '');
+                    }
                     if ($homes != '') {
                         foreach ($homes as $home) {
                             if ($home_id != $home['id']) {
@@ -234,9 +244,35 @@ class NetatmoSecurityPerson extends IPSModule
                                     $out_of_sight = (bool) $this->GetArrayElem($person, 'out_of_sight', false);
                                     $this->SetValue('Presence', !$out_of_sight);
                                     $this->SetValue('PresenceAction', $out_of_sight ? self::$PRESENCE_ACTION_HOME : self::$PRESENCE_ACTION_AWAY);
+                                }
+                            }
+                        }
+                    }
+                    if (OLD_API) {
+                    } else {
+                        $homes = $this->GetArrayElem($jdata, 'config.homes', '');
+                        if ($homes != '') {
+                            foreach ($homes as $home) {
+                                if ($home_id != $home['id']) {
+                                    continue;
+                                }
+                                $persons = $this->GetArrayElem($home, 'persons', '');
+                                if ($persons != '') {
+                                    foreach ($persons as $person) {
+                                        if ($person_id != $person['id']) {
+                                            continue;
+                                        }
+                                        $this->SendDebug(__FUNCTION__, 'decode person=' . print_r($person, true), 0);
 
-                                    $face = $this->GetArrayElem($person, 'face', '');
-                                    $this->SetBuffer('face', json_encode($face));
+                                        $url = $this->GetArrayElem($person, 'url', '');
+                                        $this->WriteAttributeString('face_url', $url);
+                                        $this->SendDebug(__FUNCTION__, 'face_url=' . $url, 0);
+
+                                        $data = @file_get_contents($url);
+                                        if ($data != false) {
+                                            $this->SetMediaData('Portrait', $data, MEDIATYPE_IMAGE, '.jpg', false);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -341,15 +377,18 @@ class NetatmoSecurityPerson extends IPSModule
         return $this->SwitchPresence(self::$PRESENCE_ACTION_ALLAWAY);
     }
 
-    public function GetPersonFaceData()
-    {
-        $face = $this->GetBuffer('face');
-        return $face != '' ? json_decode($face, true) : false;
-    }
-
     public function GetPersonFaceUrl()
     {
-        $face = $this->GetPersonFaceData();
-        return isset($face['url']) ? $face['url'] : false;
+        $url = $this->ReadAttributeString('face_url');
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+        return $url;
+    }
+
+    public function GetPersonPortraitID()
+    {
+        $name = $this->Translate('Portrait');
+        @$mediaID = IPS_GetMediaIDByName($name, $this->InstanceID);
+        $this->SendDebug(__FUNCTION__, 'mediaID=' . $mediaID, 0);
+        return $mediaID;
     }
 }

@@ -5,6 +5,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';
 require_once __DIR__ . '/../libs/local.php';
 
+if (defined('OLD_API') == false) {
+    define('OLD_API', false);
+}
+
 class NetatmoSecurityDetector extends IPSModule
 {
     use NetatmoSecurity\StubsCommonLib;
@@ -26,6 +30,8 @@ class NetatmoSecurityDetector extends IPSModule
         parent::Create();
 
         $this->RegisterPropertyBoolean('module_disable', false);
+
+        $this->RegisterPropertyBoolean('log_no_parent', true);
 
         $this->RegisterPropertyString('product_type', '');
         $this->RegisterPropertyString('product_id', '');
@@ -263,6 +269,12 @@ class NetatmoSecurityDetector extends IPSModule
             'caption' => 'Notifications'
         ];
 
+        $formElements[] = [
+            'type'    => 'CheckBox',
+            'name'    => 'log_no_parent',
+            'caption' => 'Generate message when the gateway is inactive',
+        ];
+
         return $formElements;
     }
 
@@ -346,19 +358,44 @@ class NetatmoSecurityDetector extends IPSModule
 
             switch ($source) {
                 case 'QUERY':
-                    $homes = $this->GetArrayElem($jdata, 'body.homes', '');
+                    $n_new_events = 0;
+                    $n_chg_events = 0;
+                    $n_del_events = 0;
+                    if (OLD_API) {
+                        $homes = $this->GetArrayElem($jdata, 'body.homes', '');
+                    } else {
+                        $homes = $this->GetArrayElem($jdata, 'states.homes', '');
+                    }
                     if ($homes != '') {
                         foreach ($homes as $home) {
                             if ($home_id != $home['id']) {
                                 continue;
                             }
-                            $smokedetectors = $this->GetArrayElem($home, 'smokedetectors', '');
-                            if ($smokedetectors != '') {
-                                foreach ($smokedetectors as $smokedetector) {
-                                    if ($product_id != $smokedetector['id']) {
-                                        continue;
+                            if (OLD_API) {
+                                $smokedetectors = $this->GetArrayElem($home, 'smokedetectors', '');
+                                if ($smokedetectors != '') {
+                                    foreach ($smokedetectors as $smokedetector) {
+                                        if ($product_id != $smokedetector['id']) {
+                                            continue;
+                                        }
+                                        $this->SendDebug(__FUNCTION__, 'decode smokedetector=' . print_r($smokedetector, true), 0);
                                     }
-                                    $this->SendDebug(__FUNCTION__, 'decode smokedetector=' . print_r($smokedetector, true), 0);
+                                }
+                            } else {
+                                $modules = $this->GetArrayElem($home, 'modules', '');
+                                if ($modules != '') {
+                                    foreach ($modules as $module) {
+                                        if ($product_id != $module['id']) {
+                                            continue;
+                                        }
+                                        $this->SendDebug(__FUNCTION__, 'decode module=' . print_r($module, true), 0);
+
+                                        if ($with_wifi_strength) {
+                                            $wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
+                                            $this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
+                                            $this->SetValue('WifiStrength', $wifi_strength);
+                                        }
+                                    }
                                 }
                             }
 
@@ -373,10 +410,17 @@ class NetatmoSecurityDetector extends IPSModule
                             $this->SendDebug(__FUNCTION__, 'events=' . print_r($events, true), 0);
                             if ($events != '') {
                                 $this->SendDebug(__FUNCTION__, 'n_events=' . count($events), 0);
+                                $vars = [];
                                 foreach ($events as $event) {
                                     $this->SendDebug(__FUNCTION__, 'event=' . print_r($event, true), 0);
-                                    if ($product_id != $event['device_id']) {
-                                        continue;
+                                    if (OLD_API) {
+                                        if ($product_id != $event['device_id']) {
+                                            continue;
+                                        }
+                                    } else {
+                                        if ($product_id != $event['module_id']) {
+                                            continue;
+                                        }
                                     }
                                     $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
 
@@ -399,38 +443,87 @@ class NetatmoSecurityDetector extends IPSModule
                                     }
 
                                     $type = $this->GetArrayElem($event, 'type', '');
+                                    $_type = $type;
+                                    $sub_type = '';
+                                    $ident = '';
+                                    $value = '';
                                     switch ($type) {
                                         case 'hush':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'detector_muted' : 'detector_armed';
+                                            if ($sub_type == 1) {
+                                                $type = 'detector_muted';
+                                            } else {
+                                                $type = 'detector_armed';
+                                            }
                                             break;
                                         case 'smoke':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'smoke_detected' : 'smoke_not_detected';
+                                            if ($sub_type == 1) {
+                                                $type = 'smoke_detected';
+                                            } else {
+                                                $type = 'smoke_not_detected';
+                                            }
                                             break;
                                         case 'sound_test':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'sound_test_failed' : 'sound_test_passed';
+                                            $ident = 'SoundTest';
+                                            if ($sub_type == 1) {
+                                                $type = 'sound_test_failed';
+                                                $value = true;
+                                            } else {
+                                                $type = 'sound_test_passed';
+                                                $value = false;
+                                            }
                                             break;
                                         case 'siren_sounding':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'siren_sounding' : 'siren_stopped';
+                                            if ($sub_type == 1) {
+                                                $type = 'siren_sounding';
+                                            } else {
+                                                $type = 'siren_stopped';
+                                            }
                                             break;
                                         case 'chamber_status':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'chamber_dusty' : 'chamber_clean';
+                                            $ident = 'Dusty';
+                                            if ($sub_type == 1) {
+                                                $type = 'chamber_dusty';
+                                                $value = true;
+                                            } else {
+                                                $type = 'chamber_clean';
+                                                $value = false;
+                                            }
                                             break;
                                         case 'tampered':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'detector_tampered' : 'detector_ready';
+                                            $ident = 'Tampered';
+                                            if ($sub_type == 1) {
+                                                $type = 'detector_tampered';
+                                                $value = true;
+                                            } else {
+                                                $type = 'detector_ready';
+                                                $value = false;
+                                            }
                                             break;
                                         case 'wifi_status':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
-                                            $type = ($sub_type == 1) ? 'wifi_ok' : 'wifi_error';
+                                            $ident = 'WifiStatus';
+                                            if ($sub_type) {
+                                                $type = 'wifi_ok';
+                                                $value = true;
+                                            } else {
+                                                $type = 'wifi_error';
+                                                $value = false;
+                                            }
                                             break;
                                         case 'battery_status':
                                             $sub_type = $this->GetArrayElem($event, 'sub_type', '');
                                             $type = ($sub_type == 1) ? 'battery_low' : 'battery_very_low';
+                                            if ($sub_type == 1) {
+                                                $type = 'battery_low';
+                                            } else {
+                                                $type = 'battery_very_low';
+                                            }
                                             break;
                                         case 'new_device':
                                             /*
@@ -444,12 +537,25 @@ class NetatmoSecurityDetector extends IPSModule
                                                 [message] => Smart Smoke Alarm: wurde Ihrem Zuhause hinzugefügt
                                             )
                                              */
-                                            $sub_type = '';
                                             break;
                                         default:
                                             $this->SendDebug(__FUNCTION__, 'unsupported type=' . $type, 0);
+                                            $type = '';
                                             break;
                                     }
+                                    if ($type != $_type) {
+                                        $this->SendDebug(__FUNCTION__, 'type=' . $_type . ' => ' . $type . ', sub_type=' . $sub_type, 0);
+                                    } else {
+                                        $this->SendDebug(__FUNCTION__, 'type=' . $type . ', sub_type=' . $sub_type, 0);
+                                    }
+
+                                    if ($ident != '') {
+                                        $v = isset($vars[$ident]) ? $vars[$ident] : [];
+                                        $v['tstamp'] = $tstamp;
+                                        $v['value'] = $value;
+                                        $vars[$ident] = $v;
+                                    }
+
                                     if ($type != '') {
                                         $new_event['event_type'] = $type;
                                     }
@@ -469,6 +575,25 @@ class NetatmoSecurityDetector extends IPSModule
                                     if ($fnd == false) {
                                         $new_events[] = $new_event;
                                         $this->SendDebug(__FUNCTION__, 'new_events=' . print_r($new_events, true), 0);
+                                    }
+                                }
+                                $this->SendDebug(__FUNCTION__, 'vars=' . print_r($vars, true), 0);
+                                foreach ($vars as $ident => $v) {
+                                    $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', var=' . print_r($v, true), 0);
+                                    $tstamp = $v['tstamp'];
+                                    $value = $v['value'];
+                                    @$varID = $this->GetIDForIdent($ident);
+                                    if ($varID == false) {
+                                        $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
+                                        continue;
+                                    }
+                                    $updated = IPS_GetVariable($varID)['VariableUpdated'];
+                                    $curValue = GetValueFormatted($varID);
+                                    $newValue = GetValueFormattedEx($varID, $value);
+                                    $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', current value=' . $curValue . ' (' . date('d.m.Y H:i:s', $updated) . '), new value=' . $newValue . ' (' . date('d.m.Y H:i:s', $tstamp) . ')', 0);
+
+                                    if ($tstamp > $updated) {
+                                        $this->SetValue($ident, $value);
                                     }
                                 }
                             }
@@ -530,7 +655,9 @@ class NetatmoSecurityDetector extends IPSModule
                         }
                     }
 
-                    $this->GetHomeStatus();
+                    if (OLD_API) {
+                        $this->GetHomeStatus();
+                    }
 
                     $system_ok = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;
                     $status = $system_ok;
@@ -735,8 +862,11 @@ class NetatmoSecurityDetector extends IPSModule
     public function DeleteEvent(string $event_id)
     {
         if ($this->HasActiveParent() == false) {
-            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
-            $this->LogMessage('has no active parent instance', KL_WARNING);
+            $this->SendDebug(__FUNCTION__, 'has no active parent/gateway', 0);
+            $log_no_parent = $this->ReadPropertyBoolean('log_no_parent');
+            if ($log_no_parent) {
+                $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
+            }
             return false;
         }
 
@@ -796,8 +926,11 @@ class NetatmoSecurityDetector extends IPSModule
     private function GetHomeStatus()
     {
         if ($this->HasActiveParent() == false) {
-            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
-            $this->LogMessage('has no active parent instance', KL_WARNING);
+            $this->SendDebug(__FUNCTION__, 'has no active parent/gateway', 0);
+            $log_no_parent = $this->ReadPropertyBoolean('log_no_parent');
+            if ($log_no_parent) {
+                $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
+            }
             return false;
         }
 
@@ -846,8 +979,11 @@ class NetatmoSecurityDetector extends IPSModule
     private function GetHomeData()
     {
         if ($this->HasActiveParent() == false) {
-            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
-            $this->LogMessage('has no active parent instance', KL_WARNING);
+            $this->SendDebug(__FUNCTION__, 'has no active parent/gateway', 0);
+            $log_no_parent = $this->ReadPropertyBoolean('log_no_parent');
+            if ($log_no_parent) {
+                $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
+            }
             return false;
         }
 

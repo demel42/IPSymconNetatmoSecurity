@@ -65,6 +65,11 @@
 
 			"Call with changed VPN-URL": "Aufruf bei geänderter VPN-URL",
 
+			"Generate message when the gateway is inactive": "Meldung erzeugen wenn der Gateway inaktiv ist",
+
+			"__messages__": "",
+			"Instance has no active gateway": "Instanz hat keinen aktiven Gateway",
+
 			"__variables__": "",
 			"Power state": "Stromversorgung",
 			"Camera operation": "Kamera schalten",
@@ -84,7 +89,7 @@
 			"Motion detected": "Bewegung erkannt",
 
 			"__function__": "ReceiveData",
-			"Alarm detected": "Alarm erkannt",
+			"Alarm triggered": "Alarm ausgelöst",
 			"Animal captured": "Tier erfasst",
 			"Animal": "Tier",
 			"Camera connected": "Kamera verbunden",

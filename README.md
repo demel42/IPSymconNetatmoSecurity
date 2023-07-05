@@ -595,6 +595,9 @@ GUIDs
 
 - 1.31 @ 05.07.2023 11:56
   - Neu: Anpassung an die geänderte Netatmo-API
+    Dies betrifft unter anderem und im Besonderen die Bilder - diese müssen nun direkt herunter geladen werden und werden daher in einem Verzeichnis
+	".../webfront/user/netatmo-images/" abgelegt.
+	Dieser Cache wird in Abhängigkeit von der eingestellten Aufbewahrung der Netatmo-Meldungen automatisch aufgeräumt.
   - Neu: Schalter, um die Meldung eines inaktiven Gateway zu steuern
   - Vorbereitung auf IPS 7 / PHP 8.2
   - update submodule CommonStubs

@@ -19,15 +19,9 @@ class NetatmoSecurityIO extends IPSModule
     private static $semaphoreTM = 5 * 1000;
 
     private static $scopes = [
-        'read_station', // Wetterstation
-
         'read_presence', 'write_presence', 'access_presence', // Outdoor-Kamera
         'read_camera', 'write_camera', 'access_camera', // Indoor-Kamera
-        'read_doorbell', 'access_doorbell', // Türsprechanlage
         'read_smokedetector', // Rauchmelder
-        'read_carbonmonoxidedetector', // CO-Melder
-
-        'read_homecoach', // Luftqualität-Sensor
     ];
 
     private $ModuleDir;
@@ -336,8 +330,12 @@ class NetatmoSecurityIO extends IPSModule
                 $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
                 $type = isset($jtoken['type']) ? $jtoken['type'] : self::$CONNECTION_UNDEFINED;
                 if ($type != self::$CONNECTION_OAUTH) {
-                    $this->WriteAttributeString('ApiRefreshToken', '');
-                    $this->SendDebug(__FUNCTION__, 'connection-type changed', 0);
+                    if ($type != self::$CONNECTION_UNDEFINED) {
+                        $this->WriteAttributeString('ApiRefreshToken', '');
+                        $this->SendDebug(__FUNCTION__, 'connection-type changed', 0);
+                    } else {
+                        $this->SendDebug(__FUNCTION__, 'connection-type not set', 0);
+                    }
                     $access_token = '';
                 } elseif ($expiration < time()) {
                     $this->SendDebug(__FUNCTION__, 'access_token expired', 0);
@@ -504,6 +502,17 @@ class NetatmoSecurityIO extends IPSModule
                             'name'    => 'Netatmo_Secret',
                             'caption' => 'Client-Secret'
                         ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'Due to the API changes, login using developer key is no longer possible. The refresh token must be entered manually; see expert panel.',
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'width'   => '600px',
+                            'caption' => 'Refresh token',
+                            'value'   => $this->ReadAttributeString('ApiRefreshToken'),
+                            'enabled' => false,
+                        ],
                     ],
                     'caption' => 'Netatmo Access-Details'
                 ];
@@ -595,23 +604,60 @@ class NetatmoSecurityIO extends IPSModule
             'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "UpdateData", "");',
         ];
 
+        $items = [];
+
+        $items[] = [
+            'type'    => 'Button',
+            'caption' => 'Register Webhook',
+            'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "AddWebhook", "");',
+        ];
+
+        $items[] = [
+            'type'    => 'Button',
+            'caption' => 'Clear token',
+            'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "ClearToken", "");',
+        ];
+
+        $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
+        if ($oauth_type == self::$CONNECTION_DEVELOPER) {
+            $items[] = [
+                'type'     => 'PopupButton',
+                'caption'  => 'Set refresh token',
+                'popup'    => [
+                    'caption'  => 'Set refresh token',
+                    'items'    => [
+                        [
+                            'type'    => 'Label',
+                            'caption' => 'Generate the refresh token at https://dev.netatmo.com/apps/ for the app you are using. The scopes must be selected according to the default',
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => $this->Translate('Needed scopes') . ': ' . implode(' ', self::$scopes),
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'width'   => '600px',
+                            'name'    => 'refresh_token',
+                            'caption' => 'Refresh token'
+                        ],
+                    ],
+                    'buttons' => [
+                        [
+                            'caption' => 'Set',
+                            'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "SetRefreshToken", $refresh_token);',
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        $items[] = $this->GetApiCallStatsFormItem();
+
         $formActions[] = [
             'type'      => 'ExpansionPanel',
             'caption'   => 'Expert area',
             'expanded'  => false,
-            'items'     => [
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Register Webhook',
-                    'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "AddWebhook", "");',
-                ],
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Clear token',
-                    'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "ClearToken", "");'
-                ],
-                $this->GetApiCallStatsFormItem(),
-            ],
+            'items'     => $items,
         ];
 
         $formActions[] = $this->GetInformationFormAction();
@@ -632,6 +678,9 @@ class NetatmoSecurityIO extends IPSModule
                 break;
             case 'ClearToken':
                 $this->ClearToken();
+                break;
+            case 'SetRefreshToken':
+                $this->SetRefreshToken($value);
                 break;
             default:
                 $r = false;
@@ -733,8 +782,12 @@ class NetatmoSecurityIO extends IPSModule
                 $expiration = isset($jtoken['expiration']) ? $jtoken['expiration'] : 0;
                 $type = isset($jtoken['type']) ? $jtoken['type'] : self::$CONNECTION_UNDEFINED;
                 if ($type != self::$CONNECTION_DEVELOPER) {
-                    $this->WriteAttributeString('ApiRefreshToken', '');
-                    $this->SendDebug(__FUNCTION__, 'connection-type changed', 0);
+                    if ($type != self::$CONNECTION_UNDEFINED) {
+                        $this->WriteAttributeString('ApiRefreshToken', '');
+                        $this->SendDebug(__FUNCTION__, 'connection-type changed', 0);
+                    } else {
+                        $this->SendDebug(__FUNCTION__, 'connection-type not set', 0);
+                    }
                     $access_token = '';
                 } elseif ($expiration < time()) {
                     $this->SendDebug(__FUNCTION__, 'access_token expired', 0);
@@ -1106,6 +1159,20 @@ class NetatmoSecurityIO extends IPSModule
         $access_token = $this->GetApiAccessToken();
         $this->SendDebug(__FUNCTION__, 'clear access_token=' . $access_token, 0);
         $this->SetBuffer('ApiAccessToken', '');
+    }
+
+    private function SetRefreshToken($refresh_token)
+    {
+        $this->SendDebug(__FUNCTION__, 'set refresh_token=' . $refresh_token, 0);
+        $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
+        $jtoken = [
+            'access_token' => '',
+            'expiration'   => 0,
+            'type'         => self::$CONNECTION_DEVELOPER
+        ];
+        $this->SetBuffer('ApiAccessToken', json_encode($jtoken));
+        $this->GetApiAccessToken();
+        $this->ReloadForm();
     }
 
     private function AddWebhook()

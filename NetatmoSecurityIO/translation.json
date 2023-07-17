@@ -39,6 +39,9 @@
 			"Client-ID": "Client-ID",
 			"Client-Secret": "Client-Secret",
 
+			"Due to the API changes, login using developer key is no longer possible. The refresh token must be entered manually; see expert panel.":
+				"Aufgrund von Änderungen der API kann ein Login mittels Entwícklerschlüssel nicht mehr erfolgen. Der Refresh-Token muss manuell eingetragen werden; siehe Experten-Bereich.",
+
 			"Call settings": "Abrufeinstellungen",
 
 			"Number of events per update": "Anzahl der Ereignisse pro Aktualisierung",
@@ -59,6 +62,13 @@
 			"Update data": "Aktualisiere Daten",
 			"Register Webhook": "Webhook registrieren",
 			"Clear token": "Token löschen",
+
+			"Set refresh token": "Refresh-Token setzen",
+			"Needed scopes": "Erforderliche Scopes",
+			"Generate the refresh token at https://dev.netatmo.com/apps/ for the app you are using. The scopes must be selected according to the default":
+				"Generieren Sie den Refresh-Token auf https://dev.netatmo.com/apps/ für die verwendete App. Die Scopes müssen entsprechend der Vorgabe ausgewählt werden",
+			"Refresh token": "Refresh-Token",
+			"Set": "einstellen",
 
 			"__end__": ""
 		}

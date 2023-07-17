@@ -293,21 +293,21 @@ gibt die Url zu dem Bild der Person zurück.
 
 Das Modul stellt ein WebHook zur Verfügung, mit dem auf die Videos und Bilder zurückgegriffen werden kann (siehe Konfigurationsdialog).
 
-| Kommando                                 | Bedeutung |
-| :--------------------------------------- | :-------- |
-| video?live                               | liefert die (interne oder externe) URL zu dem Live-Video |
-| video?event_id=\<event-id\>              | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
-|                                          | |
-| snapshot?live                            | liefert die (interne oder externe) URL zu dem Live-Snapshot |
-| snapshot?subevent_id=\<event-id\>        | liefert die (interne oder externe) URL zu dem Snapshot eines Events |
-| snapshot?subevent_id=\<subevent-id\>     | liefert die (interne oder externe) URL zu dem Snapshot eines Sub-Events |
-| snapshot?subevent_id=\<notification-id\> | liefert die (interne oder externe) URL zu dem Snapshot einer Notification |
-|                                          | |
-| vignette?subevent_id=\<event-id\>        | liefert die (interne oder externe) URL zu der Vignette eines Events |
-| vignette?subevent_id=\<subevent-id\>     | liefert die (interne oder externe) URL zu der Vignette eines Sub-Events |
-| vignette?subevent_id=\<notification-id\> | liefert die (interne oder externe) URL zu der Vignette einer Notification |
-|                                          | |
-| timelapse                                | liefert die (interne oder externe) URL zu der Zeitrafferdarstellung |
+| Kommando                                     | Bedeutung |
+| :------------------------------------------- | :-------- |
+| video?live                                   | liefert die (interne oder externe) URL zu dem Live-Video |
+| video?event_id=\<event-id\>                  | liefert die URL der lokal gespeicherten MP4-Videodatei oder die (interne oder externe) URL zu dem Video |
+|                                              | |
+| snapshot?live                                | liefert die (interne oder externe) URL zu dem Live-Snapshot |
+| snapshot?event_id=\<event-id\>               | liefert die (interne oder externe) URL zu dem Snapshot eines Events |
+| snapshot?subevent_id=\<subevent-id\>         | liefert die (interne oder externe) URL zu dem Snapshot eines Sub-Events |
+| snapshot?notification_id=\<notification-id\> | liefert die (interne oder externe) URL zu dem Snapshot einer Notification |
+|                                              | |
+| vignette?event_id=\<event-id\>               | liefert die (interne oder externe) URL zu der Vignette eines Events |
+| vignette?subevent_id=\<subevent-id\>         | liefert die (interne oder externe) URL zu der Vignette eines Sub-Events |
+| vignette?notification_id=\<notification-id\> | liefert die (interne oder externe) URL zu der Vignette einer Notification |
+|                                              | |
+| timelapse                                    | liefert die (interne oder externe) URL zu der Zeitrafferdarstellung |
 
 Das _Kommando_ wird an den angegenegen WebHook angehängt.
 
@@ -592,6 +592,10 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson, NetatmoSecurityDetector
 
 ## 7. Versions-Historie
+
+- 1.32 @ 15.07.2023 15:31
+  - Hotfix: Umgehung des Problems, das ein Login mit Entwicklerschlüssel nicht mehr möglich ist
+  - Fix: README korrigiert
 
 - 1.31 @ 05.07.2023 11:56
   - Neu: Anpassung an die geänderte Netatmo-API

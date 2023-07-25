@@ -166,6 +166,48 @@ class NetatmoSecurityCamera extends IPSModule
         return $r;
     }
 
+    private function CheckModuleUpdate(array $oldInfo, array $newInfo)
+    {
+        $r = [];
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.33')) {
+            $path = 'webfront' . DIRECTORY_SEPARATOR . 'user' . DIRECTORY_SEPARATOR;
+
+            $ftp_path = $this->ReadPropertyString('ftp_path');
+            if ($path == substr($ftp_path, 0, strlen($path))) {
+                $r[] = $this->Translate('Property \'ftp_path\' will be adjusted');
+            }
+
+            $timelapse_path = $this->ReadPropertyString('timelapse_path');
+            if ($path == substr($timelapse_path, 0, strlen($path))) {
+                $r[] = $this->Translate('Property \'timelapse_path\' will be adjusted');
+            }
+        }
+
+        return $r;
+    }
+
+    private function CompleteModuleUpdate(array $oldInfo, array $newInfo)
+    {
+        if ($this->version2num($oldInfo) < $this->version2num('1.33')) {
+            $path = 'webfront' . DIRECTORY_SEPARATOR . 'user' . DIRECTORY_SEPARATOR;
+
+            $ftp_path = $this->ReadPropertyString('ftp_path');
+            if ($path == substr($ftp_path, 0, strlen($path))) {
+                $ftp_path = substr($ftp_path, strlen($path));
+                IPS_SetProperty($this->InstanceID, 'ftp_path', $ftp_path);
+            }
+
+            $timelapse_path = $this->ReadPropertyString('timelapse_path');
+            if ($path == substr($timelapse_path, 0, strlen($path))) {
+                $timelapse_path = substr($timelapse_path, strlen($path));
+                IPS_SetProperty($this->InstanceID, 'timelapse_path', $timelapse_path);
+            }
+        }
+
+        return '';
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
@@ -1806,6 +1848,7 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $this->MaintainStatus(IS_ACTIVE);
+        $this->SendDebug(__FUNCTION__, ' ... done', 0);
     }
 
     private function LocalRequestAction($ident, $value)
@@ -2632,7 +2675,7 @@ class NetatmoSecurityCamera extends IPSModule
         }
         $id = $ids[0];
 
-        $path = IPS_GetKernelDir() . $ftp_path;
+        $path = $this->GetUserDir(true) . $ftp_path;
         if (substr($path, -1) != DIRECTORY_SEPARATOR) {
             $path .= DIRECTORY_SEPARATOR;
         }
@@ -2646,7 +2689,7 @@ class NetatmoSecurityCamera extends IPSModule
 
             $filename = $path;
             $filename .= $y . DIRECTORY_SEPARATOR . $m . DIRECTORY_SEPARATOR . $d . DIRECTORY_SEPARATOR;
-            $filename .= $y . '-' . $m . '-' . $d . '_' . $H . '.' . $M . '_' . $id . '.mp4';
+            $filename .= $y . '-' . $m . '-' . $d . '-' . $H . '.' . $M . '-' . $id . '.mp4';
 
             $ok = is_file($filename);
             if (!$ok) {
@@ -2782,9 +2825,9 @@ class NetatmoSecurityCamera extends IPSModule
                     $filename = $this->GetVideoFilename($video_id, $tstamp);
                     $this->SendDebug(__FUNCTION__, 'filename=' . $filename, 0);
                     if ($filename != '') {
-                        $path = IPS_GetKernelDir() . 'webfront';
+                        $path = $this->GetUserDir(true);
                         if ($path == substr($filename, 0, strlen($path))) {
-                            $path = substr($filename, strlen($path));
+                            $path = DIRECTORY_SEPARATOR . 'user' . DIRECTORY_SEPARATOR . substr($filename, strlen($path));
                             if ($preferLocal) {
                                 $url = $this->GetLocalServerUrl();
                             }
@@ -3343,9 +3386,7 @@ class NetatmoSecurityCamera extends IPSModule
         $url .= '/command/dl/timelapse';
         $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
 
-        if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
-            $path = IPS_GetKernelDir() . $path;
-        }
+        $path = $this->GetUserDir(true) . $path;
         if (substr($path, -1) != DIRECTORY_SEPARATOR) {
             $path .= DIRECTORY_SEPARATOR;
         }
@@ -3434,9 +3475,7 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
-            $path = IPS_GetKernelDir() . $path;
-        }
+        $path = $this->GetUserDir(true) . $path;
         if (substr($path, -1) != DIRECTORY_SEPARATOR) {
             $path .= DIRECTORY_SEPARATOR;
         }
@@ -3471,9 +3510,9 @@ class NetatmoSecurityCamera extends IPSModule
         $url = false;
         $filename = $this->GetTimelapseFilename($refdate);
         if ($filename != false) {
-            $path = IPS_GetKernelDir() . 'webfront';
+            $path = $this->GetUserDir(true);
             if ($path == substr($filename, 0, strlen($path))) {
-                $path = substr($filename, strlen($path));
+                $path = DIRECTORY_SEPARATOR . 'user' . DIRECTORY_SEPARATOR . substr($filename, strlen($path));
                 if ($preferLocal) {
                     $url = $this->GetLocalServerUrl();
                 }
@@ -3583,10 +3622,9 @@ class NetatmoSecurityCamera extends IPSModule
         $dt = new DateTime(date('d.m.Y 00:00:00', time()));
         $now = (int) $dt->format('U');
 
-        if (substr($path, 0, 1) != DIRECTORY_SEPARATOR) {
-            $path = IPS_GetKernelDir() . $path;
-        }
+        $path = $this->GetUserDir(true) . $path;
         $this->SendDebug(__FUNCTION__, 'cleanup path ' . $path, 0);
+
         $age = $max_age * 24 * 60 * 60;
         $this->SendDebug(__FUNCTION__, '* cleanup files', 0);
 
@@ -3917,7 +3955,7 @@ class NetatmoSecurityCamera extends IPSModule
 
     private function GetImageCacheDir()
     {
-        $dir = IPS_GetKernelDir() . 'webfront' . DIRECTORY_SEPARATOR . 'user' . DIRECTORY_SEPARATOR . 'netatmo-images';
+        $dir = $this->GetUserDir(true) . 'netatmo-images';
         if (file_exists($dir) == false) {
             if (mkdir($dir) == false) {
                 $this->SendDebug(__FUNCTION__, 'unable to create directory ' . $dir, 0);
@@ -4002,11 +4040,20 @@ class NetatmoSecurityCamera extends IPSModule
             if (file_exists($fname) == false || $force) {
                 $fp = false;
                 if ($is_ok) {
+                    $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+                    $time_start = microtime(true);
                     $data = @file_get_contents($url);
+                    $duration = round(microtime(true) - $time_start, 2);
+                    $httpcode = 0;
                     if ($data == false) {
                         $this->SendDebug(__FUNCTION__, 'unable to fetch url ' . $url, 0);
                         $is_ok = false;
+                    } elseif (isset($http_response_header[0]) && preg_match('/HTTP\/[0-9\.]+\s+([0-9]*)/', $http_response_header[0], $r)) {
+                        $httpcode = $r[1];
+                    } else {
+                        $this->SendDebug(__FUNCTION__, 'missing http_response_header', 0);
                     }
+                    $this->SendDebug(__FUNCTION__, ' => httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
                 }
                 if ($is_ok) {
                     $fp = fopen($fname, 'w');
@@ -4155,7 +4202,7 @@ class NetatmoSecurityCamera extends IPSModule
                 $i += $file['size'];
             }
         }
-        $this->SendDebug(__FUNCTION__, 'bevore cleanup: ' . $n . ' cached images with total size of ' . (int) ($i / (1024 * 1024)) . ' MB', 0);
+        $this->SendDebug(__FUNCTION__, 'before cleanup: ' . $n . ' cached images with total size of ' . (int) ($i / (1024 * 1024)) . ' MB', 0);
         // $this->SendDebug(__FUNCTION__, 'n_files=' . count($files) . ', files=' . print_r($files, true), 0);
 
         $del_files = [];

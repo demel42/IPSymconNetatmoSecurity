@@ -5,6 +5,10 @@
 			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",
 			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
 
+			"__function__": "CheckUpdate",
+			"Property 'ftp_path' will be adjusted": "Eigenschaft 'ftp_path' wird angepasst",
+			"Property 'timelapse_path' will be adjusted": "Eigenschaft 'timelapse_path' wird angepasst",
+
 			"__function__": "CheckConfiguration",
 			"Product-Type must be specified": "Produkt-Typ muss angegeben sein",
 			"Product-ID must be specified": "Produkt-ID muss angegeben sein",

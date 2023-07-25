@@ -593,6 +593,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.33 @ 25.07.2023 09:27
+  - Vorbereitung auf IPS 7 / PHP 8.2: Änderung der "webfront/user"-Struktur
+
 - 1.32 @ 15.07.2023 15:31
   - Hotfix: Umgehung des Problems, das ein Login mit Entwicklerschlüssel nicht mehr möglich ist
   - Fix: README korrigiert

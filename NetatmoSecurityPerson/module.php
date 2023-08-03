@@ -5,10 +5,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';
 require_once __DIR__ . '/../libs/local.php';
 
-if (defined('OLD_API') == false) {
-    define('OLD_API', false);
-}
-
 class NetatmoSecurityPerson extends IPSModule
 {
     use NetatmoSecurity\StubsCommonLib;
@@ -220,11 +216,7 @@ class NetatmoSecurityPerson extends IPSModule
 
             switch ($source) {
                 case 'QUERY':
-                    if (OLD_API) {
-                        $homes = $this->GetArrayElem($jdata, 'body.homes', '');
-                    } else {
-                        $homes = $this->GetArrayElem($jdata, 'states.homes', '');
-                    }
+                    $homes = $this->GetArrayElem($jdata, 'states.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
                             if ($home_id != $home['id']) {
@@ -248,8 +240,6 @@ class NetatmoSecurityPerson extends IPSModule
                             }
                         }
                     }
-                    if (OLD_API) {
-                    } else {
                         $homes = $this->GetArrayElem($jdata, 'config.homes', '');
                         if ($homes != '') {
                             foreach ($homes as $home) {
@@ -276,7 +266,6 @@ class NetatmoSecurityPerson extends IPSModule
                                 }
                             }
                         }
-                    }
                     break;
                 case 'PUSH':
                     break;

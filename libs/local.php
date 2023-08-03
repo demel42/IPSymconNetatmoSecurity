@@ -73,6 +73,10 @@ trait NetatmoSecurityLocalLib
     public static $CAMERA_STATUS_ON = 1;
     public static $CAMERA_STATUS_DISCONNECTED = 2;
 
+    public static $SIREN_STATUS_UNDEFINED = -1;
+    public static $SIREN_STATUS_OFF = 0;
+    public static $SIREN_STATUS_ON = 1;
+
     public static $LIGHT_STATUS_UNDEFINED = -1;
     public static $LIGHT_STATUS_OFF = 0;
     public static $LIGHT_STATUS_ON = 1;
@@ -122,6 +126,19 @@ trait NetatmoSecurityLocalLib
             ['Wert' => self::$CAMERA_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('NetatmoSecurity.CameraAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$SIREN_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000],
+            ['Wert' => self::$SIREN_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1],
+            ['Wert' => self::$SIREN_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => 0xEE0000],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.SirenStatus', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$SIREN_STATUS_OFF, 'Name' => $this->Translate('off'), 'Farbe' => -1],
+            ['Wert' => self::$SIREN_STATUS_ON, 'Name' => $this->Translate('on'), 'Farbe' => 0xEE0000],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.SirenAction', VARIABLETYPE_INTEGER, '', 0, 0, 0, 1, '', $associations, $reInstall);
 
         $associations = [
             ['Wert' => self::$LIGHT_STATUS_UNDEFINED, 'Name' => $this->Translate('unknown'), 'Farbe' => 0xEE0000],

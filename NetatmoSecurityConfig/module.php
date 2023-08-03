@@ -5,10 +5,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';
 require_once __DIR__ . '/../libs/local.php';
 
-if (defined('OLD_API') == false) {
-    define('OLD_API', false);
-}
-
 class NetatmoSecurityConfig extends IPSModule
 {
     use NetatmoSecurity\StubsCommonLib;
@@ -83,154 +79,22 @@ class NetatmoSecurityConfig extends IPSModule
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
         if (is_array($jdata)) {
-            if (OLD_API) {
-                $homes = $this->GetArrayElem($jdata, 'body.homes', '');
-                foreach ($homes as $home) {
-                    $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
-                    if (!isset($home['id'])) {
-                        continue;
-                    }
-                    $home_id = $home['id'];
-                    $home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
-                    if (isset($home['cameras'])) {
-                        $cameras = $home['cameras'];
-                        if (is_array($cameras)) {
-                            foreach ($cameras as $camera) {
-                                $product_id = $camera['id'];
-                                $product_name = $camera['name'];
-                                $product_type = $camera['type'];
-                                switch ($product_type) {
-                                case 'NACamera':
-                                    $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
-                                    $product_category = 'Indoor camera';
-                                    break;
-                                case 'NOC':
-                                    $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
-                                    $product_category = 'Outdoor camera';
-                                    break;
-                                default:
-                                    $guid = '';
-                                    break;
-                            }
-                                if ($guid == '') {
-                                    $this->SendDebug(__FUNCTION__, 'ignore camera ' . $camera['id'] . ': unsupported type ' . $camera['type'], 0);
-                                    continue;
-                                }
-
-                                $instIDs = IPS_GetInstanceListByModuleID($guid);
-
-                                $instanceID = 0;
-                                foreach ($instIDs as $instID) {
-                                    $prodID = IPS_GetProperty($instID, 'product_id');
-                                    if ($prodID == $product_id) {
-                                        $instanceID = $instID;
-                                        break;
-                                    }
-                                }
-
-                                if ($instanceID && IPS_GetInstance($instanceID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
-                                    continue;
-                                }
-
-                                $entry = [
-                                    'instanceID' => $instanceID,
-                                    'category'   => $this->Translate($product_category),
-                                    'home'       => $home_name,
-                                    'name'       => $product_name,
-                                    'product_id' => $product_id,
-                                    'create'     => [
-                                        'moduleID'       => $guid,
-                                        'location'       => $this->GetConfiguratorLocation($catID),
-                                        'info'           => $home_name . '\\' . $product_name,
-                                        'configuration'  => [
-                                            'product_type' => $product_type,
-                                            'product_id'   => $product_id,
-                                            'home_id'      => $home_id,
-                                        ]
-                                    ]
-                                ];
-                                $entries[] = $entry;
-                                $this->SendDebug(__FUNCTION__, 'entry=' . print_r($entry, true), 0);
-                            }
-                        }
-                    }
-                    if (isset($home['smokedetectors'])) {
-                        $smokedetectors = $home['smokedetectors'];
-                        if ($smokedetectors != '') {
-                            foreach ($smokedetectors as $smokedetector) {
-                                $this->SendDebug(__FUNCTION__, 'smokedetector=' . print_r($smokedetector, true), 0);
-                                $product_id = $smokedetector['id'];
-                                $product_name = $smokedetector['name'];
-                                $product_type = $smokedetector['type'];
-                                switch ($product_type) {
-                                case 'NSD':
-                                    $guid = '{1E90911D-AB28-5EA7-9134-CCEAF7F48C78}';
-                                    $product_category = 'Smoke detector';
-                                    break;
-                                default:
-                                    $guid = '';
-                                    break;
-                            }
-                                if ($guid == '') {
-                                    $this->SendDebug(__FUNCTION__, 'ignore smokedetector ' . $smokedetector['id'] . ': unsupported type ' . $smokedetector['type'], 0);
-                                    continue;
-                                }
-
-                                $instIDs = IPS_GetInstanceListByModuleID($guid);
-
-                                $instanceID = 0;
-                                foreach ($instIDs as $instID) {
-                                    $prodID = IPS_GetProperty($instID, 'product_id');
-                                    if ($prodID == $product_id) {
-                                        $instanceID = $instID;
-                                        break;
-                                    }
-                                }
-
-                                if ($instanceID && IPS_GetInstance($instanceID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
-                                    continue;
-                                }
-
-                                $entry = [
-                                    'instanceID' => $instanceID,
-                                    'category'   => $this->Translate($product_category),
-                                    'home'       => $home_name,
-                                    'name'       => $product_name,
-                                    'product_id' => $product_id,
-                                    'create'     => [
-                                        'moduleID'       => $guid,
-                                        'location'       => $this->GetConfiguratorLocation($catID),
-                                        'info'           => $home_name . '\\' . $product_name,
-                                        'configuration'  => [
-                                            'product_type' => $product_type,
-                                            'product_id'   => $product_id,
-                                            'home_id'      => $home_id,
-                                        ]
-                                    ]
-                                ];
-                                $entries[] = $entry;
-                                $this->SendDebug(__FUNCTION__, 'entry=' . print_r($entry, true), 0);
-                            }
-                        }
-                    }
+            $homes = $this->GetArrayElem($jdata, 'config.homes', '');
+            foreach ($homes as $home) {
+                $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
+                if (!isset($home['id'])) {
+                    continue;
                 }
-            } else {
-                $homes = $this->GetArrayElem($jdata, 'config.homes', '');
-                foreach ($homes as $home) {
-                    $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
-                    if (!isset($home['id'])) {
-                        continue;
-                    }
-                    $home_id = $home['id'];
-                    $home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
-                    if (isset($home['modules'])) {
-                        $modules = $home['modules'];
-                        if (is_array($modules)) {
-                            foreach ($modules as $module) {
-                                $product_id = $module['id'];
-                                $product_name = $module['name'];
-                                $product_type = $module['type'];
-                                switch ($product_type) {
+                $home_id = $home['id'];
+                $home_name = $this->GetArrayElem($home, 'name', 'ID:' . $home_id);
+                if (isset($home['modules'])) {
+                    $modules = $home['modules'];
+                    if (is_array($modules)) {
+                        foreach ($modules as $module) {
+                            $product_id = $module['id'];
+                            $product_name = $module['name'];
+                            $product_type = $module['type'];
+                            switch ($product_type) {
                                 case 'NACamera':
                                     $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
                                     $product_category = 'Indoor camera';
@@ -247,46 +111,45 @@ class NetatmoSecurityConfig extends IPSModule
                                     $guid = '';
                                     break;
                             }
-                                if ($guid == '') {
-                                    $this->SendDebug(__FUNCTION__, 'ignore module ' . $module['id'] . ': unsupported type ' . $module['type'], 0);
-                                    continue;
-                                }
-
-                                $instIDs = IPS_GetInstanceListByModuleID($guid);
-
-                                $instanceID = 0;
-                                foreach ($instIDs as $instID) {
-                                    $prodID = IPS_GetProperty($instID, 'product_id');
-                                    if ($prodID == $product_id) {
-                                        $instanceID = $instID;
-                                        break;
-                                    }
-                                }
-
-                                if ($instanceID && IPS_GetInstance($instanceID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
-                                    continue;
-                                }
-
-                                $entry = [
-                                    'instanceID' => $instanceID,
-                                    'category'   => $this->Translate($product_category),
-                                    'home'       => $home_name,
-                                    'name'       => $product_name,
-                                    'product_id' => $product_id,
-                                    'create'     => [
-                                        'moduleID'       => $guid,
-                                        'location'       => $this->GetConfiguratorLocation($catID),
-                                        'info'           => $home_name . '\\' . $product_name,
-                                        'configuration'  => [
-                                            'product_type' => $product_type,
-                                            'product_id'   => $product_id,
-                                            'home_id'      => $home_id,
-                                        ]
-                                    ]
-                                ];
-                                $entries[] = $entry;
-                                $this->SendDebug(__FUNCTION__, 'entry=' . print_r($entry, true), 0);
+                            if ($guid == '') {
+                                $this->SendDebug(__FUNCTION__, 'ignore module ' . $module['id'] . ': unsupported type ' . $module['type'], 0);
+                                continue;
                             }
+
+                            $instIDs = IPS_GetInstanceListByModuleID($guid);
+
+                            $instanceID = 0;
+                            foreach ($instIDs as $instID) {
+                                $prodID = IPS_GetProperty($instID, 'product_id');
+                                if ($prodID == $product_id) {
+                                    $instanceID = $instID;
+                                    break;
+                                }
+                            }
+
+                            if ($instanceID && IPS_GetInstance($instanceID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
+                                continue;
+                            }
+
+                            $entry = [
+                                'instanceID' => $instanceID,
+                                'category'   => $this->Translate($product_category),
+                                'home'       => $home_name,
+                                'name'       => $product_name,
+                                'product_id' => $product_id,
+                                'create'     => [
+                                    'moduleID'       => $guid,
+                                    'location'       => $this->GetConfiguratorLocation($catID),
+                                    'info'           => $home_name . '\\' . $product_name,
+                                    'configuration'  => [
+                                        'product_type' => $product_type,
+                                        'product_id'   => $product_id,
+                                        'home_id'      => $home_id,
+                                    ]
+                                ]
+                            ];
+                            $entries[] = $entry;
+                            $this->SendDebug(__FUNCTION__, 'entry=' . print_r($entry, true), 0);
                         }
                     }
                 }

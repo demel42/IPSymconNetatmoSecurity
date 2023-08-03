@@ -5,10 +5,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';
 require_once __DIR__ . '/../libs/local.php';
 
-if (defined('OLD_API') == false) {
-    define('OLD_API', false);
-}
-
 class NetatmoSecurityDetector extends IPSModule
 {
     use NetatmoSecurity\StubsCommonLib;
@@ -361,40 +357,24 @@ class NetatmoSecurityDetector extends IPSModule
                     $n_new_events = 0;
                     $n_chg_events = 0;
                     $n_del_events = 0;
-                    if (OLD_API) {
-                        $homes = $this->GetArrayElem($jdata, 'body.homes', '');
-                    } else {
-                        $homes = $this->GetArrayElem($jdata, 'states.homes', '');
-                    }
+                    $homes = $this->GetArrayElem($jdata, 'states.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
                             if ($home_id != $home['id']) {
                                 continue;
                             }
-                            if (OLD_API) {
-                                $smokedetectors = $this->GetArrayElem($home, 'smokedetectors', '');
-                                if ($smokedetectors != '') {
-                                    foreach ($smokedetectors as $smokedetector) {
-                                        if ($product_id != $smokedetector['id']) {
-                                            continue;
-                                        }
-                                        $this->SendDebug(__FUNCTION__, 'decode smokedetector=' . print_r($smokedetector, true), 0);
+                            $modules = $this->GetArrayElem($home, 'modules', '');
+                            if ($modules != '') {
+                                foreach ($modules as $module) {
+                                    if ($product_id != $module['id']) {
+                                        continue;
                                     }
-                                }
-                            } else {
-                                $modules = $this->GetArrayElem($home, 'modules', '');
-                                if ($modules != '') {
-                                    foreach ($modules as $module) {
-                                        if ($product_id != $module['id']) {
-                                            continue;
-                                        }
-                                        $this->SendDebug(__FUNCTION__, 'decode module=' . print_r($module, true), 0);
+                                    $this->SendDebug(__FUNCTION__, 'decode module=' . print_r($module, true), 0);
 
-                                        if ($with_wifi_strength) {
-                                            $wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
-                                            $this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
-                                            $this->SetValue('WifiStrength', $wifi_strength);
-                                        }
+                                    if ($with_wifi_strength) {
+                                        $wifi_strength = $this->map_wifi_strength($this->GetArrayElem($module, 'wifi_strength', ''));
+                                        $this->SendDebug(__FUNCTION__, 'wifi_strength=' . $wifi_strength, 0);
+                                        $this->SetValue('WifiStrength', $wifi_strength);
                                     }
                                 }
                             }
@@ -413,14 +393,8 @@ class NetatmoSecurityDetector extends IPSModule
                                 $vars = [];
                                 foreach ($events as $event) {
                                     $this->SendDebug(__FUNCTION__, 'event=' . print_r($event, true), 0);
-                                    if (OLD_API) {
-                                        if ($product_id != $event['device_id']) {
-                                            continue;
-                                        }
-                                    } else {
-                                        if ($product_id != $event['module_id']) {
-                                            continue;
-                                        }
+                                    if ($product_id != $event['module_id']) {
+                                        continue;
                                     }
                                     $this->SendDebug(__FUNCTION__, 'decode event=' . print_r($event, true), 0);
 
@@ -653,10 +627,6 @@ class NetatmoSecurityDetector extends IPSModule
                                 $this->SetValue('LastEvent', $now);
                             }
                         }
-                    }
-
-                    if (OLD_API) {
-                        $this->GetHomeStatus();
                     }
 
                     $system_ok = $this->GetArrayElem($jdata, 'status', '') == 'ok' ? true : false;

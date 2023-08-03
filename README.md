@@ -247,6 +247,9 @@ Beispiel siehe [docs/mergeTimelines.php](docs/mergeTimelines.php).
 `NetatmoSecurity_SwitchCamera(int $InstanzID, int $mode)`<br>
 schaltet die Kamera (0=aus, 1=ein)
 
+`NetatmoSecurity_SwitchSiren(int $InstanzID, int $mode)`<br>
+schaltet die Sirene (0=aus, 1=ein)
+
 
 `NetatmoSecurity_GetServerUrl(int $InstanzID)`<br>
 liefert die öffentliche (_ipmagic_) oder die lokale URL des Servers
@@ -400,6 +403,7 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 | letzte Kommunikation     | boolean  | Nein         | letzte Kommunikation mit dem Netatmo-Server |
 | letztes Ereignis         | boolean  | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
 | letzte Benachrichtigung  | boolean  | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
+| Sirene                   | boolean  | Nein         | Status/AKtion der Sirene, **nur bei OutdoorCamera** |
 | Stärke des Wifi-Signals  | boolean  | Nein         | Ausgabe des Signal in den Abstufungen: _schlecht_, _mittel_, _gut_, _hoch_|
 | Bewegungsmelder          | boolean  | Nein         | Variable mit dem Ergebnis des Kamera-Bewegungsmelders |
 |                          |          |              | |
@@ -419,11 +423,11 @@ werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 |  ... Script              | integer  |              | Script, das beim Empfang einer Benachrichtigung aufgerufen wird |
 |                          |          |              | |
 | FTP-Verzeichnis          |          |              | |
-|  ... Verzeichnis         | string   |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
+|  ... Verzeichnis         | string   |              | Pfad relativ zum IPS-Userverzeichnis |
 |  ... max. Alter          | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
 |                          |          |              | |
 | Zeitraffer-Darstellung   |          |              | **nur bei OutdoorCamera** |
-|  ... Verzeichnis         | string   |              | bei relativem Pfad wird IPS-Basisverzeichnis vorangestellt |
+|  ... Verzeichnis         | string   |              | Pfad relativ zum IPS-Userverzeichnis |
 |  ... Startzeit           | integer  | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
 |  ... max. Alter          | integer  | 7            | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
 |                          |          |              | |
@@ -496,6 +500,8 @@ NetatmoSecurity.LightModeStatus,
 NetatmoSecurity.MotionType,
 NetatmoSecurity.PowerStatus
 NetatmoSecurity.SDCardStatus,
+NetatmoSecurity.SirenAction,
+NetatmoSecurity.SirenStatus,
 
 ### Datenstrukturen
 
@@ -593,8 +599,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.33 @ 25.07.2023 09:27
+- 1.33 @ 28.07.2023 11:33
   - Vorbereitung auf IPS 7 / PHP 8.2: Änderung der "webfront/user"-Struktur
+  - Neu: Schalten von Kamera und Flutlicht über die Netatmo-API
+  - Neu: Status/Schalten der Sirene (natürlich nur bei Aussenkamera mit Sirene)
 
 - 1.32 @ 15.07.2023 15:31
   - Hotfix: Umgehung des Problems, das ein Login mit Entwicklerschlüssel nicht mehr möglich ist

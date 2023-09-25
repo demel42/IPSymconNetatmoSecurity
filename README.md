@@ -608,7 +608,7 @@ GUIDs
 - 1.33 @ 28.07.2023 11:33
   - Vorbereitung auf IPS 7 / PHP 8.2: Änderung der "webfront/user"-Struktur
   - Neu: Schalten von Kamera und Flutlicht über die Netatmo-API
-  - Neu: Status/Schalten der Sirene (natürlich nur bei Aussenkamera mit Sirene)
+  - Neu: Status der Sirene (natürlich nur bei Aussenkamera mit Sirene)
 
 - 1.32 @ 15.07.2023 15:31
   - Hotfix: Umgehung des Problems, das ein Login mit Entwicklerschlüssel nicht mehr möglich ist

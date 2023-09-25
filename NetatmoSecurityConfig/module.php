@@ -10,13 +10,16 @@ class NetatmoSecurityConfig extends IPSModule
     use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
-    private $ModuleDir;
-
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
 
-        $this->ModuleDir = __DIR__;
+        $this->CommonContruct(__DIR__);
+    }
+
+    public function __destruct()
+    {
+        $this->CommonDestruct();
     }
 
     public function Create()
@@ -25,7 +28,8 @@ class NetatmoSecurityConfig extends IPSModule
 
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
-        $this->RegisterAttributeString('UpdateInfo', '');
+        $this->RegisterAttributeString('UpdateInfo', json_encode([]));
+        $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
         $this->InstallVarProfiles(false);
 
@@ -106,6 +110,10 @@ class NetatmoSecurityConfig extends IPSModule
                                 case 'NSD':
                                     $guid = '{1E90911D-AB28-5EA7-9134-CCEAF7F48C78}';
                                     $product_category = 'Smoke detector';
+                                    break;
+                                case 'NCO':
+                                    $guid = '{1E90911D-AB28-5EA7-9134-CCEAF7F48C78}';
+                                    $product_category = 'Carbon monoxide detector';
                                     break;
                                 default:
                                     $guid = '';

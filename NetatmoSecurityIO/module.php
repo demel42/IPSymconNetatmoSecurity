@@ -12,23 +12,29 @@ class NetatmoSecurityIO extends IPSModule
 
     private $oauthIdentifer = 'netatmo';
 
-    private static $semaphoreTM = 5 * 1000;
-
     private static $scopes = [
         'read_presence', 'write_presence', 'access_presence', // Outdoor-Kamera
         'read_camera', 'write_camera', 'access_camera', // Indoor-Kamera
         'read_smokedetector', // Rauchmelder
+        'read_carbonmonoxidedetector', // CO-Melder
+        'read_doorbell', 'access_doorbell', // Türsprechanlage
     ];
 
-    private $ModuleDir;
+    private static $semaphoreTM = 5 * 1000;
+
     private $SemaphoreID;
 
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
 
-        $this->ModuleDir = __DIR__;
+        $this->CommonContruct(__DIR__);
         $this->SemaphoreID = __CLASS__ . '_' . $InstanceID;
+    }
+
+    public function __destruct()
+    {
+        $this->CommonDestruct();
     }
 
     public function Create()
@@ -53,11 +59,12 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->RegisterPropertyInteger('OAuth_Type', self::$CONNECTION_UNDEFINED);
 
-        $this->RegisterAttributeString('UpdateInfo', '');
-        $this->RegisterAttributeString('ApiCallStats', json_encode([]));
-
         $this->RegisterAttributeString('ApiRefreshToken', '');
         $this->RegisterAttributeString('AppRefreshToken', '');
+
+        $this->RegisterAttributeString('UpdateInfo', json_encode([]));
+        $this->RegisterAttributeString('ApiCallStats', json_encode([]));
+        $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
         $this->InstallVarProfiles(false);
 

@@ -2,6 +2,7 @@
 	"translations": {
 		"de": {
 			"Netatmo smoke detector": "Netatmo Rauchmelder",
+			"Netatmo carbon monoxide detector": "Netatmo Kohlenmonoxid-Melder",
 
 			"__function__": "CheckConfiguration",
 			"Product-Type must be specified": "Produkt-Typ muss angegeben sein",
@@ -33,6 +34,8 @@
 			"Instance has no active gateway": "Instanz hat keinen aktiven Gateway",
 
 			"__variables__": "",
+			"Alarm": "Alarm",
+			"Warmining": "Warnung",
 			"Events": "Ereignisse",
 			"Last communication": "letzte Kommunikation",
 			"Last seen": "zuletzt gesehen",
@@ -43,6 +46,8 @@
 			"Smoke detector is muted": "Rauchmeldet ist stummgeschaltet",
 			"Sound test": "Alarmton-Test",
 			"Wifi status": "Wifi-Status",
+			"CO is critical": "CO ist kritisch",
+			"CO is increased": "CO ist erhöht",
 
 			"__function__": "ReceiveData",
 			"Smoke detector is muted": "Rauchmelder ist stummgeschaltet",
@@ -51,6 +56,9 @@
 			"Smoke not longer detected": "Rauch wird nicht mehr erkannt",
 			"Smoke detector is tampered": "Rauchmelder ist manipuliert",
 			"Smoke detector is ready": "Rauchmelder ist bereit",
+			"Carbon monoxide not longer detected": "Kein Kohlenmonoxid mehr erkannt",
+			"Carbon monoxide is increased": "Kohlenmonoxid ist erhöht",
+			"Carbon monoxide is critical": "Kohlenmonoxid ist kritisch",
 			"Wifi status is ok": "Wifi-Status ist ok",
 			"Wifi status is bad": "Wifi-Status ist schlecht",
 			"Battery status is very low": "Batteriestatus ist sehr niedrig",

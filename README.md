@@ -22,6 +22,7 @@ Anschluss der Geräte, die von Netatmo unter dem Beriff _Security_ zusammengefas
 - Aussenkamera (_Outdoor_ bzw. _Presence_)
 - Innenkamera (_Indoor_ bzw. _Welcome_)
 - Rauchmelder
+- Kohlenmonoxid-Melder
 - Fenster- und Türsensoren (_Tags_)
 Hinweis: für den Rauchmelder sowiet die Sensoren gibt es mangels eigener Testmöglichkeit noch keine Implementierung.
 
@@ -598,6 +599,11 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson, NetatmoSecurityDetector
 
 ## 7. Versions-Historie
+
+- 1.34 @ 25.09.2023 09:59
+  - Neu: CO-Melder integriert
+  - Neu: Ermittlung von Speicherbedarf und Laufzeit (aktuell und für 31 Tage) und Anzeige im Panel "Information"
+  - update submodule CommonStubs
 
 - 1.33 @ 28.07.2023 11:33
   - Vorbereitung auf IPS 7 / PHP 8.2: Änderung der "webfront/user"-Struktur

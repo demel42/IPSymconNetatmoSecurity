@@ -10,15 +10,18 @@ class NetatmoSecurityDetector extends IPSModule
     use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
-    private $ModuleDir;
-
     public static $MUTE_RELEASE = 15 * 60; // 15 Minuten
 
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
 
-        $this->ModuleDir = __DIR__;
+        $this->CommonContruct(__DIR__);
+    }
+
+    public function __destruct()
+    {
+        $this->CommonDestruct();
     }
 
     public function Create()
@@ -44,7 +47,8 @@ class NetatmoSecurityDetector extends IPSModule
         $this->RegisterPropertyInteger('new_event_script', 0);
         $this->RegisterPropertyInteger('notify_script', 0);
 
-        $this->RegisterAttributeString('UpdateInfo', '');
+        $this->RegisterAttributeString('UpdateInfo', json_encode([]));
+        $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
         $this->InstallVarProfiles(false);
 
@@ -107,6 +111,9 @@ class NetatmoSecurityDetector extends IPSModule
         $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
+        $product_id = $this->ReadPropertyString('product_id');
+        $product_type = $this->ReadPropertyString('product_type');
+
         $vpos = 1;
 
         $this->MaintainVariable('Status', $this->Translate('State'), VARIABLETYPE_BOOLEAN, '~Alert.Reversed', $vpos++, true);
@@ -117,15 +124,35 @@ class NetatmoSecurityDetector extends IPSModule
 
         $this->MaintainVariable('WifiStrength', $this->Translate('Strength of wifi-signal'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.WifiStrength', $vpos++, $with_wifi_strength);
 
-        $this->MaintainVariable('Alarm', $this->Translate('Smoke detected'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
-        $this->MaintainVariable('Muted', $this->Translate('Smoke detector is muted'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
-        $this->MaintainVariable('Tampered', $this->Translate('Smoke detector is tampered'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
-        $this->MaintainVariable('Dusty', $this->Translate('Smoke chamber is dusty'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+        switch ($product_type) {
+            case 'NSD':
+                $this->MaintainVariable('Alarm', $this->Translate('Smoke detected'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+                $this->MaintainVariable('Muted', $this->Translate('Smoke detector is muted'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+                $this->MaintainVariable('Tampered', $this->Translate('Smoke detector is tampered'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+                $this->MaintainVariable('Dusty', $this->Translate('Smoke chamber is dusty'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+
+                foreach (['Warning'] as $unused_var) {
+                    $this->UnregisterVariable($unused_var);
+                }
+                break;
+            case 'NCO':
+                $this->MaintainVariable('Alarm', $this->Translate('CO is critical'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+                $this->MaintainVariable('Warning', $this->Translate('CO is increased'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, true);
+
+                foreach (['Muted', 'Tampered', 'Dusty'] as $unused_var) {
+                    $this->UnregisterVariable($unused_var);
+                }
+                break;
+            default:
+                foreach (['Alarm', 'Warning', 'Muted', 'Tampered', 'Dusty'] as $unused_var) {
+                    $this->UnregisterVariable($unused_var);
+                }
+                break;
+        }
+
         $this->MaintainVariable('SoundTest', $this->Translate('Sound test'), VARIABLETYPE_BOOLEAN, '~Alert', $vpos++, true);
         $this->MaintainVariable('WifiStatus', $this->Translate('Wifi status'), VARIABLETYPE_BOOLEAN, '~Alert.Reversed', $vpos++, true);
 
-        $product_id = $this->ReadPropertyString('product_id');
-        $product_type = $this->ReadPropertyString('product_type');
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
 
@@ -158,6 +185,9 @@ class NetatmoSecurityDetector extends IPSModule
         switch ($product_type) {
             case 'NSD':
                 $product_type_s = 'Netatmo smoke detector';
+                break;
+            case 'NCO':
+                $product_type_s = 'Netatmo carbon monoxide detector';
                 break;
             default:
                 $product_type_s = 'Unknown product';
@@ -335,6 +365,8 @@ class NetatmoSecurityDetector extends IPSModule
         $product_type = $this->ReadPropertyString('product_type');
         switch ($product_type) {
             case 'NSD':
+                break;
+            case 'NCO':
                 break;
             default:
                 break;
@@ -745,12 +777,39 @@ class NetatmoSecurityDetector extends IPSModule
                                     $this->SetValue('SoundTest', false);
                                 }
                                 break;
-/*
-                            case 'NCO-co_detected': // When carbon monoxide is detected (0=ok, 1=pre-alarm, 2=alarm)
-                            case 'NCO-wifi_status': // When wifi status is updated (0=error, 1=ok)
-                            case 'NCO-battery_status': // When battery status is too low (0=low, 1=very low)
+                            case 'NCO-co_detected':
+                                switch ($sub_type) {
+                                    case 0:
+                                        $message = $this->Translate('Carbon monoxide not longer detected');
+                                        $this->SetValue('Alarm', false);
+                                        $this->SetValue('Warning', false);
+                                        break;
+                                    case 1:
+                                        $message = $this->Translate('Carbon monoxide is increased');
+                                        $this->SetValue('Warning', true);
+                                        break;
+                                    case 2:
+                                        $message = $this->Translate('Carbon monoxide is critical');
+                                        $this->SetValue('Alarm', true);
+                                        break;
+                                }
                                 break;
- */
+                            case 'NCO-wifi_status':
+                                if ($sub_type) {
+                                    $message = $this->Translate('Wifi status is ok');
+                                    $this->SetValue('WifiStatus', true);
+                                } else {
+                                    $message = $this->Translate('Wifi status is bad');
+                                    $this->SetValue('WifiStatus', false);
+                                }
+                                break;
+                            case 'NCO-battery_status':
+                                if ($sub_type) {
+                                    $message = $this->Translate('Battery status is very low');
+                                } else {
+                                    $message = $this->Translate('Battery status is low');
+                                }
+                                break;
                             default:
                                 break;
                         }
@@ -763,6 +822,9 @@ class NetatmoSecurityDetector extends IPSModule
                             case 'NSD-battery_status':
                             case 'NSD-sound_test':
                             case 'NSD-detection_chamber_status':
+                            case 'NCO-co_detected':
+                            case 'NCO-wifi_status':
+                            case 'NCO-battery_status':
                                 $cur_notification = [
                                     'tstamp'       => $now,
                                     'id'           => $event_id,

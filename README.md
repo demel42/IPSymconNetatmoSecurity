@@ -600,7 +600,7 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.34 @ 25.09.2023 09:59
+- 1.34 @ 26.09.2023 07:40
   - Neu: CO-Melder integriert
   - Neu: Ermittlung von Speicherbedarf und Laufzeit (aktuell und für 31 Tage) und Anzeige im Panel "Information"
   - update submodule CommonStubs

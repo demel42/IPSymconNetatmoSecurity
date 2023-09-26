@@ -223,7 +223,7 @@ class NetatmoSecurityPerson extends IPSModule
                     $homes = $this->GetArrayElem($jdata, 'states.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
-                            if ($home_id != $home['id']) {
+                            if (isset($home['id']) && $home['id'] != $home_id) {
                                 continue;
                             }
                             $persons = $this->GetArrayElem($home, 'persons', '');
@@ -244,32 +244,32 @@ class NetatmoSecurityPerson extends IPSModule
                             }
                         }
                     }
-                        $homes = $this->GetArrayElem($jdata, 'config.homes', '');
-                        if ($homes != '') {
-                            foreach ($homes as $home) {
-                                if ($home_id != $home['id']) {
-                                    continue;
-                                }
-                                $persons = $this->GetArrayElem($home, 'persons', '');
-                                if ($persons != '') {
-                                    foreach ($persons as $person) {
-                                        if ($person_id != $person['id']) {
-                                            continue;
-                                        }
-                                        $this->SendDebug(__FUNCTION__, 'decode person=' . print_r($person, true), 0);
+                    $homes = $this->GetArrayElem($jdata, 'config.homes', '');
+                    if ($homes != '') {
+                        foreach ($homes as $home) {
+                            if (isset($home['id']) && $home['id'] != $home_id) {
+                                continue;
+                            }
+                            $persons = $this->GetArrayElem($home, 'persons', '');
+                            if ($persons != '') {
+                                foreach ($persons as $person) {
+                                    if ($person_id != $person['id']) {
+                                        continue;
+                                    }
+                                    $this->SendDebug(__FUNCTION__, 'decode person=' . print_r($person, true), 0);
 
-                                        $url = $this->GetArrayElem($person, 'url', '');
-                                        $this->WriteAttributeString('face_url', $url);
-                                        $this->SendDebug(__FUNCTION__, 'face_url=' . $url, 0);
+                                    $url = $this->GetArrayElem($person, 'url', '');
+                                    $this->WriteAttributeString('face_url', $url);
+                                    $this->SendDebug(__FUNCTION__, 'face_url=' . $url, 0);
 
-                                        $data = @file_get_contents($url);
-                                        if ($data != false) {
-                                            $this->SetMediaData('Portrait', $data, MEDIATYPE_IMAGE, '.jpg', false);
-                                        }
+                                    $data = @file_get_contents($url);
+                                    if ($data != false) {
+                                        $this->SetMediaData('Portrait', $data, MEDIATYPE_IMAGE, '.jpg', false);
                                     }
                                 }
                             }
                         }
+                    }
                     break;
                 case 'PUSH':
                     break;

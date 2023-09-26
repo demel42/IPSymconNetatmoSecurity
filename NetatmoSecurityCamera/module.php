@@ -952,7 +952,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $homes = $this->GetArrayElem($jdata, 'states.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
-                            if ($home_id != $home['id']) {
+                            if (isset($home['id']) && $home['id'] != $home_id) {
                                 continue;
                             }
                             $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
@@ -1359,7 +1359,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $homes = $this->GetArrayElem($jdata, 'config.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
-                            if ($home_id != $home['id']) {
+                            if (isset($home['id']) && $home['id'] != $home_id) {
                                 continue;
                             }
                             $persons = $this->GetArrayElem($home, 'persons', '');
@@ -2216,7 +2216,7 @@ class NetatmoSecurityCamera extends IPSModule
             $this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
             if ($homes != '') {
                 foreach ($homes as $home) {
-                    if ($home_id != $home['id']) {
+                    if (isset($home['id']) && $home['id'] != $home_id) {
                         continue;
                     }
                     $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);

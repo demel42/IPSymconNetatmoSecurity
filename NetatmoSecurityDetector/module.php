@@ -392,7 +392,7 @@ class NetatmoSecurityDetector extends IPSModule
                     $homes = $this->GetArrayElem($jdata, 'states.homes', '');
                     if ($homes != '') {
                         foreach ($homes as $home) {
-                            if ($home_id != $home['id']) {
+                            if (isset($home['id']) && $home['id'] != $home_id) {
                                 continue;
                             }
                             $modules = $this->GetArrayElem($home, 'modules', '');
@@ -1044,13 +1044,10 @@ class NetatmoSecurityDetector extends IPSModule
             $this->SendDebug(__FUNCTION__, 'homes=' . print_r($homes, true), 0);
             if ($homes != '') {
                 foreach ($homes as $home) {
-                    if ($home_id != $home['id']) {
+                    if (isset($home['id']) && $home['id'] != $home_id) {
                         continue;
                     }
                     $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
-
-                    $NOC = $this->GetArrayElem($home, 'NOC', '');
-                    $this->SendDebug(__FUNCTION__, 'NOC=' . print_r($NOC, true), 0);
                 }
             }
         }

@@ -601,7 +601,7 @@ GUIDs
 ## 7. Versions-Historie
 
 - 1.35 @ 15.10.2023 13:51
-  - Fix: ApiCalls werden nicht mehr nach uri sondern nur noch host+cmd differenzieren
+  - Fix: die Statistik der ApiCalls wird nicht mehr nach uri sondern nur noch host+cmd differenziert
   - update submodule CommonStubs
 
 - 1.34 @ 26.09.2023 07:40

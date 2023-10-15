@@ -600,7 +600,8 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.35 @ 15.10.2023 13:51
+- 1.35 @ 15.10.2023 15:40
+  - Fix: Absicherung von fehlenden Media-Objekten (z.B. frisch eingerichtete Instanz)
   - Fix: die Statistik der ApiCalls wird nicht mehr nach uri sondern nur noch host+cmd differenziert
   - update submodule CommonStubs
 

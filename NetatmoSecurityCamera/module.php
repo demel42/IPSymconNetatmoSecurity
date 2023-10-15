@@ -1048,7 +1048,7 @@ class NetatmoSecurityCamera extends IPSModule
                             $cur_events = [];
                             $new_events = [];
                             $s = $this->GetMediaData('Events');
-                            $prev_events = @json_decode($s, true);
+                            $prev_events = @json_decode((string) $s, true);
                             if (is_array($prev_events) == false) {
                                 $prev_events = [];
                             }
@@ -1383,7 +1383,7 @@ class NetatmoSecurityCamera extends IPSModule
                     $new_notifications = [];
                     $cur_notifications = [];
                     $s = $this->GetMediaData('Notifications');
-                    $prev_notifications = @json_decode($s, true);
+                    $prev_notifications = @json_decode((string) $s, true);
                     if (is_array($prev_notifications) == false) {
                         $prev_notifications = [];
                     }

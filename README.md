@@ -600,7 +600,8 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.35.1 @ 03.11.2023 11:06
+- 1.36 @ 13.11.2023 16:44
+  - Fix: Konfigurator erkennt nun auch überflüssige Rauch- und CO-Melder
   - update submodule CommonStubs
 
 - 1.35 @ 15.10.2023 15:40

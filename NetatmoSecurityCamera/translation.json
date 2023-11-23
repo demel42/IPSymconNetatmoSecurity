@@ -51,6 +51,7 @@
 			"Check whether the retrieval is from the local network": "Prüfung, ob der Abruf aus dem lokalen Netz erfolgt",
 			"external IP-Address": "externe IP-Adresse",
 			"local CIDR's": "lokale CIDR's",
+			"Prefer local camera-url for video/images": "Lokale Kamera-URL für Video/Bilder bevorzugen",
 
 			"maximum age until deletion": "maximales Alter bis zum Löschen",
 			"days": "Tage",

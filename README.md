@@ -395,49 +395,50 @@ Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in d
 
 werden vom Konfigurator beim Anlegen der Instanz gesetzt.
 
-| Eigenschaft              | Typ      | Standardwert | Beschreibung |
-| :----------------------- | :--------| :----------- | :----------- |
-| Produkt-Typ              | string   |              | Identifikation, z.Zt _NACamera_, _NOC_ |
-| Produkt-ID               | string   |              | ID des Produktes |
-| Heim-ID                  | string   |              | ID des "Heims" |
-|                          |          |              | |
-| letzte Kommunikation     | boolean  | Nein         | letzte Kommunikation mit dem Netatmo-Server |
-| letztes Ereignis         | boolean  | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
-| letzte Benachrichtigung  | boolean  | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
-| Sirene                   | boolean  | Nein         | Status/AKtion der Sirene, **nur bei OutdoorCamera** |
-| Stärke des Wifi-Signals  | boolean  | Nein         | Ausgabe des Signal in den Abstufungen: _schlecht_, _mittel_, _gut_, _hoch_|
-| Bewegungsmelder          | boolean  | Nein         | Variable mit dem Ergebnis des Kamera-Bewegungsmelders |
-|                          |          |              | |
-| Webhook                  | string   |              | Webhook, um Daten dieser Kamera abzufragen |
-|  ... IPS IP-Adresse      | string   |              | DynDNS-Name oder IP des IPS-Servers |
-|  ... IPS Portnummer      | integer  | 3777         | Portnummer des IPS-Servers |
-|  ... externe IP-Adresse  | string   |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
-|  ... local CIDR's        | string   |              | durch Semikolog getrennte Liste der lokalen CIDR's (Netzwerke) |
-|  ... Script              | integer  |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
-|                          |          |              | |
-| Ereignisse               |          |              | |
-|  ... max. Alter          | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
-|  ... Script              | integer  |              | Script, das beim Empfang neuer Ereignisse aufgerufen wird |
-|                          |          |              | |
-| Benachrichtigung         |          |              | |
-|  ... max. Alter          | integer  | 2            | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
-|  ... Script              | integer  |              | Script, das beim Empfang einer Benachrichtigung aufgerufen wird |
-|                          |          |              | |
-| FTP-Verzeichnis          |          |              | |
-|  ... Verzeichnis         | string   |              | Pfad relativ zum IPS-Userverzeichnis |
-|  ... max. Alter          | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
-|                          |          |              | |
-| Zeitraffer-Darstellung   |          |              | **nur bei OutdoorCamera** |
-|  ... Verzeichnis         | string   |              | Pfad relativ zum IPS-Userverzeichnis |
-|  ... Startzeit           | integer  | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
-|  ... max. Alter          | integer  | 7            | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
-|                          |          |              | |
-| geänderte VPN-URL        |          |              | |
-|  ... Script              | integer  |              | Script, das bei Änderung der VPN-URL aufgerufen wird |
-|                          |          |              | |
-| Personen                 |          |              | **nur bei IndoorCamera** |
-| Kategorie                | integer  | 0            | Kategorie im Objektbaum, unter dem die Instanzen angelegt werden |
-| Personen                 | list     |              | Liste der verfügbaren Personen zu diesem Heim |
+| Eigenschaft                | Typ      | Standardwert | Beschreibung |
+| :-----------------------   | :--------| :----------- | :----------- |
+| Produkt-Typ                | string   |              | Identifikation, z.Zt _NACamera_, _NOC_ |
+| Produkt-ID                 | string   |              | ID des Produktes |
+| Heim-ID                    | string   |              | ID des "Heims" |
+|                            |          |              | |
+| letzte Kommunikation       | boolean  | Nein         | letzte Kommunikation mit dem Netatmo-Server |
+| letztes Ereignis           | boolean  | Nein         | Zeitpunkt der letzten Änderung an Ereignissen durch Ereignis-Abruf |
+| letzte Benachrichtigung    | boolean  | Nein         | Zeitpunkt der letzten Benachrichtigung von Netatmo |
+| Sirene                     | boolean  | Nein         | Status/AKtion der Sirene, **nur bei OutdoorCamera** |
+| Stärke des Wifi-Signals    | boolean  | Nein         | Ausgabe des Signal in den Abstufungen: _schlecht_, _mittel_, _gut_, _hoch_|
+| Bewegungsmelder            | boolean  | Nein         | Variable mit dem Ergebnis des Kamera-Bewegungsmelders |
+|                            |          |              | |
+| Webhook                    | string   |              | Webhook, um Daten dieser Kamera abzufragen |
+|  ... IPS IP-Adresse        | string   |              | DynDNS-Name oder IP des IPS-Servers |
+|  ... IPS Portnummer        | integer  | 3777         | Portnummer des IPS-Servers |
+|  ... externe IP-Adresse    | string   |              | DynDNS-Name oder IP der externen Adresse des Internet-Anschlusses |
+|  ... lokale CIDR's         | string   |              | durch Semikolon getrennte Liste der lokalen CIDR's (Netzwerke) |
+|  ... lokale URL bevorzugen | boolean  | Ja           | bevorzugt lokale Kamera-URL verwenden zum Abruf von Videos/Bildern |
+|  ... Script                | integer  |              | Script, das dem Aufruf des WebHook aufgerufen werden kann (siehe Aufbau des WebHook) |
+|                            |          |              | |
+| Ereignisse                 |          |              | |
+|  ... max. Alter            | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
+|  ... Script                | integer  |              | Script, das beim Empfang neuer Ereignisse aufgerufen wird |
+|                            |          |              | |
+| Benachrichtigung           |          |              | |
+|  ... max. Alter            | integer  | 2            | automatisches Löschen nach Überschreitung des Alters (in Tagen) |
+|  ... Script                | integer  |              | Script, das beim Empfang einer Benachrichtigung aufgerufen wird |
+|                            |          |              | |
+| FTP-Verzeichnis            |          |              | |
+|  ... Verzeichnis           | string   |              | Pfad relativ zum IPS-Userverzeichnis |
+|  ... max. Alter            | integer  | 14           | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
+|                            |          |              | |
+| Zeitraffer-Darstellung     |          |              | **nur bei OutdoorCamera** |
+|  ... Verzeichnis           | string   |              | Pfad relativ zum IPS-Userverzeichnis |
+|  ... Startzeit             | integer  | 0            | Tageszeit, wann das holen gestartet werden soll, **-1** deaktiviert die Funktion |
+|  ... max. Alter            | integer  | 7            | automatisches Löschen nach Überschreitung des Alters (in Tagen), **0** deaktiviert das Löschen |
+|                            |          |              | |
+| geänderte VPN-URL          |          |              | |
+|  ... Script                | integer  |              | Script, das bei Änderung der VPN-URL aufgerufen wird |
+|                            |          |              | |
+| Personen                   |          |              | **nur bei IndoorCamera** |
+| Kategorie                  | integer  | 0            | Kategorie im Objektbaum, unter dem die Instanzen angelegt werden |
+| Personen                   | list     |              | Liste der verfügbaren Personen zu diesem Heim |
 
 - Hinweis: damit die Videos abgerufen werden können, müssen diesen unterhalb von _webfront/user_ liegen (zumindestens ist mir keine andere Möglichkeit bekannt). Wenn die Daten auf einem anderen Server (z.B. einem NAS) gespeichert werden, so kann das Verzeichnis ja passend gemountet werden.<br>
 Das ist an sich unproblatisch, aber die Standard-Sicherung von IPS sichert das Webhook-Verzeichnis natprlich mit und damit wird die Sicherung deutlich größer.
@@ -600,8 +601,12 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.36 @ 13.11.2023 16:44
+- 1.36 @ 23.11.2023 16:39
+  - Neu: Kamerainstanz hat neue Option zur Entscheidung, ob bevorzugt die lokale Kamer-URL genommen wird oder die VPN-URL
   - Fix: Konfigurator erkennt nun auch überflüssige Rauch- und CO-Melder
+  - Fix: Bug in der Vorlage "processUrlChanged.php"
+  - Fix: fehlerhafte "lokale CIDR's" verursachen keinen Absturz mehr
+  - Verbesserung: Länge der SelectScript-Properties erhöht
   - update submodule CommonStubs
 
 - 1.35 @ 15.10.2023 15:40

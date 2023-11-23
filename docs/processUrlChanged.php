@@ -17,5 +17,5 @@ $varIDs = [
 ];
 
 foreach ($varIDs as $varID) {
-    SetValue($varID, GetValue($varId));
+    SetValue($varID, GetValue($varID));
 }

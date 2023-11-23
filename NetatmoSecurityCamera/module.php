@@ -51,6 +51,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyInteger('ipsPort', 3777);
         $this->RegisterPropertyString('externalIP', '');
         $this->RegisterPropertyString('localCIDRs', '');
+        $this->RegisterPropertyBoolean('prefer_local_url', true);
 
         $this->RegisterPropertyInteger('event_max_age', 14);
         $this->RegisterPropertyInteger('notification_max_age', 2);
@@ -135,21 +136,27 @@ class NetatmoSecurityCamera extends IPSModule
             $ok = true;
             $cidrs = explode(';', $localCIDRs);
             foreach ($cidrs as $cidr) {
-                list($net, $mask) = explode('/', $cidr);
+                $p = explode('/', $cidr);
+                if (count($p) != 2) {
+                    $ok = false;
+                    break;
+                }
+                $net = $p[0];
+                $mask = $p[1];
                 if (ip2long($net) == false) {
                     $ok = false;
+                    break;
                 }
                 if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $mask)) {
                     if (ip2long($mask) == false) {
                         $ok = false;
+                        break;
                     }
                 } else {
                     if (!is_numeric($mask) || $mask < 1 || $mask > 31) {
                         $ok = false;
+                        break;
                     }
-                }
-                if (!$ok) {
-                    break;
                 }
             }
             if (!$ok) {
@@ -633,9 +640,10 @@ class NetatmoSecurityCamera extends IPSModule
                     'caption' => 'Webhook'
                 ],
                 [
-                    'type'    => 'SelectScript',
-                    'name'    => 'webhook_script',
-                    'caption' => 'Adjustment of the returned HTML code'
+                    'type'     => 'SelectScript',
+                    'name'     => 'webhook_script',
+                    'width'    => '600px',
+                    'caption'  => 'Adjustment of the returned HTML code'
                 ],
                 [
                     'type'    => 'Label',
@@ -666,9 +674,15 @@ class NetatmoSecurityCamera extends IPSModule
                     'caption' => 'local CIDR\'s'
                 ],
                 [
-                    'type'    => 'SelectScript',
-                    'name'    => 'url_changed_script',
-                    'caption' => 'Call with changed VPN-URL'
+                    'type'    => 'CheckBox',
+                    'name'    => 'prefer_local_url',
+                    'caption' => 'Prefer local camera-url for video/images'
+                ],
+                [
+                    'type'     => 'SelectScript',
+                    'name'     => 'url_changed_script',
+                    'width'    => '600px',
+                    'caption'  => 'Call with changed VPN-URL'
                 ],
             ],
             'caption' => 'Webhook'
@@ -685,9 +699,10 @@ class NetatmoSecurityCamera extends IPSModule
                     'suffix'  => 'days'
                 ],
                 [
-                    'type'    => 'SelectScript',
-                    'name'    => 'new_event_script',
-                    'caption' => 'Call upon receipt of new events'
+                    'type'     => 'SelectScript',
+                    'name'     => 'new_event_script',
+                    'width'    => '600px',
+                    'caption'  => 'Call upon receipt of new events'
                 ],
             ],
             'caption' => 'Events'
@@ -704,9 +719,10 @@ class NetatmoSecurityCamera extends IPSModule
                     'suffix'  => 'days'
                 ],
                 [
-                    'type'    => 'SelectScript',
-                    'name'    => 'notify_script',
-                    'caption' => 'Call upon receipt of a notification'
+                    'type'     => 'SelectScript',
+                    'name'     => 'notify_script',
+                    'width'    => '600px',
+                    'caption'  => 'Call upon receipt of a notification'
                 ],
             ],
             'caption' => 'Notifications'
@@ -2351,7 +2367,8 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        $url = $preferLocal ? $this->determineLocalUrl() : false;
+        $prefer_local_url = $this->ReadPropertyBoolean('prefer_local_url');
+        $url = ($preferLocal && $prefer_local_url) ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -2369,7 +2386,8 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetLiveSnapshotUrl(bool $preferLocal)
     {
-        $url = $preferLocal ? $this->determineLocalUrl() : false;
+        $prefer_local_url = $this->ReadPropertyBoolean('prefer_local_url');
+        $url = ($preferLocal && $prefer_local_url) ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -2394,7 +2412,8 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        $url = $preferLocal ? $this->determineLocalUrl() : false;
+        $prefer_local_url = $this->ReadPropertyBoolean('prefer_local_url');
+        $url = ($preferLocal && $prefer_local_url) ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -2422,7 +2441,8 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetPictureUrl4Filename(string $filename, bool $preferLocal)
     {
-        $url = $preferLocal ? $this->determineLocalUrl() : false;
+        $prefer_local_url = $this->ReadPropertyBoolean('prefer_local_url');
+        $url = ($preferLocal && $prefer_local_url) ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
@@ -2946,6 +2966,10 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $html = '<html>';
         if (preg_match('/\.mp4$/', $url)) {
+            $html .= '<head>';
+            $html .= '<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">';
+            $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
+            $html .= '</head>';
             $html .= '<body>';
             $html .= '<video>';
             $html .= '  <source src="' . $url . '" type="video/mp4" />';
@@ -2953,18 +2977,21 @@ class NetatmoSecurityCamera extends IPSModule
             $html .= '</body>';
         } elseif (preg_match('/\.m3u8$/', $url)) {
             $html .= '<head>';
+            $html .= '<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">';
             $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
             $html .= '</head>';
             $html .= '<body>';
             $html .= '</body>';
         } elseif (preg_match('/\.jpg$/', $url)) {
             $html .= '<head>';
+            $html .= '<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">';
             $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
             $html .= '</head>';
             $html .= '<body>';
             $html .= '</body>';
         } else {
             $html .= '<head>';
+            $html .= '<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">';
             $html .= '<meta http-equiv="refresh" content="0; url=' . $url . '">';
             $html .= '</head>';
             $html .= '<body>';

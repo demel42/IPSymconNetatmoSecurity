@@ -68,7 +68,9 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyInteger('webhook_script', 0);
         $this->RegisterPropertyInteger('url_changed_script', 0);
 
-        $this->RegisterPropertyInteger('ImportCategoryID', 0);
+        if (IPS_GetKernelVersion() < 7.0) {
+            $this->RegisterPropertyInteger('ImportCategoryID', 0);
+        }
 
         $this->RegisterAttributeString('UpdateInfo', json_encode([]));
         $this->RegisterAttributeString('ModuleStats', json_encode([]));
@@ -220,7 +222,10 @@ class NetatmoSecurityCamera extends IPSModule
     {
         parent::ApplyChanges();
 
-        $propertyNames = ['ImportCategoryID', 'new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
+        $propertyNames = ['new_event_script', 'notify_script', 'url_changed_script', 'webhook_script'];
+        if (IPS_GetKernelVersion() < 7.0) {
+            $propertyNames[] = 'ImportCategoryID';
+        }
         $this->MaintainReferences($propertyNames);
 
         if ($this->CheckPrerequisites() != false) {
@@ -390,7 +395,12 @@ class NetatmoSecurityCamera extends IPSModule
             return $entries;
         }
 
-        $catID = $this->ReadPropertyInteger('ImportCategoryID');
+        if (IPS_GetKernelVersion() < 7.0) {
+            $catID = $this->ReadPropertyInteger('ImportCategoryID');
+            $location = $this->GetConfiguratorLocation($catID);
+        } else {
+            $location = '';
+        }
 
         $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'LastData'];
         $data = $this->SendDataToParent(json_encode($SendData));
@@ -441,7 +451,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 'person_id'  => $person_id,
                                 'create'     => [
                                     'moduleID'       => $guid,
-                                    'location'       => $this->GetConfiguratorLocation($catID),
+                                    'location'       => $location,
                                     'info'           => $home_name . '\\' . $pseudo,
                                     'configuration'  => [
                                         'pseudo'     => $pseudo,
@@ -488,49 +498,6 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         return $entries;
-    }
-
-    private function GetConfigurator4Person()
-    {
-        $entries = $this->getConfiguratorValues();
-        if (count($entries) > 0) {
-            $configurator = [
-                'type'    => 'Configurator',
-                'name'    => 'persons',
-                'caption' => 'Persons',
-
-                'rowCount' => count($entries),
-
-                'add'    => false,
-                'delete' => false,
-                'sort'   => [
-                    'column'    => 'name',
-                    'direction' => 'ascending'
-                ],
-                'columns' => [
-                    [
-                        'caption' => 'Home',
-                        'name'    => 'home',
-                        'width'   => '200px'
-                    ],
-                    [
-                        'caption' => 'Pseudonym',
-                        'name'    => 'name',
-                        'width'   => 'auto'
-                    ],
-                    [
-                        'caption' => 'Id',
-                        'name'    => 'person_id',
-                        'width'   => '200px'
-                    ]
-                ],
-                'values' => $entries,
-            ];
-        } else {
-            $configurator = false;
-        }
-
-        return $configurator;
     }
 
     private function GetFormElements()
@@ -786,48 +753,51 @@ class NetatmoSecurityCamera extends IPSModule
 
         if ($product_type == 'NACamera') {
             $entries = $this->getConfiguratorValues();
+            $items = [];
+            if (IPS_GetKernelVersion() < 7.0) {
+                $items[] = [
+                    'type'    => 'SelectCategory',
+                    'name'    => 'ImportCategoryID',
+                    'caption' => 'category for persons to be created'
+                ];
+            }
+            $items[] = [
+                'type'    => 'Configurator',
+                'name'    => 'persons',
+                'caption' => 'Persons',
+
+                'rowCount' => count($entries),
+
+                'add'    => false,
+                'delete' => false,
+                'sort'   => [
+                    'column'    => 'name',
+                    'direction' => 'ascending'
+                ],
+                'columns' => [
+                    [
+                        'caption' => 'Home',
+                        'name'    => 'home',
+                        'width'   => '200px'
+                    ],
+                    [
+                        'caption' => 'Pseudonym',
+                        'name'    => 'name',
+                        'width'   => 'auto'
+                    ],
+                    [
+                        'caption' => 'Id',
+                        'name'    => 'person_id',
+                        'width'   => '200px'
+                    ]
+                ],
+                'values' => $entries,
+            ];
+
             if (count($entries) > 0) {
                 $formElements[] = [
                     'type'    => 'ExpansionPanel',
-                    'items'   => [
-                        [
-                            'type'    => 'SelectCategory',
-                            'name'    => 'ImportCategoryID',
-                            'caption' => 'category for persons to be created'
-                        ],
-                        [
-                            'type'    => 'Configurator',
-                            'name'    => 'persons',
-                            'caption' => 'Persons',
-
-                            'rowCount' => count($entries),
-
-                            'add'    => false,
-                            'delete' => false,
-                            'sort'   => [
-                                'column'    => 'name',
-                                'direction' => 'ascending'
-                            ],
-                            'columns' => [
-                                [
-                                    'caption' => 'Home',
-                                    'name'    => 'home',
-                                    'width'   => '200px'
-                                ],
-                                [
-                                    'caption' => 'Pseudonym',
-                                    'name'    => 'name',
-                                    'width'   => 'auto'
-                                ],
-                                [
-                                    'caption' => 'Id',
-                                    'name'    => 'person_id',
-                                    'width'   => '200px'
-                                ]
-                            ],
-                            'values' => $entries,
-                        ],
-                    ],
+                    'items'   => $items,
                     'caption' => 'Persons'
                 ];
             }
@@ -2041,7 +2011,7 @@ class NetatmoSecurityCamera extends IPSModule
         return $r;
     }
 
-    public function SetState($state, $value)
+    private function SetState($state, $value)
     {
         if ($this->HasActiveParent() == false) {
             $this->SendDebug(__FUNCTION__, 'has no active parent/gateway', 0);

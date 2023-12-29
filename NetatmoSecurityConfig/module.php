@@ -117,6 +117,10 @@ class NetatmoSecurityConfig extends IPSModule
                                     $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
                                     $product_category = 'Outdoor camera';
                                     break;
+                                case 'NDB':
+                                    $guid = '{06D589CF-7789-44B1-A0EC-6F51428352E6}';
+                                    $product_category = 'Video doorbell';
+                                    break;
                                 case 'NSD':
                                     $guid = '{1E90911D-AB28-5EA7-9134-CCEAF7F48C78}';
                                     $product_category = 'Smoke detector';

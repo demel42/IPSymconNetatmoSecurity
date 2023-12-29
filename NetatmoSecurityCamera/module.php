@@ -218,6 +218,51 @@ class NetatmoSecurityCamera extends IPSModule
         return '';
     }
 
+    private function GetCapabilities()
+    {
+        $product_type = $this->ReadPropertyString('product_type');
+        switch ($product_type) {
+            case 'NACamera':
+                $ret = [
+                    'with_camera_status'    => true,
+                    'with_light'            => false,
+                    'with_power'            => true,
+                    'with_siren'            => false,
+                    'with_motion_detection' => $this->ReadPropertyBoolean('with_motion_detection'),
+                ];
+                break;
+            case 'NOC':
+                $ret = [
+                    'with_camera_status'    => true,
+                    'with_light'            => true,
+                    'with_power'            => false,
+                    'with_siren'            => $this->ReadPropertyBoolean('with_siren'),
+                    'with_motion_detection' => $this->ReadPropertyBoolean('with_motion_detection'),
+                ];
+                break;
+            case 'NDB':
+                $ret = [
+                    'with_camera_status'    => false,
+                    'with_light'            => false,
+                    'with_power'            => true,
+                    'with_siren'            => false,
+                    'with_motion_detection' => false,
+                ];
+                break;
+            default:
+                $ret = [
+                    'with_camera_status'    => false,
+                    'with_light'            => false,
+                    'with_power'            => false,
+                    'with_siren'            => false,
+                    'with_motion_detection' => false,
+                ];
+                break;
+        }
+
+        return $ret;
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
@@ -253,24 +298,11 @@ class NetatmoSecurityCamera extends IPSModule
         $with_last_event = $this->ReadPropertyBoolean('with_last_event');
         $with_last_notification = $this->ReadPropertyBoolean('with_last_notification');
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
-        $with_siren = $this->ReadPropertyBoolean('with_siren');
         $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
-        $with_motion_detection = $this->ReadPropertyBoolean('with_motion_detection');
 
-        $product_type = $this->ReadPropertyString('product_type');
-        switch ($product_type) {
-            case 'NACamera':
-                $with_light = false;
-                $with_power = true;
-                break;
-            case 'NOC':
-                $with_light = true;
-                $with_power = false;
-                break;
-            default:
-                $with_light = false;
-                $with_power = false;
-                break;
+        $cap = $this->GetCapabilities();
+        foreach ($cap as $k => $v) {
+            ${$k} = $v;
         }
 
         $vpos = 1;
@@ -280,19 +312,21 @@ class NetatmoSecurityCamera extends IPSModule
         $this->MaintainVariable('LastEvent', $this->Translate('Last event'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, $with_last_event);
         $this->MaintainVariable('LastNotification', $this->Translate('Last notification'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, $with_last_notification);
 
-        $this->MaintainVariable('CameraStatus', $this->Translate('Camera state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraStatus', $vpos++, true);
+        $this->MaintainVariable('CameraStatus', $this->Translate('Camera state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraStatus', $vpos++, $with_camera_status);
         $this->MaintainVariable('SDCardStatus', $this->Translate('SD-Card state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.SDCardStatus', $vpos++, true);
         $this->MaintainVariable('PowerStatus', $this->Translate('Power state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.PowerStatus', $vpos++, $with_power);
         $this->MaintainVariable('LightmodeStatus', $this->Translate('Lightmode state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightModeStatus', $vpos++, $with_light);
 
-        $this->MaintainVariable('CameraAction', $this->Translate('Camera operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraAction', $vpos++, true);
+        $this->MaintainVariable('CameraAction', $this->Translate('Camera operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.CameraAction', $vpos++, $with_camera_status);
         $this->MaintainVariable('LightAction', $this->Translate('Light operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightAction', $vpos++, $with_light);
         $this->MaintainVariable('LightIntensity', $this->Translate('Light intensity'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.LightIntensity', $vpos++, $with_light);
 
         $this->MaintainVariable('SirenStatus', $this->Translate('Siren state'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.SirenStatus', $vpos++, $with_siren);
         $this->MaintainVariable('SirenAction', $this->Translate('Siren operation'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.SirenAction', $vpos++, $with_siren);
 
-        $this->MaintainAction('CameraAction', true);
+        if ($with_camera_status) {
+            $this->MaintainAction('CameraAction', true);
+        }
         if ($with_light) {
             $this->MaintainAction('LightAction', true);
             $this->MaintainAction('LightIntensity', true);
@@ -510,6 +544,9 @@ class NetatmoSecurityCamera extends IPSModule
             case 'NOC':
                 $product_type_s = 'Netatmo Outdoor camera (Presence)';
                 break;
+            case 'NDB':
+                $product_type_s = 'Netatmo video doorbell';
+                break;
             default:
                 $product_type_s = 'Netatmo Camera';
                 break;
@@ -577,12 +614,15 @@ class NetatmoSecurityCamera extends IPSModule
                 'name'    => 'with_local_detection',
                 'caption' => 'Detection whether the camera is connected to local network'
             ],
-            [
+        ];
+
+        if (in_array($product_type, ['NACamera', 'NOC'])) {
+            $items[] = [
                 'type'    => 'CheckBox',
                 'name'    => 'with_motion_detection',
                 'caption' => 'Motion detection'
-            ],
-        ];
+            ];
+        }
 
         if ($product_type == 'NOC') {
             $items[] = [
@@ -895,25 +935,14 @@ class NetatmoSecurityCamera extends IPSModule
 
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
-
         $product_type = $this->ReadPropertyString('product_type');
-        switch ($product_type) {
-            case 'NACamera':
-                $with_light = false;
-                $with_power = true;
-                break;
-            case 'NOC':
-                $with_light = true;
-                $with_power = false;
-                break;
-            default:
-                $with_light = false;
-                $with_power = false;
-                break;
+
+        $cap = $this->GetCapabilities();
+        foreach ($cap as $k => $v) {
+            ${$k} = $v;
         }
-        $with_siren = $this->ReadPropertyBoolean('with_siren');
+
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
-        $with_motion_detection = $this->ReadPropertyBoolean('with_motion_detection');
 
         $event_max_age = $this->ReadPropertyInteger('event_max_age');
         $notification_max_age = $this->ReadPropertyInteger('notification_max_age');
@@ -964,18 +993,20 @@ class NetatmoSecurityCamera extends IPSModule
                                         $this->SetBuffer('local_url', '');
                                     }
 
-                                    $camera_status = $this->map_camera_status($this->GetArrayElem($module, 'monitoring', ''));
-                                    if (is_int($camera_status)) {
-                                        if ($camera_status != self::$CAMERA_STATUS_ON && $camera_status != self::$CAMERA_STATUS_OFF) {
-                                            $camera_ok = false;
+                                    if ($with_camera_status) {
+                                        $camera_status = $this->map_camera_status($this->GetArrayElem($module, 'monitoring', ''));
+                                        if (is_int($camera_status)) {
+                                            if ($camera_status != self::$CAMERA_STATUS_ON && $camera_status != self::$CAMERA_STATUS_OFF) {
+                                                $camera_ok = false;
+                                            }
+                                            $this->SetValue('CameraStatus', $camera_status);
+                                            if ($camera_status == self::$CAMERA_STATUS_ON) {
+                                                $v = self::$CAMERA_STATUS_OFF;
+                                            } else {
+                                                $v = self::$CAMERA_STATUS_ON;
+                                            }
+                                            $this->SetValue('CameraAction', $v);
                                         }
-                                        $this->SetValue('CameraStatus', $camera_status);
-                                        if ($camera_status == self::$CAMERA_STATUS_ON) {
-                                            $v = self::$CAMERA_STATUS_OFF;
-                                        } else {
-                                            $v = self::$CAMERA_STATUS_ON;
-                                        }
-                                        $this->SetValue('CameraAction', $v);
                                     }
 
                                     $sd_status = $this->map_sd_status($this->GetArrayElem($module, 'sd_status', ''));
@@ -1638,32 +1669,35 @@ class NetatmoSecurityCamera extends IPSModule
                                 break;
                             case 'connection':
                             case 'disconnection':
-                            case 'NACamera-alarm_started':
                             case 'NACamera-connection':
                             case 'NACamera-disconnection':
-                            case 'NACamera-off':
-                            case 'NACamera-on':
                             case 'NOC-connection':
                             case 'NOC-disconnection':
-                            case 'NOC-ftp':
-                            case 'NOC-light_mode':
-                            case 'NOC-off':
-                            case 'NOC-on':
+                            case 'NDB-connection':
+                            case 'NDB-disconnection':
                             case 'off':
                             case 'on':
+                            case 'NACamera-off':
+                            case 'NACamera-on':
+                            case 'NOC-off':
+                            case 'NOC-on':
+                            case 'NOC-light_mode':
+                            case 'NOC-ftp':
+                            case 'NACamera-alarm_started':
+                            case 'NDB-incoming_call':
+                            case 'NDB-accepted_call':
+                            case 'NDB-missed_call':
                                 switch ($push_type) {
                                     case 'connection':
                                     case 'NACamera-connection':
                                     case 'NOC-connection':
-                                        $message = $this->Translate('Camera connected');
-                                        break;
+                                    case 'NDB-connection':
+                                        $message = $this->Translate('Camera connected'); break;
                                     case 'disconnection':
                                     case 'NACamera-disconnection':
                                     case 'NOC-disconnection':
+                                    case 'NDB-disconnection':
                                         $message = $this->Translate('Camera disconnected');
-                                        break;
-                                    case 'NOC-light_mode':
-                                        $message = $this->Translate('Light-mode changed to ' . $sub_type);
                                         break;
                                     case 'off':
                                     case 'NACamera-off':
@@ -1674,6 +1708,9 @@ class NetatmoSecurityCamera extends IPSModule
                                     case 'NACamera-on':
                                     case 'NOC-on':
                                         $message = $this->Translate('Monitoring enabled');
+                                        break;
+                                    case 'NOC-light_mode':
+                                        $message = $this->Translate('Light-mode changed to ' . $sub_type);
                                         break;
                                     case 'NOC-ftp':
                                         switch ($message) {
@@ -1692,6 +1729,15 @@ class NetatmoSecurityCamera extends IPSModule
                                         break;
                                     case 'NACamera-alarm_started':
                                         $message = $this->Translate('Alarm triggered');
+                                        break;
+                                    case 'NDB-incoming_call':
+                                        $message = $this->Translate('Incoming call');
+                                        break;
+                                    case 'NDB-accepted_call':
+                                        $message = $this->Translate('Accepted call');
+                                        break;
+                                    case 'NDB-missed_call':
+                                        $message = $this->Translate('Missed call');
                                         break;
                                     default:
                                         if ($message == '') {
@@ -1798,9 +1844,15 @@ class NetatmoSecurityCamera extends IPSModule
 
         $product_type = $this->ReadPropertyString('product_type');
 
+        $cap = $this->GetCapabilities();
+        foreach ($cap as $k => $v) {
+            ${$k} = $v;
+        }
+
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', value=' . $value . ', product_type=' . $product_type, 0);
         switch ($ident) {
             case 'LightAction':
-                if ($product_type == 'NOC') {
+                if ($with_light) {
                     $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
                     $this->SwitchLight($value);
                 } else {
@@ -1808,7 +1860,7 @@ class NetatmoSecurityCamera extends IPSModule
                 }
                 break;
             case 'LightIntensity':
-                if ($product_type == 'NOC') {
+                if ($with_light) {
                     $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
                     if ($this->DimLight($value)) {
                         $this->SetValue('LightIntensity', $value);
@@ -1818,12 +1870,20 @@ class NetatmoSecurityCamera extends IPSModule
                 }
                 break;
             case 'CameraAction':
-                $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
-                $this->SwitchCamera($value);
+                if ($with_camera_status) {
+                    $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
+                    $this->SwitchCamera($value);
+                } else {
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident . ' for product ' . $product_type, 0);
+                }
                 break;
             case 'SirenAction':
-                $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
-                $this->SwitchSiren($value);
+                if ($with_siren) {
+                    $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
+                    $this->SwitchSiren($value);
+                } else {
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident . ' for product ' . $product_type, 0);
+                }
                 break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
@@ -1839,6 +1899,17 @@ class NetatmoSecurityCamera extends IPSModule
             if ($log_no_parent) {
                 $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
             }
+            return false;
+        }
+
+        $product_type = $this->ReadPropertyString('product_type');
+
+        $cap = $this->GetCapabilities();
+        foreach ($cap as $k => $v) {
+            ${$k} = $v;
+        }
+        if ($with_light == false) {
+            $this->SendDebug(__FUNCTION__, 'function unavail for product ' . $product_type, 0);
             return false;
         }
 
@@ -1875,8 +1946,13 @@ class NetatmoSecurityCamera extends IPSModule
         }
 
         $product_type = $this->ReadPropertyString('product_type');
-        if ($product_type != 'NOC') {
-            $this->SendDebug(__FUNCTION__, 'not aviable for product ' . $product_type, 0);
+
+        $cap = $this->GetCapabilities();
+        foreach ($cap as $k => $v) {
+            ${$k} = $v;
+        }
+        if ($with_light == false) {
+            $this->SendDebug(__FUNCTION__, 'function unavail for product ' . $product_type, 0);
             return false;
         }
 
@@ -1964,6 +2040,17 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
+        $product_type = $this->ReadPropertyString('product_type');
+
+        $cap = $this->GetCapabilities();
+        foreach ($cap as $k => $v) {
+            ${$k} = $v;
+        }
+        if ($with_camera_status == false) {
+            $this->SendDebug(__FUNCTION__, 'function unavail for product ' . $product_type, 0);
+            return false;
+        }
+
         switch ($mode) {
             case self::$CAMERA_STATUS_OFF:
                 $value = 'off';
@@ -1990,6 +2077,17 @@ class NetatmoSecurityCamera extends IPSModule
             if ($log_no_parent) {
                 $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
             }
+            return false;
+        }
+
+        $product_type = $this->ReadPropertyString('product_type');
+
+        $cap = $this->GetCapabilities();
+        foreach ($cap as $k => $v) {
+            ${$k} = $v;
+        }
+        if ($with_siren == false) {
+            $this->SendDebug(__FUNCTION__, 'function unavail for product ' . $product_type, 0);
             return false;
         }
 

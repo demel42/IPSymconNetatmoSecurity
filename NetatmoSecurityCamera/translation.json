@@ -4,6 +4,7 @@
 			"Netatmo camera": "Netatmo Kamera",
 			"Netatmo Indoor camera (Welcome)": "Netatmo Innenkamera (Welcome)",
 			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
+			"Netatmo video doorbell": "Netatmo Videotürklingel",
 
 			"__function__": "CheckUpdate",
 			"Property 'ftp_path' will be adjusted": "Eigenschaft 'ftp_path' wird angepasst",
@@ -129,6 +130,9 @@
 			"Upload successful (FTP)": "Upload erfolgreich (FTP)",
 			"Vehicle captured": "Fahrzeug erfasst",
 			"Vehicle": "Fahrzeug",
+			"Incoming call": "eingehender Anruf",
+			"Accepted call": "angenommener Anruf",
+			"Missed call": "verpasster Anruf",
 
 			"__actions__": "",
 			"internal informations": "interne Informationen",

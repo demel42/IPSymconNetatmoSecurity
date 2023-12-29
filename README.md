@@ -21,6 +21,7 @@
 Anschluss der Geräte, die von Netatmo unter dem Beriff _Security_ zusammengefasst sind:
 - Aussenkamera (_Outdoor_ bzw. _Presence_)
 - Innenkamera (_Indoor_ bzw. _Welcome_)
+- Videotürklingel
 - Rauchmelder
 - Kohlenmonoxid-Melder
 - Fenster- und Türsensoren (_Tags_)
@@ -604,6 +605,9 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson, NetatmoSecurityDetector
 
 ## 7. Versions-Historie
+
+- 1.38 @ 29.12.2023 10:46
+  - Neu: Videotürklingel integriert
 
 - 1.37 @ 10.12.2023 10:49
   - Neu: ab IPS-Version 7 ist im Konfigurator die Angabe einer Import-Kategorie integriert, daher entfällt die bisher vorhandene separate Einstellmöglichkeit

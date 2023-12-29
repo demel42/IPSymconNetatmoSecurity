@@ -43,6 +43,7 @@
 			"Strength of wifi-signal": "Stärke des Wifi-Signals",
 			"Detection whether the camera is connected to local network": "Erkennung, ob die Kamera mit dem lokalen Netzwerk verbunden ist",
 			"Motion detection": "Bewegungsmelder",
+			"Doorbell detection": "Türklingel-Erkennung",
 
 			"Adjustment of the returned HTML code": "Anpassung des zurückgegebenen HTML-Codes",
 
@@ -78,6 +79,7 @@
 			"Instance has no active gateway": "Instanz hat keinen aktiven Gateway",
 
 			"__variables__": "",
+			"Call from doorbell": "Anruf von der Türklingel",
 			"Camera operation": "Kamera schalten",
 			"Camera state": "Kamera",
 			"Connected to local network": "mit dem lokalen Netzwerk verbunden",

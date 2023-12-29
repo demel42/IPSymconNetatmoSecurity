@@ -501,6 +501,7 @@ NetatmoSecurity.YesNo
 * Integer<br>
 NetatmoSecurity.CameraAction,
 NetatmoSecurity.CameraStatus,
+NetatmoSecurity.Doorbell,
 NetatmoSecurity.LightAction,
 NetatmoSecurity.LightIntensity,
 NetatmoSecurity.LightModeStatus,
@@ -606,7 +607,7 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.38 @ 29.12.2023 10:46
+- 1.38 @ 29.12.2023 18:22
   - Neu: Videotürklingel integriert
 
 - 1.37 @ 10.12.2023 10:49

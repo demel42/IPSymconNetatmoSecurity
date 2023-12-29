@@ -61,6 +61,12 @@
 			"away": "geht",
 			"all away": "alle gehen",
 
+			"__variableprofile__": "NetatmoSecurity.Doorbell",
+			"none": "keine",
+			"incoming": "eingehend",
+			"accepted": "angenommen",
+			"missed": "verpasst",
+
 			"__status__": "",
 			"Instance is inactive (no data)": "Instanz ist inaktiv (keine Daten)",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",

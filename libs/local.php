@@ -101,6 +101,11 @@ trait NetatmoSecurityLocalLib
     public static $MOTION_TYPE_ANIMAL = 4;
     public static $MOTION_TYPE_VEHICLE = 5;
 
+    public static $DOORBELL_TYPE_NONE = 0;
+    public static $DOORBELL_TYPE_INCOMING = 1;
+    public static $DOORBELL_TYPE_ACCEPTED = 2;
+    public static $DOORBELL_TYPE_MISSED = 3;
+
     private function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
@@ -201,5 +206,13 @@ trait NetatmoSecurityLocalLib
             ['Wert' => self::$MOTION_TYPE_VEHICLE, 'Name' => $this->Translate('vehicle'), 'Farbe' => 0xEE0000],
         ];
         $this->CreateVarProfile('NetatmoSecurity.MotionType', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$DOORBELL_TYPE_NONE, 'Name' => $this->Translate('none'), 'Farbe' => -1],
+            ['Wert' => self::$DOORBELL_TYPE_INCOMING, 'Name' => $this->Translate('incoming'), 'Farbe' => -1],
+            ['Wert' => self::$DOORBELL_TYPE_ACCEPTED, 'Name' => $this->Translate('accepted'), 'Farbe' => -1],
+            ['Wert' => self::$DOORBELL_TYPE_MISSED, 'Name' => $this->Translate('missed'), 'Farbe' => 0xEE0000],
+        ];
+        $this->CreateVarProfile('NetatmoSecurity.Doorbell', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
     }
 }

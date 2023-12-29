@@ -11,6 +11,7 @@ class NetatmoSecurityCamera extends IPSModule
     use NetatmoSecurityLocalLib;
 
     public static $MOTION_RELEASE = 60; // Sekunden
+    public static $DOORBELL_RELEASE = 60; // Sekunden
 
     public function __construct(string $InstanceID)
     {
@@ -42,8 +43,8 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyBoolean('with_wifi_strength', false);
         $this->RegisterPropertyBoolean('with_siren', false);
         $this->RegisterPropertyBoolean('with_local_detection', false);
-
         $this->RegisterPropertyBoolean('with_motion_detection', false);
+        $this->RegisterPropertyBoolean('with_doorbell_detection', false);
 
         $this->RegisterPropertyString('hook', '');
 
@@ -82,6 +83,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterTimer('CleanupPath', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doCleanupPath", "");');
         $this->RegisterTimer('LoadTimelapse', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doLoadTimelapse", "");');
         $this->RegisterTimer('MotionRelease', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doMotionRelease", "");');
+        $this->RegisterTimer('DoorbellRelease', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "doDoorbellRelease", "");');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
@@ -224,38 +226,42 @@ class NetatmoSecurityCamera extends IPSModule
         switch ($product_type) {
             case 'NACamera':
                 $ret = [
-                    'with_camera_status'    => true,
-                    'with_light'            => false,
-                    'with_power'            => true,
-                    'with_siren'            => false,
-                    'with_motion_detection' => $this->ReadPropertyBoolean('with_motion_detection'),
+                    'with_camera_status'      => true,
+                    'with_light'              => false,
+                    'with_power'              => true,
+                    'with_siren'              => false,
+                    'with_doorbell_detection' => false,
+                    'with_motion_detection'   => $this->ReadPropertyBoolean('with_motion_detection'),
                 ];
                 break;
             case 'NOC':
                 $ret = [
-                    'with_camera_status'    => true,
-                    'with_light'            => true,
-                    'with_power'            => false,
-                    'with_siren'            => $this->ReadPropertyBoolean('with_siren'),
-                    'with_motion_detection' => $this->ReadPropertyBoolean('with_motion_detection'),
+                    'with_camera_status'      => true,
+                    'with_light'              => true,
+                    'with_power'              => false,
+                    'with_siren'              => $this->ReadPropertyBoolean('with_siren'),
+                    'with_doorbell_detection' => false,
+                    'with_motion_detection'   => $this->ReadPropertyBoolean('with_motion_detection'),
                 ];
                 break;
             case 'NDB':
                 $ret = [
-                    'with_camera_status'    => false,
-                    'with_light'            => false,
-                    'with_power'            => true,
-                    'with_siren'            => false,
-                    'with_motion_detection' => false,
+                    'with_camera_status'      => false,
+                    'with_light'              => false,
+                    'with_power'              => true,
+                    'with_siren'              => false,
+                    'with_doorbell_detection' => true,
+                    'with_motion_detection'   => $this->ReadPropertyBoolean('with_motion_detection'),
                 ];
                 break;
             default:
                 $ret = [
-                    'with_camera_status'    => false,
-                    'with_light'            => false,
-                    'with_power'            => false,
-                    'with_siren'            => false,
-                    'with_motion_detection' => false,
+                    'with_camera_status'      => false,
+                    'with_light'              => false,
+                    'with_power'              => false,
+                    'with_siren'              => false,
+                    'with_doorbell_detection' => false,
+                    'with_motion_detection'   => false,
                 ];
                 break;
         }
@@ -276,6 +282,8 @@ class NetatmoSecurityCamera extends IPSModule
         if ($this->CheckPrerequisites() != false) {
             $this->MaintainTimer('CleanupPath', 0);
             $this->MaintainTimer('LoadTimelapse', 0);
+            $this->MaintainTimer('MotionRelease', 0);
+            $this->MaintainTimer('DoorbellRelease', 0);
             $this->MaintainStatus(self::$IS_INVALIDPREREQUISITES);
             return;
         }
@@ -283,6 +291,8 @@ class NetatmoSecurityCamera extends IPSModule
         if ($this->CheckUpdate() != false) {
             $this->MaintainTimer('CleanupPath', 0);
             $this->MaintainTimer('LoadTimelapse', 0);
+            $this->MaintainTimer('MotionRelease', 0);
+            $this->MaintainTimer('DoorbellRelease', 0);
             $this->MaintainStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
         }
@@ -290,6 +300,8 @@ class NetatmoSecurityCamera extends IPSModule
         if ($this->CheckConfiguration() != false) {
             $this->MaintainTimer('CleanupPath', 0);
             $this->MaintainTimer('LoadTimelapse', 0);
+            $this->MaintainTimer('MotionRelease', 0);
+            $this->MaintainTimer('DoorbellRelease', 0);
             $this->MaintainStatus(self::$IS_INVALIDCONFIG);
             return;
         }
@@ -339,6 +351,8 @@ class NetatmoSecurityCamera extends IPSModule
         $this->MaintainVariable('InLocalNetwork', $this->Translate('Connected to local network'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.YesNo', $vpos++, $with_local_detection);
 
         $this->MaintainVariable('MotionType', $this->Translate('Motion detected'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.MotionType', $vpos++, $with_motion_detection);
+
+        $this->MaintainVariable('Doorbell', $this->Translate('Call from doorbell'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.Doorbell', $vpos++, $with_doorbell_detection);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_type = $this->ReadPropertyString('product_type');
@@ -616,11 +630,19 @@ class NetatmoSecurityCamera extends IPSModule
             ],
         ];
 
-        if (in_array($product_type, ['NACamera', 'NOC'])) {
+        if (in_array($product_type, ['NACamera', 'NOC', 'NDB'])) {
             $items[] = [
                 'type'    => 'CheckBox',
                 'name'    => 'with_motion_detection',
                 'caption' => 'Motion detection'
+            ];
+        }
+
+        if ($product_type == 'NDB') {
+            $items[] = [
+                'type'    => 'CheckBox',
+                'name'    => 'with_doorbell_detection',
+                'caption' => 'Doorbell detection'
             ];
         }
 
@@ -1427,12 +1449,14 @@ class NetatmoSecurityCamera extends IPSModule
                             case 'NOC-human':
                             case 'NOC-animal':
                             case 'NOC-vehicle':
+                            case 'NDB-human':
                                 switch ($push_type) {
                                     case 'NOC-movement':
                                         $message = $this->Translate('Movement detected');
                                         $motion_type = self::$MOTION_TYPE_MOVEMENT;
                                         break;
                                     case 'NOC-human':
+                                    case 'NDB-human':
                                         $message = $this->Translate('Person captured');
                                         $motion_type = self::$MOTION_TYPE_HUMAN;
                                         break;
@@ -1687,6 +1711,7 @@ class NetatmoSecurityCamera extends IPSModule
                             case 'NDB-incoming_call':
                             case 'NDB-accepted_call':
                             case 'NDB-missed_call':
+                                $doorbell_type = self::$DOORBELL_TYPE_NONE;
                                 switch ($push_type) {
                                     case 'connection':
                                     case 'NACamera-connection':
@@ -1732,18 +1757,26 @@ class NetatmoSecurityCamera extends IPSModule
                                         break;
                                     case 'NDB-incoming_call':
                                         $message = $this->Translate('Incoming call');
+                                        $doorbell_type = self::$DOORBELL_TYPE_INCOMING;
                                         break;
                                     case 'NDB-accepted_call':
                                         $message = $this->Translate('Accepted call');
+                                        $doorbell_type = self::$DOORBELL_TYPE_ACCEPTED;
                                         break;
                                     case 'NDB-missed_call':
                                         $message = $this->Translate('Missed call');
+                                        $doorbell_type = self::$DOORBELL_TYPE_MISSED;
                                         break;
                                     default:
                                         if ($message == '') {
                                             $message = $event_type . '-' . $sub_type;
                                         }
                                         break;
+                                }
+
+                                if ($with_doorbell_detection && $doorbell_type != self::$DOORBELL_TYPE_NONE) {
+                                    $this->SetValue('Doorbell', $doorbell_type);
+                                    $this->MaintainTimer('DoorbellRelease', self::$DOORBELL_RELEASE * 1000);
                                 }
 
                                 $cur_notification = [
@@ -1825,6 +1858,9 @@ class NetatmoSecurityCamera extends IPSModule
                 break;
             case 'doMotionRelease':
                 $this->doMotionRelease();
+                break;
+            case 'doDoorbellRelease':
+                $this->doDoorbellRelease();
                 break;
             default:
                 $r = false;
@@ -3623,6 +3659,15 @@ class NetatmoSecurityCamera extends IPSModule
             $this->SetValue('MotionType', self::$MOTION_TYPE_NONE);
         }
         $this->MaintainTimer('MotionRelease', 0);
+    }
+
+    private function doDoorbellRelease()
+    {
+        $with_doorbell_detection = $this->ReadPropertyBoolean('with_doorbell_detection');
+        if ($with_doorbell_detection) {
+            $this->SetValue('Doorbell', self::$DOORBELL_TYPE_NONE);
+        }
+        $this->MaintainTimer('DoorbellRelease', 0);
     }
 
     private function cleanupPath($path, $max_age, $verbose)

@@ -92,7 +92,7 @@ if (preg_match('/\.m3u8$/', $url)) {
     }
     $html .= '>';
 } elseif (preg_match('/\.mp4$/', $url)) {
-    if (preg_match('/firefox/i', $SERVER['HTTP_USER_AGENT']) || preg_match('/[5-9]\.[2-9]/', IPS_GetKernelVersion())) {
+    if (preg_match('/firefox/i', $SERVER['HTTP_USER_AGENT']) || (float) IPS_GetKernelVersion() >= 5.2) {
         $html = '<video ';
         if ($height != '') {
             $html .= 'height="' . $height . '" ';

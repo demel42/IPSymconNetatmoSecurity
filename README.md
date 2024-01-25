@@ -607,6 +607,11 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.40 @ 25.01.2024 15:23
+  - Neu: Schalter, um Daten zu API-Aufrufen zu sammeln
+    Die API-Aufruf-Daten stehen nun in einem Medienobjekt zur Verfügung
+  - update submodule CommonStubs
+
 - 1.39 @ 30.12.2023 18:11
   - Fix: bei dem Abruf eines Live-Videos gびbt es bei der IPS-Version 7 eine Fehlermeldumg.
     Korrektur muss in dem Custom-Script "ProcessStreamURL.php" erfolgen; Zeile 95 in der Vorlage "docs/processStreamURL.php":

@@ -57,6 +57,8 @@
 			" ... if not given, the Connect-URL is used" : " ... falls nicht angegeben, wird die Connect-URL verwendet",
 			"Base-URL": "Basis-URL",
 
+			"Collect data of API calls": "Daten von API-Aufrufen sammeln",
+
 			"__actions__": "",
 			"Login at Netatmo": "Bei Netatmo anmelden",
 			"Update data": "Aktualisiere Daten",

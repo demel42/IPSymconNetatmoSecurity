@@ -9,6 +9,9 @@
 			"Product-ID must be specified": "Produkt-ID muss angegeben sein",
 			"Home-ID must be specified": "Heim-ID muss angegeben sein",
 
+			"__function__": "CheckUpdate",
+			"Set ident of media objects": "Ident der Media-Objekte setzen",
+
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",
 

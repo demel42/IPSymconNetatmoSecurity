@@ -84,6 +84,39 @@ class NetatmoSecurityDetector extends IPSModule
         return $r;
     }
 
+    private function CheckModuleUpdate(array $oldInfo, array $newInfo)
+    {
+        $r = [];
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.41')) {
+            $r[] = $this->Translate('Set ident of media objects');
+        }
+
+        return $r;
+    }
+
+    private function CompleteModuleUpdate(array $oldInfo, array $newInfo)
+    {
+        $r = '';
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.41')) {
+            $m = [
+                'Events'        => '.dat',
+                'Notifications' => '.dat',
+            ];
+
+            foreach ($m as $ident => $extension) {
+                $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
+                @$mediaID = IPS_GetMediaIDByFile($filename);
+                if ($mediaID != false) {
+                    IPS_SetIdent($mediaID, $ident);
+                }
+            }
+        }
+
+        return $r;
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
@@ -152,6 +185,10 @@ class NetatmoSecurityDetector extends IPSModule
 
         $this->MaintainVariable('SoundTest', $this->Translate('Sound test'), VARIABLETYPE_BOOLEAN, '~Alert', $vpos++, true);
         $this->MaintainVariable('WifiStatus', $this->Translate('Wifi status'), VARIABLETYPE_BOOLEAN, '~Alert.Reversed', $vpos++, true);
+
+        $vpos = 100;
+        $this->MaintainMedia('Events', $this->Translate('Events'), MEDIATYPE_DOCUMENT, '.dat', false, $vpos++, true);
+        $this->MaintainMedia('Notifications', $this->Translate('Notifications'), MEDIATYPE_DOCUMENT, '.dat', false, $vpos++, true);
 
         $product_info = $product_id . ' (' . $product_type . ')';
         $this->SetSummary($product_info);
@@ -415,7 +452,7 @@ class NetatmoSecurityDetector extends IPSModule
 
                             $cur_events = [];
                             $new_events = [];
-                            $s = $this->GetMediaData('Events');
+                            $s = $this->GetMediaContent('Events');
                             $prev_events = json_decode((string) $s, true);
                             $this->SendDebug(__FUNCTION__, 'prev_events=' . print_r($prev_events, true), 0);
                             $events = $this->GetArrayElem($home, 'events', '');
@@ -652,7 +689,7 @@ class NetatmoSecurityDetector extends IPSModule
                             } else {
                                 $s = '';
                             }
-                            $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+                            $this->SetMediaContent('Events', $s);
 
                             $with_last_event = $this->ReadPropertyBoolean('with_last_event');
                             if ($with_last_event && $n_new_events > 0) {
@@ -691,7 +728,7 @@ class NetatmoSecurityDetector extends IPSModule
 
                     $new_notifications = [];
                     $cur_notifications = [];
-                    $s = $this->GetMediaData('Notifications');
+                    $s = $this->GetMediaContent('Notifications');
                     $prev_notifications = json_decode((string) $s, true);
                     if ($prev_notifications != '') {
                         foreach ($prev_notifications as $prev_notification) {
@@ -860,7 +897,7 @@ class NetatmoSecurityDetector extends IPSModule
                     } else {
                         $s = '';
                     }
-                    $this->SetMediaData('Notifications', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+                    $this->SetMediaContent('Notifications', $s);
 
                     $n_new_notifications = count($new_notifications);
 
@@ -949,7 +986,7 @@ class NetatmoSecurityDetector extends IPSModule
                     break;
                 }
             }
-            $this->SetMediaData('Events', json_encode($events), MEDIATYPE_DOCUMENT, '.dat', false);
+            $this->SetMediaContent('Events', json_encode($events));
         }
 
         return $status == 'ok';
@@ -1055,13 +1092,13 @@ class NetatmoSecurityDetector extends IPSModule
 
     public function GetEvents()
     {
-        $data = $this->GetMediaData('Events');
+        $data = $this->GetMediaContent('Events');
         return $data;
     }
 
     public function GetNotifications()
     {
-        $data = $this->GetMediaData('Notifications');
+        $data = $this->GetMediaContent('Notifications');
         return $data;
     }
 

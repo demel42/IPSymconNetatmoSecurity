@@ -173,6 +173,10 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
+        $vpos = 1000;
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        $this->MaintainMedia('ApiCallStats', $this->Translate('API call statistics'), MEDIATYPE_DOCUMENT, '.txt', false, $vpos++, $collectApiCallStats);
+
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
             $this->MaintainTimer('UpdateData', 0);

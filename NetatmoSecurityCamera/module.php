@@ -196,6 +196,10 @@ class NetatmoSecurityCamera extends IPSModule
             }
         }
 
+        if ($this->version2num($oldInfo) < $this->version2num('1.41')) {
+            $r[] = $this->Translate('Set ident of media objects');
+        }
+
         return $r;
     }
 
@@ -214,6 +218,21 @@ class NetatmoSecurityCamera extends IPSModule
             if ($path == substr($timelapse_path, 0, strlen($path))) {
                 $timelapse_path = substr($timelapse_path, strlen($path));
                 IPS_SetProperty($this->InstanceID, 'timelapse_path', $timelapse_path);
+            }
+        }
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.41')) {
+            $m = [
+                'Events'        => '.dat',
+                'Notifications' => '.dat',
+            ];
+
+            foreach ($m as $ident => $extension) {
+                $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
+                @$mediaID = IPS_GetMediaIDByFile($filename);
+                if ($mediaID != false) {
+                    IPS_SetIdent($mediaID, $ident);
+                }
             }
         }
 
@@ -353,6 +372,10 @@ class NetatmoSecurityCamera extends IPSModule
         $this->MaintainVariable('MotionType', $this->Translate('Motion detected'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.MotionType', $vpos++, $with_motion_detection);
 
         $this->MaintainVariable('Doorbell', $this->Translate('Call from doorbell'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.Doorbell', $vpos++, $with_doorbell_detection);
+
+        $vpos = 100;
+        $this->MaintainMedia('Events', $this->Translate('Events'), MEDIATYPE_DOCUMENT, '.dat', false, $vpos++, true);
+        $this->MaintainMedia('Notifications', $this->Translate('Notifications'), MEDIATYPE_DOCUMENT, '.dat', false, $vpos++, true);
 
         $product_id = $this->ReadPropertyString('product_id');
         $product_type = $this->ReadPropertyString('product_type');
@@ -1086,7 +1109,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                             $cur_events = [];
                             $new_events = [];
-                            $s = $this->GetMediaData('Events');
+                            $s = $this->GetMediaContent('Events');
                             $prev_events = @json_decode((string) $s, true);
                             if (is_array($prev_events) == false) {
                                 $prev_events = [];
@@ -1340,7 +1363,7 @@ class NetatmoSecurityCamera extends IPSModule
                             } else {
                                 $s = '';
                             }
-                            $this->SetMediaData('Events', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+                            $this->SetMediaContent('Events', $s);
 
                             $n = 0;
                             $i = 0;
@@ -1421,7 +1444,7 @@ class NetatmoSecurityCamera extends IPSModule
 
                     $new_notifications = [];
                     $cur_notifications = [];
-                    $s = $this->GetMediaData('Notifications');
+                    $s = $this->GetMediaContent('Notifications');
                     $prev_notifications = @json_decode((string) $s, true);
                     if (is_array($prev_notifications) == false) {
                         $prev_notifications = [];
@@ -1814,7 +1837,7 @@ class NetatmoSecurityCamera extends IPSModule
                     } else {
                         $s = '';
                     }
-                    $this->SetMediaData('Notifications', $s, MEDIATYPE_DOCUMENT, '.dat', false);
+                    $this->SetMediaContent('Notifications', $s);
 
                     $n_new_notifications = count($new_notifications);
 
@@ -2244,7 +2267,7 @@ class NetatmoSecurityCamera extends IPSModule
                     break;
                 }
             }
-            $this->SetMediaData('Events', json_encode($events), MEDIATYPE_DOCUMENT, '.dat', false);
+            $this->SetMediaContent('Events', json_encode($events));
         }
 
         return $status == 'ok';
@@ -2619,13 +2642,13 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetEvents()
     {
-        $data = $this->GetMediaData('Events');
+        $data = $this->GetMediaContent('Events');
         return $data;
     }
 
     public function GetNotifications()
     {
-        $data = $this->GetMediaData('Notifications');
+        $data = $this->GetMediaContent('Notifications');
         return $data;
     }
 
@@ -2795,7 +2818,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function SearchNotification(string $id)
     {
         $notification = false;
-        $s = $this->GetMediaData('Notifications');
+        $s = $this->GetMediaContent('Notifications');
         $notifications = @json_decode($s, true);
         if (is_array($notifications) == false) {
             $notifications = [];
@@ -2851,7 +2874,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function SearchEvent(string $event_id)
     {
         $event = false;
-        $s = $this->GetMediaData('Events');
+        $s = $this->GetMediaContent('Events');
         $events = @json_decode($s, true);
         if (is_array($events) == false) {
             $events = [];
@@ -2869,7 +2892,7 @@ class NetatmoSecurityCamera extends IPSModule
     public function SearchSubEvent(string $subevent_id)
     {
         $subevent = false;
-        $s = $this->GetMediaData('Events');
+        $s = $this->GetMediaContent('Events');
         $events = @json_decode($s, true);
         if (is_array($events) == false) {
             $events = [];

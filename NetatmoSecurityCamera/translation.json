@@ -6,10 +6,6 @@
 			"Netatmo Outdoor camera (Presence)": "Netatmo Aussenkamera (Presence)",
 			"Netatmo video doorbell": "Netatmo Videotürklingel",
 
-			"__function__": "CheckUpdate",
-			"Property 'ftp_path' will be adjusted": "Eigenschaft 'ftp_path' wird angepasst",
-			"Property 'timelapse_path' will be adjusted": "Eigenschaft 'timelapse_path' wird angepasst",
-
 			"__function__": "CheckConfiguration",
 			"Product-Type must be specified": "Produkt-Typ muss angegeben sein",
 			"Product-ID must be specified": "Produkt-ID muss angegeben sein",
@@ -19,6 +15,11 @@
 			"external IP-Address is invalid": "externe IP-Adresse ist ungültig",
 			"local CIDR's are invalid": "lokale CIDR's sind ungültig",
 			"Webhook is already in use": "Webhook wird bereits verwendet",
+
+			"__function__": "CheckUpdate",
+			"Property 'ftp_path' will be adjusted": "Eigenschaft 'ftp_path' wird angepasst",
+			"Property 'timelapse_path' will be adjusted": "Eigenschaft 'timelapse_path' wird angepasst",
+			"Set ident of media objects": "Ident der Media-Objekte setzen",
 
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",

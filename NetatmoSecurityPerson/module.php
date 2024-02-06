@@ -63,6 +63,38 @@ class NetatmoSecurityPerson extends IPSModule
         return $r;
     }
 
+    private function CheckModuleUpdate(array $oldInfo, array $newInfo)
+    {
+        $r = [];
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.41')) {
+            $r[] = $this->Translate('Set ident of media objects');
+        }
+
+        return $r;
+    }
+
+    private function CompleteModuleUpdate(array $oldInfo, array $newInfo)
+    {
+        $r = '';
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.41')) {
+            $m = [
+                'Portrait' => '.jpg',
+            ];
+
+            foreach ($m as $ident => $extension) {
+                $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
+                @$mediaID = IPS_GetMediaIDByFile($filename);
+                if ($mediaID != false) {
+                    IPS_SetIdent($mediaID, $ident);
+                }
+            }
+        }
+
+        return $r;
+    }
+
     public function ApplyChanges()
     {
         parent::ApplyChanges();
@@ -84,13 +116,15 @@ class NetatmoSecurityPerson extends IPSModule
             return;
         }
 
-        $vpos = 0;
-
+        $vpos = 1;
         $this->MaintainVariable('LastSeen', $this->Translate('Last seen'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('Presence', $this->Translate('Presence'), VARIABLETYPE_BOOLEAN, 'NetatmoSecurity.Presence', $vpos++, true);
         $this->MaintainVariable('PresenceAction', $this->Translate('Change presence'), VARIABLETYPE_INTEGER, 'NetatmoSecurity.PresenceAction', $vpos++, true);
 
         $this->MaintainAction('PresenceAction', true);
+
+        $vpos = 100;
+        $this->MaintainMedia('Portrait', $this->Translate('Portrait'), MEDIATYPE_IMAGE, '.jog', false, $vpos++, true);
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
@@ -264,7 +298,7 @@ class NetatmoSecurityPerson extends IPSModule
 
                                     $data = @file_get_contents($url);
                                     if ($data != false) {
-                                        $this->SetMediaData('Portrait', $data, MEDIATYPE_IMAGE, '.jpg', false);
+                                        $this->SetMediaContent('Portrait', $data);
                                     }
                                 }
                             }

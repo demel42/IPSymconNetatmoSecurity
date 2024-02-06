@@ -607,6 +607,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.41 @ 29.01.2024 11:11
+  - Änderung: Medien-Objekte haben zur eindeutigen Identifizierung jetzt ebenfalls ein Ident
+
 - 1.40 @ 25.01.2024 15:23
   - Neu: Schalter, um Daten zu API-Aufrufen zu sammeln
     Die API-Aufruf-Daten stehen nun in einem Medienobjekt zur Verfügung

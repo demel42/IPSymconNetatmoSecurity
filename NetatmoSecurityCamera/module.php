@@ -504,8 +504,8 @@ class NetatmoSecurityCamera extends IPSModule
 
                             $instanceID = 0;
                             foreach ($instIDs as $instID) {
-                                $persID = IPS_GetProperty($instID, 'person_id');
-                                if ($persID == $person_id) {
+                                if (@IPS_GetProperty($instID, 'person_id') == $person_id) {
+                                    $this->SendDebug(__FUNCTION__, 'instance found: ' . IPS_GetName($instID) . ' (' . $instID . ')', 0);
                                     $instanceID = $instID;
                                     break;
                                 }
@@ -532,6 +532,7 @@ class NetatmoSecurityCamera extends IPSModule
                                 ]
                             ];
                             $entries[] = $entry;
+                            $this->SendDebug(__FUNCTION__, 'instanceID=' . $instanceID . ', entry=' . print_r($entry, true), 0);
                         }
                     }
                 }
@@ -553,9 +554,9 @@ class NetatmoSecurityCamera extends IPSModule
                 continue;
             }
 
-            $name = IPS_GetProperty($instID, 'pseudo');
+            @$name = IPS_GetProperty($instID, 'pseudo');
             $home = '';
-            $person_id = IPS_GetProperty($instID, 'person_id');
+            @$person_id = IPS_GetProperty($instID, 'person_id');
 
             $entry = [
                 'instanceID' => $instID,
@@ -563,9 +564,8 @@ class NetatmoSecurityCamera extends IPSModule
                 'home'       => $home,
                 'person_id'  => $person_id,
             ];
-
             $entries[] = $entry;
-            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
+            $this->SendDebug(__FUNCTION__, 'lost: instanceID=' . $instID . ', entry=' . print_r($entry, true), 0);
         }
 
         return $entries;

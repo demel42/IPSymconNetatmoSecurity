@@ -4221,7 +4221,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}'); // NetatmoSecurityCamera
         foreach ($instIDs as $instID) {
-            @$mediaID = IPS_GetMediaIDByName($this->Translate('Events'), $instID);
+            @$mediaID = IPS_GetObjectIDByIdent('Events', $instID);
             if ($mediaID == false) {
                 continue;
             }
@@ -4264,7 +4264,7 @@ class NetatmoSecurityCamera extends IPSModule
                 }
             }
 
-            @$mediaID = IPS_GetMediaIDByName($this->Translate('Notifications'), $instID);
+            @$mediaID = IPS_GetObjectIDByIdent('Notifications', $instID);
             if ($mediaID == false) {
                 continue;
             }

@@ -124,7 +124,7 @@ class NetatmoSecurityPerson extends IPSModule
         $this->MaintainAction('PresenceAction', true);
 
         $vpos = 100;
-        $this->MaintainMedia('Portrait', $this->Translate('Portrait'), MEDIATYPE_IMAGE, '.jog', false, $vpos++, true);
+        $this->MaintainMedia('Portrait', $this->Translate('Portrait'), MEDIATYPE_IMAGE, '.jpg', false, $vpos++, true);
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {

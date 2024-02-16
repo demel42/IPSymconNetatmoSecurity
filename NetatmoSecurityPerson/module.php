@@ -413,8 +413,7 @@ class NetatmoSecurityPerson extends IPSModule
 
     public function GetPersonPortraitID()
     {
-        $name = $this->Translate('Portrait');
-        @$mediaID = IPS_GetMediaIDByName($name, $this->InstanceID);
+        @$mediaID = IPS_GetObjectIDByIdent('Portrait', $this->InstanceID);
         $this->SendDebug(__FUNCTION__, 'mediaID=' . $mediaID, 0);
         return $mediaID;
     }

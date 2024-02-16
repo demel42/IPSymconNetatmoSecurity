@@ -4219,7 +4219,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $cache_ids = [];
 
-		// Rücksprache mit NT per Mail am 13.02.2024
+        // Rücksprache mit NT per Mail am 13.02.2024
         $instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}'); // NetatmoSecurityCamera
         foreach ($instIDs as $instID) {
             @$mediaID = IPS_GetObjectIDByIdent('Events', $instID);

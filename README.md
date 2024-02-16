@@ -607,7 +607,7 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.42.1 @ 13.02.2024 15:36
+- 1.42.1 @ 16.02.2024 17:34
   - Fix: Zugriff auf Medien-Objekte waren z.T. noch per Name
 
 - 1.42 @ 07.02.2024 17:59

@@ -609,7 +609,7 @@ GUIDs
 
 - 1.42.2 @ 21.02.2024 11:07
   - Fix: Absicherung des Zugriffs auf den Inhalt von Medienobjekten
-  - Zugriff auf Medien-Objekt 'Person' nochmals angepasst
+  - Fix: Zugriff auf Medien-Objekt 'Person' nochmals angepasst
 
 - 1.42.1 @ 16.02.2024 17:34
   - Fix: Zugriff auf Medien-Objekte waren z.T. noch per Name

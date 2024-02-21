@@ -610,6 +610,7 @@ GUIDs
 - 1.42.2 @ 21.02.2024 11:07
   - Fix: Absicherung des Zugriffs auf den Inhalt von Medienobjekten
   - Fix: Zugriff auf Medien-Objekt 'Person' nochmals angepasst
+  - update submodule CommonStubs
 
 - 1.42.1 @ 16.02.2024 17:34
   - Fix: Zugriff auf Medien-Objekte waren z.T. noch per Name

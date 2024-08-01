@@ -607,6 +607,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.43 @ 01.08.2024 14:28
+  - Änderung: nach Wegfall des Passwort-basierten Logins (siehe v1.32) nun die Konfiguration von Benutzerkennung und Passwort bereinigt
+  - update submodule CommonStubs
+
 - 1.42.2 @ 21.02.2024 11:07
   - Fix: Absicherung des Zugriffs auf den Inhalt von Medienobjekten
   - Fix: Zugriff auf Medien-Objekt 'Person' nochmals angepasst
@@ -627,7 +631,7 @@ GUIDs
   - update submodule CommonStubs
 
 - 1.39 @ 30.12.2023 18:11
-  - Fix: bei dem Abruf eines Live-Videos gびbt es bei der IPS-Version 7 eine Fehlermeldumg.
+  - Fix: bei dem Abruf eines Live-Videos gibt es bei der IPS-Version 7 eine Fehlermeldumg.
     Korrektur muss in dem Custom-Script "ProcessStreamURL.php" erfolgen; Zeile 95 in der Vorlage "docs/processStreamURL.php":
 	- alt: if (preg_match('/firefox/i', $SERVER['HTTP_USER_AGENT']) || preg_match('/[5-9]\.[2-9]/', IPS_GetKernelVersion())) {
 	- neu: if (preg_match('/firefox/i', $SERVER['HTTP_USER_AGENT']) || (float) IPS_GetKernelVersion() >= 5.2) {

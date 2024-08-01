@@ -28,7 +28,7 @@ class NetatmoSecurityIO extends IPSModule
     {
         parent::__construct($InstanceID);
 
-        $this->CommonContruct(__DIR__);
+        $this->CommonConstruct(__DIR__);
         $this->SemaphoreID = __CLASS__ . '_' . $InstanceID;
     }
 
@@ -43,8 +43,10 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->RegisterPropertyBoolean('module_disable', false);
 
-        $this->RegisterPropertyString('Netatmo_User', '');
-        $this->RegisterPropertyString('Netatmo_Password', '');
+        if (defined('GRANT_PASSWORD')) {
+            $this->RegisterPropertyString('Netatmo_User', '');
+            $this->RegisterPropertyString('Netatmo_Password', '');
+        }
         $this->RegisterPropertyString('Netatmo_Client', '');
         $this->RegisterPropertyString('Netatmo_Secret', '');
 
@@ -81,15 +83,17 @@ class NetatmoSecurityIO extends IPSModule
 
         $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
         if ($oauth_type == self::$CONNECTION_DEVELOPER) {
-            $user = $this->ReadPropertyString('Netatmo_User');
-            if ($user == '') {
-                $this->SendDebug(__FUNCTION__, '"Netatmo_User" is needed', 0);
-                $r[] = $this->Translate('Username must be specified');
-            }
-            $password = $this->ReadPropertyString('Netatmo_Password');
-            if ($password == '') {
-                $this->SendDebug(__FUNCTION__, '"Netatmo_Password" is needed', 0);
-                $r[] = $this->Translate('Password must be specified');
+            if (defined('GRANT_PASSWORD')) {
+                $user = $this->ReadPropertyString('Netatmo_User');
+                if ($user == '') {
+                    $this->SendDebug(__FUNCTION__, '"Netatmo_User" is needed', 0);
+                    $r[] = $this->Translate('Username must be specified');
+                }
+                $password = $this->ReadPropertyString('Netatmo_Password');
+                if ($password == '') {
+                    $this->SendDebug(__FUNCTION__, '"Netatmo_Password" is needed', 0);
+                    $r[] = $this->Translate('Password must be specified');
+                }
             }
             $client = $this->ReadPropertyString('Netatmo_Client');
             if ($client == '') {
@@ -478,50 +482,54 @@ class NetatmoSecurityIO extends IPSModule
                 ];
                 break;
             case self::$CONNECTION_DEVELOPER:
+                $items = [];
+                if (defined('GRANT_PASSWORD')) {
+                    $items[] = [
+                        'type'    => 'Label',
+                        'caption' => 'Netatmo-Account from https://my.netatmo.com'
+                    ];
+                    $items[] = [
+                        'type'    => 'ValidationTextBox',
+                        'name'    => 'Netatmo_User',
+                        'caption' => 'Username'
+                    ];
+                    $items[] = [
+                        'type'    => 'ValidationTextBox',
+                        'name'    => 'Netatmo_Password',
+                        'caption' => 'Password'
+                    ];
+                }
+                $items[] = [
+                    'type'    => 'Label',
+                    'caption' => 'Netatmo-Connect from https://dev.netatmo.com'
+                ];
+                $items[] = [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'Netatmo_Client',
+                    'caption' => 'Client ID'
+                ];
+                $items[] = [
+                    'type'    => 'ValidationTextBox',
+                    'width'   => '400px',
+                    'name'    => 'Netatmo_Secret',
+                    'caption' => 'Client Secret'
+                ];
+                if (!defined('GRANT_PASSWORD')) {
+                    $items[] = [
+                        'type'    => 'Label',
+                        'caption' => 'Due to the API changes, password-based login with the developer key is no longer possible. The refresh token must be entered manually; see expert panel.',
+                    ];
+                    $items[] = [
+                        'type'    => 'ValidationTextBox',
+                        'width'   => '600px',
+                        'caption' => 'Refresh token',
+                        'value'   => $this->ReadAttributeString('ApiRefreshToken'),
+                        'enabled' => false,
+                    ];
+                }
                 $formElements[] = [
                     'type'    => 'ExpansionPanel',
-                    'items'   => [
-                        [
-                            'type'    => 'Label',
-                            'caption' => 'Netatmo-Account from https://my.netatmo.com'
-                        ],
-                        [
-                            'type'    => 'ValidationTextBox',
-                            'name'    => 'Netatmo_User',
-                            'caption' => 'Username'
-                        ],
-                        [
-                            'type'    => 'ValidationTextBox',
-                            'name'    => 'Netatmo_Password',
-                            'caption' => 'Password'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => 'Netatmo-Connect from https://dev.netatmo.com'
-                        ],
-                        [
-                            'type'    => 'ValidationTextBox',
-                            'name'    => 'Netatmo_Client',
-                            'caption' => 'Client-ID'
-                        ],
-                        [
-                            'type'    => 'ValidationTextBox',
-                            'width'   => '400px',
-                            'name'    => 'Netatmo_Secret',
-                            'caption' => 'Client-Secret'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => 'Due to the API changes, login using developer key is no longer possible. The refresh token must be entered manually; see expert panel.',
-                        ],
-                        [
-                            'type'    => 'ValidationTextBox',
-                            'width'   => '600px',
-                            'caption' => 'Refresh token',
-                            'value'   => $this->ReadAttributeString('ApiRefreshToken'),
-                            'enabled' => false,
-                        ],
-                    ],
+                    'items'   => $items,
                     'caption' => 'Netatmo Access-Details'
                 ];
                 break;
@@ -789,8 +797,6 @@ class NetatmoSecurityIO extends IPSModule
             case self::$CONNECTION_DEVELOPER:
                 $url = 'https://api.netatmo.net/oauth2/token';
 
-                $user = $this->ReadPropertyString('Netatmo_User');
-                $password = $this->ReadPropertyString('Netatmo_Password');
                 $client = $this->ReadPropertyString('Netatmo_Client');
                 $secret = $this->ReadPropertyString('Netatmo_Secret');
 
@@ -810,22 +816,27 @@ class NetatmoSecurityIO extends IPSModule
                     $this->SendDebug(__FUNCTION__, 'access_token expired', 0);
                     $access_token = '';
                 }
-                if ($access_token == '') {
+                if ($access_token != '') {
+                    $this->SendDebug(__FUNCTION__, 'old access_token, valid until ' . date('d.m.y H:i:s', $expiration), 0);
+                } else {
                     $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
                     if ($refresh_token == '') {
-                        $this->SendDebug(__FUNCTION__, 'grant_type "password" is not longer supported, set "refresh_token" manually', 0);
-                        $this->MaintainStatus(self::$IS_NOLOGIN);
-                        return false;
-                    /*
-                    $postdata = [
-                        'grant_type'    => 'password',
-                        'client_id'     => $client,
-                        'client_secret' => $secret,
-                        'username'      => $user,
-                        'password'      => $password,
-                        'scope'         => implode(' ', self::$scopes),
-                    ];
-                     */
+                        if (defined('GRANT_PASSWORD')) {
+                            $user = $this->ReadPropertyString('Netatmo_User');
+                            $password = $this->ReadPropertyString('Netatmo_Password');
+                            $postdata = [
+                                'grant_type'    => 'password',
+                                'client_id'     => $client,
+                                'client_secret' => $secret,
+                                'username'      => $user,
+                                'password'      => $password,
+                                'scope'         => implode(' ', self::$scopes),
+                            ];
+                        } else {
+                            $this->SendDebug(__FUNCTION__, 'grant_type "password" is not longer supported, set "refresh_token" manually', 0);
+                            $this->MaintainStatus(self::$IS_NOLOGIN);
+                            return false;
+                        }
                     } else {
                         $postdata = [
                             'grant_type'    => 'refresh_token',
@@ -874,8 +885,6 @@ class NetatmoSecurityIO extends IPSModule
 
                     $this->MaintainStatus(IS_ACTIVE);
                     $this->do_AddWebhook($access_token);
-                } else {
-                    $this->SendDebug(__FUNCTION__, 'access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expiration), 0);
                 }
 
                 break;

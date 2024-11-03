@@ -608,7 +608,7 @@ GUIDs
 ## 7. Versions-Historie
 
 - 1.44 @ 23.10.2024 17:06
-  - Änderung: nach Wegfall des Passwort-basierten Logins (siehe v1.7) ist nun ein Login per OAuth-Login möglich; die manuelle Eingabe des "RefreshToken" entfällt bei aktiven Symcon-Connect.
+  - Änderung: nach Wegfall des Passwort-basierten Logins (siehe v1.32) ist nun ein Login per OAuth-Login möglich; die manuelle Eingabe des "RefreshToken" entfällt bei aktiven Symcon-Connect.
   - update submodule CommonStubs
 
 - 1.43 @ 01.08.2024 14:28

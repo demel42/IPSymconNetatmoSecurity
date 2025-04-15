@@ -356,22 +356,30 @@ Dem Kommando vom Type _timelapse_ kann die Option _date=\<refdate\>_ angehängt 
 
 #### Properties
 
-| Eigenschaft               | Typ      | Standardwert | Beschreibung |
-| :------------------------ | :------  | :----------- | :----------- |
-| Verbindungstyp            | integer  | 0            | _Netatmo über IP-Symcon Connect_ oder _Netatmo Entwickler-Schlüssel_ |
-|                           |          |              | |
-| Netatmo-Zugangsdaten      | string   |              | Benutzername und Passwort von https://my.netatmo.com sowie Client-ID und -Secret von https://dev.netatmo.com |
-|                           |          |              | |
-| Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
-|                           |          |              | |
-| Anzahl Ereignisse ...     | integer  | 30           | Anzahl der Ereignisse die bei einem Update abgerufen werden |
-|                           |          |              | |
-| Webbook registrieren      | boolean  | Nein         | Webhook zur Übernahme der Benachrichtigungen von Netatmo |
-| Basis-URL                 | string   |              | URL, unter der IPS erreichbar ist; wird nichts angegeben, wird die IPS-Connect-URL verwendet|
-|                           |          |              | |
-| Aktualisiere Daten ...    | integer  | 5            | Aktualisierungsintervall, Angabe in Minuten |
+| Eigenschaft                    | Typ     | Standardwert | Beschreibung |
+| :----------------------------- | :------ | :----------- | :----------- |
+| Verbindungstyp                 | integer | 0            | _Netatmo über IP-Symcon Connect_ oder _Netatmo Entwickler-Schlüssel_ |
+|                                |         |              | |
+| Netatmo-Zugangsdaten           | string  |              | Benutzername und Passwort von https://my.netatmo.com sowie Client-ID und -Secret von https://dev.netatmo.com |
+|                                |         |              | |
+| Aktualisiere Daten ...         | integer | 5            | Aktualisierungsintervall, Angabe in Minuten |
+|                                |         |              | |
+| Anzahl Ereignisse ...          | integer | 30           | Anzahl der Ereignisse die bei einem Update abgerufen werden _[1]_ |
+|                                |         |              | |
+| Webbook registrieren           | boolean | Nein         | Webhook zur Übernahme der Benachrichtigungen von Netatmo |
+| Basis-URL                      | string  |              | URL, unter der IPS erreichbar ist; wird nichts angegeben, wird die IPS-Connect-URL verwendet|
+|                                |         |              | |
+| Aktualisiere Daten ...         | integer | 5            | Aktualisierungsintervall, Angabe in Minuten |
+|                                |         |              | |
+|                                |         |              | Behandlung von Kommunikationsfehlern _[2]_ |
+| Timeout eines Abrufs           | integer | 15           | - Timeout eines HTTP-Aufrufs in Sekunden |
+| Anzahl der Versuche            | integer | 3            | - Anzahl der Versuche nach Kommunikationsfehler |
+| Verzögerung zwischen Versuchen | float   | 1            | - Verzögerung zwischen den Versuchen in Sekunden |
 
-Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in der Netatmo-App gelöscht werden, werden in IPS als gelöscht markiert. Um gelöschte Ereignisse erkennen zu können, muss eine ausreichende Menge an Ereignisse abgerufen werden; wie viele, hängt davon ab, wieviele Ereignisse stattfinden. Die Standardanzahl vom *30* reicht im Regelfall aus und sollte nur vorsichtig erhöht werden.
+_[1]_: Hinweise zu _Anzahl Ereignisse_: Ereignisse, die nachträglich vom Benutzer in der Netatmo-App gelöscht werden, werden in IPS als gelöscht markiert. Um gelöschte Ereignisse erkennen zu können, muss eine ausreichende Menge an Ereignisse abgerufen werden; wie viele, hängt davon ab, wieviele Ereignisse stattfinden. Die Standardanzahl vom *30* reicht im Regelfall aus und sollte nur vorsichtig erhöht werden.
+
+_[2]_: als Kommunikationsfehler werden die Abrufe definiert, bei der es keine qualifizierte Reaktion der Gegenseite gibt (also einen HTTP-Code).<br>
+Achtung: die maximale Wartezeit in Sekunden berechnet sich wie folgt: ((*Timeout* + *Verzögerung*) * *Anzahl*) + 1 => solange ist der Thread der Instanz maximal blockiert!
 
 #### Schaltflächen
 
@@ -606,6 +614,17 @@ GUIDs
   - `{5F947426-53FB-4DD9-A725-F95590CBD97C}`: an NetatmoSecurityConfig, NetatmoSecurityCamera, NetatmoSecurityPerson, NetatmoSecurityDetector
 
 ## 7. Versions-Historie
+
+- 1.47 @ 12.04.2025 11:42
+  - Verbesserung: ein aufgrund Nichterreichbarkeit des Servers fehlgeschlagener HTTP-Aufruf wird mehrfach wiederholt.
+    Der Timeout des Abrufs und die Anzahl der Versuche und die Verzögerung zwischen den Versuchen kann nun eingestellt werden.
+    Achtung: Hinweis zu diesen Einstellungen im README.md beachten
+
+- 1.46 @ 16.03.2025 09:21
+  - Verbesserung: Überprüfung der von Netatmo als lokale Adresse gemeldeten IP der Kamera anhand der angegebenen "lokale CIDR's".
+    Hintergrund: bei einem Neustart der Kamera wird in der Netatmo-Cloud manchmal eine lokale IP-Adresse vermerkt (bei mir typischerweise *169.254.190.x*), die aber gar nicht die lokale Adresse der Kamera ist.
+    Das führt in Folge dazu, das im Modul versucht wird, Bilder (u.a. für die Timeline) von dieser Adresse zu holen, was mit Timeout fehlschlägt. Das summiert sich dann u.U. zu einem langlaufenden Thread.
+	Im Zweifelsfall werden die Bilder dann jetzt über die "vpn_url" geholt.
 
 - 1.45 @ 03.01.2025 14:17
   - update submodule CommonStubs

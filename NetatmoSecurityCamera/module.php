@@ -121,7 +121,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $ipsIP = $this->ReadPropertyString('ipsIP');
         if ($ipsIP != '') {
-            if ($this->deternmineIp($ipsIP) == false) {
+            if ($this->determineIp($ipsIP) == false) {
                 $this->SendDebug(__FUNCTION__, '"ipsIP" is invalid', 0);
                 $r[] = $this->Translate('IP-Address is invalid');
             }
@@ -129,7 +129,7 @@ class NetatmoSecurityCamera extends IPSModule
 
         $externalIP = $this->ReadPropertyString('externalIP');
         if ($externalIP != '') {
-            if ($this->deternmineIp($externalIP) == false) {
+            if ($this->determineIp($externalIP) == false) {
                 $this->SendDebug(__FUNCTION__, '"externalIP" is invalid', 0);
                 $r[] = $this->Translate('external IP-Address is invalid');
             }
@@ -2431,20 +2431,39 @@ class NetatmoSecurityCamera extends IPSModule
             $response = json_decode($jdata['data'], true);
             $s .= ', vpn response=' . print_r($response, true);
             $local_url1 = $this->GetArrayElem($response, 'local_url', '');
-
-            $url = $local_url1 . '/command/ping';
-            $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGet', 'Url' => $url];
-            $data = $this->SendDataToParent(json_encode($SendData));
-            if ($data != '') {
-                $jdata = json_decode($data, true);
-                $response = json_decode($jdata['data'], true);
-                $s .= ', local response=' . print_r($response, true);
-                $local_url2 = $this->GetArrayElem($response, 'local_url', '');
-                if ($local_url1 == $local_url2) {
-                    $local_url = $local_url1;
+            if ($local_url1 != '' && preg_match('#^.*://([^/]*)#', $local_url1, $r)) {
+                $ip = $this->determineIp($r[1]);
+                $localCIDRs = $this->ReadPropertyString('localCIDRs');
+                if ($localCIDRs != '') {
+                    $match = false;
+                    $cidrs = explode(';', $localCIDRs);
+                    foreach ($cidrs as $cidr) {
+                        $match = $this->ipInCIDR($ip, $cidr);
+                        if ($match) {
+                            break;
+                        }
+                    }
+                    if ($match == false) {
+                        $s .= ', ip is not local';
+                        $local_url1 = '';
+                    }
                 }
-            } else {
-                $s .= ', no local response';
+            }
+            if ($local_url1 != '') {
+                $url = $local_url1 . '/command/ping';
+                $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGet', 'Url' => $url];
+                $data = $this->SendDataToParent(json_encode($SendData));
+                if ($data != '') {
+                    $jdata = json_decode($data, true);
+                    $response = json_decode($jdata['data'], true);
+                    $s .= ', local response=' . print_r($response, true);
+                    $local_url2 = $this->GetArrayElem($response, 'local_url', '');
+                    if ($local_url1 == $local_url2) {
+                        $local_url = $local_url1;
+                    }
+                } else {
+                    $s .= ', no local response';
+                }
             }
         } else {
             $s .= ', no vpn response';
@@ -3076,7 +3095,7 @@ class NetatmoSecurityCamera extends IPSModule
         return ($ip_ip & $ip_mask) == ($ip_net & $ip_mask);
     }
 
-    private function deternmineIp($host)
+    private function determineIp($host)
     {
         if (preg_match('/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/', $host)) {
             $ip = $host;
@@ -3160,10 +3179,10 @@ class NetatmoSecurityCamera extends IPSModule
         $localCIDRs = $this->ReadPropertyString('localCIDRs');
 
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR'] != '') {
-            $ip = $this->deternmineIp($_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip = $this->determineIp($_SERVER['HTTP_X_FORWARDED_FOR']);
             $s = 'HTTP_X_FORWARDED_FOR=' . $_SERVER['HTTP_X_FORWARDED_FOR'];
         } elseif (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != '') {
-            $ip = $this->deternmineIp($_SERVER['REMOTE_ADDR']);
+            $ip = $this->determineIp($_SERVER['REMOTE_ADDR']);
             $s = 'REMOTE_ADDR=' . $_SERVER['REMOTE_ADDR'];
         } else {
             $ip = false;
@@ -3184,7 +3203,7 @@ class NetatmoSecurityCamera extends IPSModule
                 }
             }
             if (!$preferLocal && $externalIP != '') {
-                $external_ip = $this->deternmineIp($externalIP);
+                $external_ip = $this->determineIp($externalIP);
                 if ($external_ip != false) {
                     $preferLocal = $ip == $external_ip;
                 }

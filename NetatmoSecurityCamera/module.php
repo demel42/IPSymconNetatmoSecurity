@@ -64,6 +64,8 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterPropertyInteger('timelapse_hour', 0);
         $this->RegisterPropertyInteger('timelapse_max_age', 7);
 
+        $this->RegisterPropertyString('images_path', 'netatmo-images');
+
         $this->RegisterPropertyInteger('new_event_script', 0);
         $this->RegisterPropertyInteger('notify_script', 0);
         $this->RegisterPropertyInteger('webhook_script', 0);
@@ -744,9 +746,14 @@ class NetatmoSecurityCamera extends IPSModule
             'type'    => 'ExpansionPanel',
             'items'   => [
                 [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'images_path',
+                    'caption' => 'Path for local copy of event images',
+                ],
+                [
                     'type'    => 'NumberSpinner',
                     'name'    => 'event_max_age',
-                    'caption' => 'maximum age until deletion',
+                    'caption' => 'Maximum age until deletion',
                     'minimum' => 0,
                     'suffix'  => 'days'
                 ],
@@ -766,7 +773,7 @@ class NetatmoSecurityCamera extends IPSModule
                 [
                     'type'    => 'NumberSpinner',
                     'name'    => 'notification_max_age',
-                    'caption' => 'maximum age until deletion',
+                    'caption' => 'Maximum age until deletion',
                     'minimum' => 0,
                     'suffix'  => 'days'
                 ],
@@ -795,7 +802,7 @@ class NetatmoSecurityCamera extends IPSModule
                 [
                     'type'    => 'NumberSpinner',
                     'name'    => 'ftp_max_age',
-                    'caption' => 'maximum age until deletion',
+                    'caption' => 'Maximum age until deletion',
                     'minimum' => 0,
                     'suffix'  => 'days'
                 ],
@@ -1740,7 +1747,8 @@ class NetatmoSecurityCamera extends IPSModule
                                     case 'NACamera-connection':
                                     case 'NOC-connection':
                                     case 'NDB-connection':
-                                        $message = $this->Translate('Camera connected'); break;
+                                        $message = $this->Translate('Camera connected');
+                                        break;
                                     case 'disconnection':
                                     case 'NACamera-disconnection':
                                     case 'NOC-disconnection':
@@ -2015,9 +2023,9 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        $url = $this->determineUrl();
+        $url = $this->determineLocalUrl();
         if ($url == false) {
-            $err = 'no url available';
+            $err = 'no local url available';
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
             return false;
@@ -2059,9 +2067,9 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        $url = $this->determineUrl();
+        $url = $this->determineLocalUrl();
         if ($url == false) {
-            $err = 'no url available';
+            $err = 'no local url available';
             $this->SendDebug(__FUNCTION__, $err, 0);
             $this->LogMessage(__FUNCTION__ . ': ' . $err, KL_NOTIFY);
             return false;
@@ -2392,9 +2400,11 @@ class NetatmoSecurityCamera extends IPSModule
 
     private function determineLocalUrl()
     {
+        $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
+
         $is_local = $this->GetBuffer('is_local');
+        $is_local = true;
         if ($is_local == false) {
-            $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
             if ($with_local_detection) {
                 if ($this->GetValue('InLocalNetwork') != false) {
                     $this->SetValue('InLocalNetwork', false);
@@ -2406,7 +2416,6 @@ class NetatmoSecurityCamera extends IPSModule
 
         $local_url = $this->GetBuffer('local_url');
         if ($local_url != '') {
-            $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
             if ($with_local_detection) {
                 if ($this->GetValue('InLocalNetwork') != true) {
                     $this->SetValue('InLocalNetwork', true);
@@ -2472,7 +2481,6 @@ class NetatmoSecurityCamera extends IPSModule
 
         $this->SetBuffer('local_url', $local_url);
 
-        $with_local_detection = $this->ReadPropertyBoolean('with_local_detection');
         if ($with_local_detection) {
             $this->SetValue('InLocalNetwork', $local_url != '');
         }
@@ -2513,11 +2521,14 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
+        /*
         $prefer_local_url = $this->ReadPropertyBoolean('prefer_local_url');
         $url = ($preferLocal && $prefer_local_url) ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
+         */
+        $url = $this->determineVpnUrl();
         if ($url == false) {
             $err = 'no url available';
             $this->SendDebug(__FUNCTION__, $err, 0);
@@ -2532,11 +2543,14 @@ class NetatmoSecurityCamera extends IPSModule
 
     public function GetLiveSnapshotUrl(bool $preferLocal)
     {
+        /*
         $prefer_local_url = $this->ReadPropertyBoolean('prefer_local_url');
         $url = ($preferLocal && $prefer_local_url) ? $this->determineLocalUrl() : false;
         if ($url == false) {
             $url = $this->determineVpnUrl();
         }
+         */
+        $url = $this->determineVpnUrl();
         if ($url == false) {
             $err = 'no url available';
             $this->SendDebug(__FUNCTION__, $err, 0);
@@ -2959,12 +2973,12 @@ class NetatmoSecurityCamera extends IPSModule
                             if ($preferLocal) {
                                 $url = $this->GetLocalServerUrl();
                             }
+                            if ($url == false) {
+                                $url = $this->GetServerUrl();
+                            }
                             if ($url == false && isset($_SERVER['HTTP_HOST'])) {
                                 $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
                                 $url .= '://' . $_SERVER['HTTP_HOST'];
-                            }
-                            if ($url == false) {
-                                $url = $this->GetServerUrl();
                             }
                             if ($url != false) {
                                 $url .= $path;
@@ -3232,9 +3246,13 @@ class NetatmoSecurityCamera extends IPSModule
         switch ($command) {
             case 'video':
                 if (isset($_GET['live'])) {
-                    $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
-                    $this->SendDebug(__FUNCTION__, 'option: live, resolution=' . $resolution, 0);
-                    $url = $this->GetLiveVideoUrl($resolution, $preferLocal);
+                    if ($this->GetValue('CameraStatus') == self::$CAMERA_STATUS_ON) {
+                        $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
+                        $this->SendDebug(__FUNCTION__, 'option: live, resolution=' . $resolution, 0);
+                        $url = $this->GetLiveVideoUrl($resolution, $preferLocal);
+                    } else {
+                        $url = $this->EventType2Icon('off', true);
+                    }
                     $alternate_url = $this->GetLiveSnapshotUrl($preferLocal);
                 }
                 if (isset($_GET['event_id'])) {
@@ -3245,14 +3263,18 @@ class NetatmoSecurityCamera extends IPSModule
                         http_response_code(404);
                         die('event_id missing');
                     }
-                    $url = $this->GetVideoUrl4Event($event_id, $resolution, $preferLocal);
                     $event = $this->SearchEvent($event_id);
-                    if ($event != false && isset($event['subevents'])) {
-                        $subevents = $event['subevents'];
-                        foreach ($subevents as $subevent) {
-                            $alternate_url = $this->GetSnapshotUrl4Subevent($subevent['id'], $preferLocal);
-                            if ($alternate_url != false) {
-                                break;
+                    if (isset($event['video_status']) && $event['video_status'] == 'recording') {
+                        $url = $this->EventType2Icon($event['video_status'], true);
+                    } else {
+                        $url = $this->GetVideoUrl4Event($event_id, $resolution, $preferLocal);
+                        if ($event != false && isset($event['subevents'])) {
+                            $subevents = $event['subevents'];
+                            foreach ($subevents as $subevent) {
+                                $alternate_url = $this->GetSnapshotUrl4Subevent($subevent['id'], $preferLocal);
+                                if ($alternate_url != false) {
+                                    break;
+                                }
                             }
                         }
                     }
@@ -3607,12 +3629,12 @@ class NetatmoSecurityCamera extends IPSModule
                 if ($preferLocal) {
                     $url = $this->GetLocalServerUrl();
                 }
+                if ($url == false) {
+                    $url = $this->GetServerUrl();
+                }
                 if ($url == false && isset($_SERVER['HTTP_HOST'])) {
                     $url = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
                     $url .= '://' . $_SERVER['HTTP_HOST'];
-                }
-                if ($url == false) {
-                    $url = $this->GetServerUrl();
                 }
                 if ($url != false) {
                     $url .= $path;
@@ -3799,7 +3821,7 @@ class NetatmoSecurityCamera extends IPSModule
         $ipsIP = $this->ReadPropertyString('ipsIP');
         $ipsPort = $this->ReadPropertyInteger('ipsPort');
 
-        $url = 'http://' . ($ipsIP != '' ? $ipsIP : gethostbyname(gethostname())) . ':' . $ipsPort;
+        $url = 'https://' . ($ipsIP != '' ? $ipsIP : gethostbyname(gethostname())) . ':' . $ipsPort;
         return $url;
     }
 
@@ -3839,7 +3861,7 @@ class NetatmoSecurityCamera extends IPSModule
             'end_update'      => 'end_update_icon.png',
             'siren_sounding'  => 'sounding.png',
             'siren_stopped'   => 'stopped.png',
-
+            'recording'       => 'record.png',
         ];
 
         if (isset($val2icon[$val])) {
@@ -4081,7 +4103,8 @@ class NetatmoSecurityCamera extends IPSModule
 
     private function GetImageCacheDir()
     {
-        $dir = $this->GetUserDir(true) . 'netatmo-images';
+        $path = $this->ReadPropertyString('images_path');
+        $dir = $this->GetUserDir(true) . $path;
         if (file_exists($dir) == false) {
             if (mkdir($dir) == false) {
                 $this->SendDebug(__FUNCTION__, 'unable to create directory ' . $dir, 0);

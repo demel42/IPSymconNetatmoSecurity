@@ -286,7 +286,7 @@ class NetatmoSecurityIO extends IPSModule
                 'scope'        => implode(' ', self::$scopes),
                 'state'        => $this->random_string(16),
             ];
-            $url = $this->build_url('https://api.netatmo.net/oauth2/authorize', $params);
+            $url = $this->build_url('https://api.netatmo.com/oauth2/authorize', $params);
         }
         $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
@@ -905,7 +905,7 @@ class NetatmoSecurityIO extends IPSModule
                 default:
                     $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
                     break;
-                }
+            }
         } else {
             $this->SendDebug(__FUNCTION__, 'unknown message-structure', 0);
         }
@@ -928,7 +928,7 @@ class NetatmoSecurityIO extends IPSModule
             return false;
         }
 
-        $url = 'https://api.netatmo.net/oauth2/token';
+        $url = 'https://api.netatmo.com/oauth2/token';
 
         $client_id = $this->ReadPropertyString('Netatmo_Client');
         $client_secret = $this->ReadPropertyString('Netatmo_Secret');
@@ -997,7 +997,7 @@ class NetatmoSecurityIO extends IPSModule
                 $access_token = $this->FetchAccessToken();
                 break;
             case self::$CONNECTION_DEVELOPER:
-                $url = 'https://api.netatmo.net/oauth2/token';
+                $url = 'https://api.netatmo.com/oauth2/token';
 
                 $client_id = $this->ReadPropertyString('Netatmo_Client');
                 $client_secret = $this->ReadPropertyString('Netatmo_Secret');
@@ -1390,7 +1390,7 @@ class NetatmoSecurityIO extends IPSModule
         $params = [
             'access_token' => $access_token,
         ];
-        $url = $this->build_url('https://api.netatmo.net/api/addwebhook', $params);
+        $url = $this->build_url('https://api.netatmo.com/api/addwebhook', $params);
 
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
         if ($webhook_baseurl == '') {
@@ -1446,7 +1446,7 @@ class NetatmoSecurityIO extends IPSModule
             'access_token' => $access_token,
             'app_types'    => 'app_security',
         ];
-        $url = $this->build_url('https://api.netatmo.net/api/dropwebhook', $params);
+        $url = $this->build_url('https://api.netatmo.com/api/dropwebhook', $params);
 
         $data = '';
         $err = '';
@@ -1629,7 +1629,7 @@ class NetatmoSecurityIO extends IPSModule
                 $statuscode = self::$IS_FORBIDDEN;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
             } elseif ($httpcode == 406) {
-                if (preg_match('#^https://api.netatmo.net/api/dropwebhook#', $url)) {
+                if (preg_match('#^https://api.netatmo.com/api/dropwebhook#', $url)) {
                     $data = $cdata;
                 } else {
                     $statuscode = self::$IS_HTTPERROR;
@@ -1658,7 +1658,9 @@ class NetatmoSecurityIO extends IPSModule
         }
 
         $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
-        $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
+        if ($data != $cdata) {
+            $this->SendDebug(__FUNCTION__, '    data=' . $data, 0);
+        }
 
         $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
         if ($collectApiCallStats) {

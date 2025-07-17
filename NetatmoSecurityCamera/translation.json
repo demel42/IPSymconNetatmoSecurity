@@ -56,7 +56,9 @@
 			"local CIDR's": "lokale CIDR's",
 			"Prefer local camera-url for video/images": "Lokale Kamera-URL für Video/Bilder bevorzugen",
 
-			"maximum age until deletion": "maximales Alter bis zum Löschen",
+			"Path for local copy of event images": "Verzeichnis für lokale Kopie der Bilder von Ereignissen",
+
+			"Maximum age until deletion": "maximales Alter bis zum Löschen",
 			"days": "Tage",
 
 			"FTP": "FTP",

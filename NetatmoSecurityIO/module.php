@@ -1123,7 +1123,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $sync_event_count = $this->ReadPropertyInteger('sync_event_count');
 
-        $url = 'https://app.netatmo.net/api/homesdata';
+        $url = 'https://api.netatmo.com/api/homesdata';
 
         $postdata = [
             'gateway_types' => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
@@ -1178,7 +1178,7 @@ class NetatmoSecurityIO extends IPSModule
             foreach ($homes as $home) {
                 $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
 
-                $url = 'https://app.netatmo.net/syncapi/v1/homestatus';
+                $url = 'https://api.netatmo.com/syncapi/v1/homestatus';
 
                 $postdata = [
                     'home_id'      => $home['id'],

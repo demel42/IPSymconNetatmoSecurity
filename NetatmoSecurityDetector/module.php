@@ -1007,7 +1007,7 @@ class NetatmoSecurityDetector extends IPSModule
         $product_id = $this->ReadPropertyString('product_id');
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
-        $url = 'https://app.netatmo.net/syncapi/v1/homestatus';
+        $url = 'https://api.netatmo.com/syncapi/v1/homestatus';
 
         $postdata = [
             'home_id'       => $home_id,
@@ -1059,7 +1059,7 @@ class NetatmoSecurityDetector extends IPSModule
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
 
-        $url = 'https://app.netatmo.net/api/homesdata';
+        $url = 'https://api.netatmo.com/api/homesdata';
 
         $postdata = [
             'home_id'       => $home_id,

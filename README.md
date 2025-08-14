@@ -615,6 +615,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.48.1 @ 04.08.2025 11:03
+  - Fix: alter Hostname "app.netatmo.net" übersehen (Nachtrag zu v1.48)
+
 - 1.48 @ 17.07.2025 11:16
   - Änderung: API-Server wurden geändert (api.netatmo.net -> api.netatmo.com)
   - Verbesserung: Umgang mit der lokalen URL, insbesondere, wenn die Kamera mal keine lokale IP hat

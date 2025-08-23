@@ -12,6 +12,8 @@ class NetatmoSecurityIO extends IPSModule
 
     private $oauthIdentifer = 'netatmo';
 
+    private static $api_server = 'api.netatmo.com';
+
     private static $scopes = [
         'read_presence', 'write_presence', 'access_presence', // Outdoor-Kamera
         'read_camera', 'write_camera', 'access_camera', // Indoor-Kamera
@@ -251,13 +253,25 @@ class NetatmoSecurityIO extends IPSModule
 
     private function build_url($url, $params)
     {
-        $n = 0;
+        $p = '';
         if (is_array($params)) {
+            $r = [];
             foreach ($params as $param => $value) {
-                $url .= ($n++ ? '&' : '?') . $param . '=' . rawurlencode(strval($value));
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        $r[] = $param . '=' . rawurlencode(strval($v));
+                    }
+                } elseif (is_null($value)) {
+                    $r[] = $param;
+                } else {
+                    $r[] = $param . '=' . rawurlencode(strval($value));
+                }
+            }
+            if ($r != []) {
+                $p = '?' . implode('&', $r);
             }
         }
-        return $url;
+        return $url . $p;
     }
 
     private function build_header($headerfields)
@@ -286,7 +300,7 @@ class NetatmoSecurityIO extends IPSModule
                 'scope'        => implode(' ', self::$scopes),
                 'state'        => $this->random_string(16),
             ];
-            $url = $this->build_url('https://api.netatmo.com/oauth2/authorize', $params);
+            $url = $this->build_url('https://' . self::$api_server . '/oauth2/authorize', $params);
         }
         $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
@@ -928,7 +942,7 @@ class NetatmoSecurityIO extends IPSModule
             return false;
         }
 
-        $url = 'https://api.netatmo.com/oauth2/token';
+        $url = 'https://' . self::$api_server . '/oauth2/token';
 
         $client_id = $this->ReadPropertyString('Netatmo_Client');
         $client_secret = $this->ReadPropertyString('Netatmo_Secret');
@@ -997,7 +1011,7 @@ class NetatmoSecurityIO extends IPSModule
                 $access_token = $this->FetchAccessToken();
                 break;
             case self::$CONNECTION_DEVELOPER:
-                $url = 'https://api.netatmo.com/oauth2/token';
+                $url = 'https://' . self::$api_server . '/oauth2/token';
 
                 $client_id = $this->ReadPropertyString('Netatmo_Client');
                 $client_secret = $this->ReadPropertyString('Netatmo_Secret');
@@ -1123,7 +1137,7 @@ class NetatmoSecurityIO extends IPSModule
 
         $sync_event_count = $this->ReadPropertyInteger('sync_event_count');
 
-        $url = 'https://api.netatmo.com/api/homesdata';
+        $url = 'https://' . self::$api_server . '/api/homesdata';
 
         $postdata = [
             'gateway_types' => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
@@ -1178,23 +1192,20 @@ class NetatmoSecurityIO extends IPSModule
             foreach ($homes as $home) {
                 $this->SendDebug(__FUNCTION__, 'home=' . print_r($home, true), 0);
 
-                $url = 'https://api.netatmo.com/syncapi/v1/homestatus';
-
-                $postdata = [
+                $params = [
                     'home_id'      => $home['id'],
                     'device_types' => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
                 ];
-                $pdata = json_encode($postdata);
+                $url = $this->build_url('https://' . self::$api_server . '/api/homestatus', $params);
 
                 $header = [
                     'Accept: application/json',
                     'Authorization: Bearer ' . $access_token,
-                    'Content-Type: application/json;charset=utf-8',
                 ];
 
                 $data = '';
                 $err = '';
-                $statuscode = $this->do_HttpRequest($url, $header, $pdata, 'POST', $data, $err);
+                $statuscode = $this->do_HttpRequest($url, $header, '', 'GET', $data, $err);
                 $this->SendDebug(__FUNCTION__, 'data=' . $data, 0);
                 if ($statuscode == 0) {
                     $jstates = json_decode($data, true);
@@ -1221,7 +1232,7 @@ class NetatmoSecurityIO extends IPSModule
                     'home_id' => $home['id'],
                     'size'    => $sync_event_count
                 ];
-                $url = $this->build_url('https://api.netatmo.com/api/getevents', $params);
+                $url = $this->build_url('https://' . self::$api_server . '/api/getevents', $params);
 
                 $header = [
                     'Accept: application/json',
@@ -1367,7 +1378,7 @@ class NetatmoSecurityIO extends IPSModule
         }
 
         $register_webhook = $this->ReadPropertyBoolean('register_webhook');
-        if (!$register_webhook) {
+        if ($register_webhook == false) {
             $this->SendDebug(__FUNCTION__, 'don\'t register webhook', 0);
             return;
         }
@@ -1383,14 +1394,9 @@ class NetatmoSecurityIO extends IPSModule
     private function do_AddWebhook($access_token)
     {
         $register_webhook = $this->ReadPropertyBoolean('register_webhook');
-        if (!$register_webhook) {
+        if ($register_webhook == false) {
             return;
         }
-
-        $params = [
-            'access_token' => $access_token,
-        ];
-        $url = $this->build_url('https://api.netatmo.com/api/addwebhook', $params);
 
         $webhook_baseurl = $this->ReadPropertyString('webhook_baseurl');
         if ($webhook_baseurl == '') {
@@ -1406,11 +1412,20 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
         $webhook_baseurl .= $hook . '/event';
-        $url .= '&url=' . rawurlencode($webhook_baseurl);
+
+        $params = [
+            'url' => $webhook_baseurl,
+        ];
+        $url = $this->build_url('https://' . self::$api_server . '/api/addwebhook', $params);
+
+        $header = [
+            'Accept: application/json',
+            'Authorization: Bearer ' . $access_token,
+        ];
 
         $data = '';
         $err = '';
-        $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+        $statuscode = $this->do_HttpRequest($url, $header, '', 'GET', $data, $err);
         if ($statuscode == 0) {
             $jdata = json_decode($data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
@@ -1442,15 +1457,15 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
 
-        $params = [
-            'access_token' => $access_token,
-            'app_types'    => 'app_security',
+        $header = [
+            'Accept: application/json',
+            'Authorization: Bearer ' . $access_token,
         ];
-        $url = $this->build_url('https://api.netatmo.com/api/dropwebhook', $params);
+        $url = 'https://' . self::$api_server . '/api/dropwebhook';
 
         $data = '';
         $err = '';
-        $statuscode = $this->do_HttpRequest($url, '', '', 'GET', $data, $err);
+        $statuscode = $this->do_HttpRequest($url, $header, '', 'GET', $data, $err);
         if ($statuscode == 0) {
             $jdata = json_decode($data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
@@ -1629,7 +1644,7 @@ class NetatmoSecurityIO extends IPSModule
                 $statuscode = self::$IS_FORBIDDEN;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
             } elseif ($httpcode == 406) {
-                if (preg_match('#^https://api.netatmo.com/api/dropwebhook#', $url)) {
+                if (preg_match('#^https://' . self::$api_server . '/api/dropwebhook#', $url)) {
                     $data = $cdata;
                 } else {
                     $statuscode = self::$IS_HTTPERROR;

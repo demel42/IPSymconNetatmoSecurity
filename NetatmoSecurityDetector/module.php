@@ -10,6 +10,8 @@ class NetatmoSecurityDetector extends IPSModule
     use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
+    private static $api_server = 'api.netatmo.com';
+
     public static $MUTE_RELEASE = 15 * 60; // 15 Minuten
 
     public function __construct(string $InstanceID)
@@ -928,6 +930,38 @@ class NetatmoSecurityDetector extends IPSModule
         $this->MaintainStatus(IS_ACTIVE);
     }
 
+    private function build_url($url, $params)
+    {
+        $p = '';
+        if (is_array($params)) {
+            $r = [];
+            foreach ($params as $param => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        $r[] = $param . '=' . rawurlencode(strval($v));
+                    }
+                } elseif (is_null($value)) {
+                    $r[] = $param;
+                } else {
+                    $r[] = $param . '=' . rawurlencode(strval($value));
+                }
+            }
+            if ($r != []) {
+                $p = '?' . implode('&', $r);
+            }
+        }
+        return $url . $p;
+    }
+
+    private function build_header($headerfields)
+    {
+        $header = [];
+        foreach ($headerfields as $key => $value) {
+            $header[] = $key . ': ' . $value;
+        }
+        return $header;
+    }
+
     public function DeleteEvent(string $event_id)
     {
         if ($this->HasActiveParent() == false) {
@@ -961,7 +995,7 @@ class NetatmoSecurityDetector extends IPSModule
             return false;
         }
 
-        $url = 'https://api.netatmo.com/api/deleteevent';
+        $url = 'https://' . self::$api_server . '/api/deleteevent';
 
         $postdata = [
             'home_id'   => $home_id,
@@ -1007,15 +1041,13 @@ class NetatmoSecurityDetector extends IPSModule
         $product_id = $this->ReadPropertyString('product_id');
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
-        $url = 'https://api.netatmo.com/syncapi/v1/homestatus';
-
-        $postdata = [
-            'home_id'       => $home_id,
-            'gateway_types' => ['NSD', 'NCO'],
+        $params = [
+            'home_id'      => $home['id'],
+            'device_types' => ['NSD', 'NCO'],
         ];
-        $pdata = json_encode($postdata);
+        $url = $this->build_url('https://' . self::$api_server . '/api/homestatus', $params);
 
-        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGetWithAuth', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
 
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
@@ -1059,7 +1091,7 @@ class NetatmoSecurityDetector extends IPSModule
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
 
-        $url = 'https://api.netatmo.com/api/homesdata';
+        $url = 'https://' . self::$api_server . '/api/homesdata';
 
         $postdata = [
             'home_id'       => $home_id,

@@ -10,6 +10,8 @@ class NetatmoSecurityPerson extends IPSModule
     use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
+    private static $api_server = 'api.netatmo.com';
+
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
@@ -347,7 +349,7 @@ class NetatmoSecurityPerson extends IPSModule
         $home_id = $this->ReadPropertyString('home_id');
         $person_id = $this->ReadPropertyString('person_id');
 
-        $url = 'https://api.netatmo.com/api/';
+        $url = 'https://' . self::$api_server . '/api/';
 
         switch ($mode) {
             case self::$PRESENCE_ACTION_AWAY:

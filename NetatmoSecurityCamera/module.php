@@ -10,6 +10,8 @@ class NetatmoSecurityCamera extends IPSModule
     use NetatmoSecurity\StubsCommonLib;
     use NetatmoSecurityLocalLib;
 
+    private static $api_server = 'api.netatmo.com';
+
     public static $MOTION_RELEASE = 60; // Sekunden
     public static $DOORBELL_RELEASE = 60; // Sekunden
 
@@ -1958,6 +1960,38 @@ class NetatmoSecurityCamera extends IPSModule
         }
     }
 
+    private function build_url($url, $params)
+    {
+        $p = '';
+        if (is_array($params)) {
+            $r = [];
+            foreach ($params as $param => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        $r[] = $param . '=' . rawurlencode(strval($v));
+                    }
+                } elseif (is_null($value)) {
+                    $r[] = $param;
+                } else {
+                    $r[] = $param . '=' . rawurlencode(strval($value));
+                }
+            }
+            if ($r != []) {
+                $p = '?' . implode('&', $r);
+            }
+        }
+        return $url . $p;
+    }
+
+    private function build_header($headerfields)
+    {
+        $header = [];
+        foreach ($headerfields as $key => $value) {
+            $header[] = $key . ': ' . $value;
+        }
+        return $header;
+    }
+
     public function SwitchLight(int $mode)
     {
         if ($this->HasActiveParent() == false) {
@@ -2190,7 +2224,7 @@ class NetatmoSecurityCamera extends IPSModule
         $product_id = $this->ReadPropertyString('product_id');
         $home_id = $this->ReadPropertyString('home_id');
 
-        $url = 'https://api.netatmo.com/api/setstate';
+        $url = 'https://' . self::$api_server . '/api/setstate';
 
         $postdata = [
             'home' => [
@@ -2250,7 +2284,7 @@ class NetatmoSecurityCamera extends IPSModule
             return false;
         }
 
-        $url = 'https://api.netatmo.com/api/deleteevent';
+        $url = 'https://' . self::$api_server . '/api/deleteevent';
 
         $postdata = [
             'home_id'   => $home_id,
@@ -2296,15 +2330,13 @@ class NetatmoSecurityCamera extends IPSModule
         $product_id = $this->ReadPropertyString('product_id');
         $with_wifi_strength = $this->ReadPropertyBoolean('with_wifi_strength');
 
-        $url = 'https://api.netatmo.com/syncapi/v1/homestatus';
-
-        $postdata = [
-            'home_id'       => $home_id,
-            'device_types'  => ['NACamera', 'NOC', 'NDB', 'NSD', 'NCO'],
+        $params = [
+            'home_id'      => $home['id'],
+            'device_types' => ['NACamera', 'NOC', 'NDB']
         ];
-        $pdata = json_encode($postdata);
+        $url = $this->build_url('https://' . self::$api_server . '/api/homestatus', $params);
 
-        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlPostWithAuth', 'Url' => $url, 'PostData' => $pdata];
+        $SendData = ['DataID' => '{2EEA0F59-D05C-4C50-B228-4B9AE8FC23D5}', 'Function' => 'CmdUrlGetWithAuth', 'Url' => $url];
         $data = $this->SendDataToParent(json_encode($SendData));
 
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', got data=' . print_r($data, true), 0);
@@ -2345,7 +2377,7 @@ class NetatmoSecurityCamera extends IPSModule
         $home_id = $this->ReadPropertyString('home_id');
         $product_id = $this->ReadPropertyString('product_id');
 
-        $url = 'https://api.netatmo.com/api/homesdata';
+        $url = 'https://' . self::$api_server . '/api/homesdata';
 
         $postdata = [
             'home_id'       => $home_id,
@@ -2593,7 +2625,11 @@ class NetatmoSecurityCamera extends IPSModule
     {
         $url = false;
         if ($id != '' && $key != '') {
-            $url = 'https://api.netatmo.com/api/getcamerapicture?image_id=' . $id . '&key=' . $key;
+            $params = [
+                'image_id' => $id,
+                'key'      => $key,
+            ];
+            $url = $this->build_url('https://' . self::$api_server . '/api/getcamerapicture', $params);
         }
         $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
         return $url;
@@ -2875,8 +2911,12 @@ class NetatmoSecurityCamera extends IPSModule
                 $snapshot = $notification['snapshot'];
                 $path = $this->GetSnapshotFilename4Notification($notification_id);
                 if ($path != false) {
+                    $params = [
+                        'notification_id' => $notification_id,
+                        'content'         => true,
+                    ];
                     $hook = $this->ReadPropertyString('hook');
-                    $url = $this->GetServerUrl() . $hook . '/snapshot?notification_id=' . $notification_id . '&content';
+                    $url = $this->build_url($this->GetServerUrl() . $hook . '/snapshot', $params);
                 }
             }
         }
@@ -2894,8 +2934,12 @@ class NetatmoSecurityCamera extends IPSModule
                 $vignette = $notification['vignette'];
                 $path = $this->GetVignetteFilename4Notification($notification_id);
                 if ($path != false) {
+                    $params = [
+                        'notification_id' => $notification_id,
+                        'content'         => true,
+                    ];
                     $hook = $this->ReadPropertyString('hook');
-                    $url = $this->GetServerUrl() . $hook . '/snapshot?notification_id=' . $notification_id . '&content';
+                    $url = $this->build_url($this->GetServerUrl() . $hook . '/vignette', $params);
                 }
             }
         }
@@ -3004,8 +3048,12 @@ class NetatmoSecurityCamera extends IPSModule
                 $snapshot = $event['snapshot'];
                 $path = $this->GetSnapshotFilename4Event($event_id);
                 if ($path != false) {
+                    $params = [
+                        'event_id'   => $event_id,
+                        'content'    => true,
+                    ];
                     $hook = $this->ReadPropertyString('hook');
-                    $url = $this->GetServerUrl() . $hook . '/snapshot?event_id=' . $event_id . '&content';
+                    $url = $this->build_url($this->GetServerUrl() . $hook . '/snapshot', $params);
                 }
             }
         }
@@ -3023,8 +3071,12 @@ class NetatmoSecurityCamera extends IPSModule
                 $vignette = $event['vignette'];
                 $path = $this->GetVignetteFilename4Event($event_id);
                 if ($path != false) {
+                    $params = [
+                        'event_id'   => $event_id,
+                        'content'    => true,
+                    ];
                     $hook = $this->ReadPropertyString('hook');
-                    $url = $this->GetServerUrl() . $hook . '/vignette?event_id=' . $event_id . '&content';
+                    $url = $this->build_url($this->GetServerUrl() . $hook . '/vignette', $params);
                 }
             }
         }
@@ -3042,8 +3094,12 @@ class NetatmoSecurityCamera extends IPSModule
                 $snapshot = $subevent['snapshot'];
                 $path = $this->GetSnapshotFilename4Subevent($subevent_id);
                 if ($path != false) {
+                    $params = [
+                        'subevent_id' => $subevent_id,
+                        'content'     => true,
+                    ];
                     $hook = $this->ReadPropertyString('hook');
-                    $url = $this->GetServerUrl() . $hook . '/snapshot?subevent_id=' . $subevent_id . '&content';
+                    $url = $this->build_url($this->GetServerUrl() . $hook . '/snapshot', $params);
                 }
             }
         }
@@ -3062,8 +3118,12 @@ class NetatmoSecurityCamera extends IPSModule
                 $vignette = $subevent['vignette'];
                 $path = $this->GetVignetteFilename4Subevent($subevent_id);
                 if ($path != false) {
+                    $params = [
+                        'subevent_id' => $subevent_id,
+                        'content'     => true,
+                    ];
                     $hook = $this->ReadPropertyString('hook');
-                    $url = $this->GetServerUrl() . $hook . '/vignette?subevent_id=' . $subevent_id . '&content';
+                    $url = $this->build_url($this->GetServerUrl() . $hook . '/vignette', $params);
                 }
             }
         }
@@ -3077,8 +3137,12 @@ class NetatmoSecurityCamera extends IPSModule
         $url = false;
         $path = $this->GetImageCachePath('person-' . $person_id);
         if ($path != false && file_exists($path)) {
+            $params = [
+                'person_id'  => $person_id,
+                'content'    => true,
+            ];
             $hook = $this->ReadPropertyString('hook');
-            $url = $this->GetServerUrl() . $hook . '/person?person_id=' . $person_id . '&content';
+            $url = $this->build_url($this->GetServerUrl() . $hook . '/person', $params);
         }
         $this->SendDebug(__FUNCTION__, 'person_id=' . $person_id . ', url=' . $url, 0);
         return $url;
@@ -3089,8 +3153,12 @@ class NetatmoSecurityCamera extends IPSModule
         $url = false;
         $path = $this->GetImageCachePath('face-' . $face_id);
         if ($path != false && file_exists($path)) {
+            $params = [
+                'face_id'    => $face_id,
+                'content'    => true,
+            ];
             $hook = $this->ReadPropertyString('hook');
-            $url = $this->GetServerUrl() . $hook . '/face?face_id=' . $face_id . '&content';
+            $url = $this->build_url($this->GetServerUrl() . $hook . '/face', $params);
         }
         $this->SendDebug(__FUNCTION__, 'face_id=' . $face_id . ', url=' . $url, 0);
         return $url;

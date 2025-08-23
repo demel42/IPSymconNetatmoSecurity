@@ -615,6 +615,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.49 @ 22.08.2025 10:40
+  - Korrektur: API-Aufrufe an aktuelle Dokumentation angepasst
+
 - 1.48.1 @ 04.08.2025 11:03
   - Fix: alter Hostname "app.netatmo.net" übersehen (Nachtrag zu v1.48)
 

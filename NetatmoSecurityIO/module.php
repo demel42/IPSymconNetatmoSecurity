@@ -31,6 +31,11 @@ class NetatmoSecurityIO extends IPSModule
 
         $this->CommonConstruct(__DIR__);
         $this->SemaphoreID = __CLASS__ . '_' . $InstanceID;
+
+        $curl_exec_timeout = $this->ReadPropertyInteger('curl_exec_timeout');
+        $curl_exec_attempts = $this->ReadPropertyInteger('curl_exec_attempts');
+        $curl_exec_delay = $this->ReadPropertyFloat('curl_exec_delay');
+        $this->SemaphoreTM = ((($curl_exec_timeout + ceil($curl_exec_delay)) * $curl_exec_attempts) + 1) * 1000;
     }
 
     public function __destruct()
@@ -192,11 +197,6 @@ class NetatmoSecurityIO extends IPSModule
             $this->MaintainStatus(IS_INACTIVE);
             return;
         }
-
-        $curl_exec_timeout = $this->ReadPropertyInteger('curl_exec_timeout');
-        $curl_exec_attempts = $this->ReadPropertyInteger('curl_exec_attempts');
-        $curl_exec_delay = $this->ReadPropertyFloat('curl_exec_delay');
-        $this->SemaphoreTM = ((($curl_exec_timeout + ceil($curl_exec_delay)) * $curl_exec_attempts) + 1) * 1000;
 
         $oauth_type = $this->ReadPropertyInteger('OAuth_Type');
         if ($oauth_type == self::$CONNECTION_DEVELOPER) {
@@ -458,7 +458,7 @@ class NetatmoSecurityIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'no saved access_token', 0);
             }
             $refresh_token = $this->ReadAttributeString('ApiRefreshToken');
-            $this->SendDebug(__FUNCTION__, 'refresh_token=' . print_r($refresh_token, true), 0);
+            $this->SendDebug(__FUNCTION__, 'refresh_token=' . $refresh_token, 0);
             if ($refresh_token == '') {
                 $this->SendDebug(__FUNCTION__, 'has no refresh_token', 0);
                 $this->WriteAttributeString('ApiRefreshToken', '');
@@ -503,6 +503,9 @@ class NetatmoSecurityIO extends IPSModule
             return;
         }
         $refresh_token = $this->FetchRefreshToken($_GET['code']);
+        if ($refresh_token === false) {
+            $refresh_token = '';
+        }
         $this->SendDebug(__FUNCTION__, 'refresh_token=' . $refresh_token, 0);
         $this->WriteAttributeString('ApiRefreshToken', $refresh_token);
         if ($this->GetStatus() == self::$IS_NOLOGIN) {

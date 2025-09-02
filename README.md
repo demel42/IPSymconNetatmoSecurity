@@ -615,6 +615,9 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.49.1 @ 02.09.2025 17:20
+  - Korrektur: Änderung zu 1.49
+
 - 1.49 @ 22.08.2025 10:40
   - Korrektur: API-Aufrufe an aktuelle Dokumentation angepasst
 

@@ -22,20 +22,11 @@ class NetatmoSecurityIO extends IPSModule
         'read_doorbell', 'access_doorbell', // Türsprechanlage
     ];
 
-    private $SemaphoreID;
-    private $SemaphoreTM;
-
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
 
         $this->CommonConstruct(__DIR__);
-        $this->SemaphoreID = __CLASS__ . '_' . $InstanceID;
-
-        $curl_exec_timeout = $this->ReadPropertyInteger('curl_exec_timeout');
-        $curl_exec_attempts = $this->ReadPropertyInteger('curl_exec_attempts');
-        $curl_exec_delay = $this->ReadPropertyFloat('curl_exec_delay');
-        $this->SemaphoreTM = ((($curl_exec_timeout + ceil($curl_exec_delay)) * $curl_exec_attempts) + 1) * 1000;
     }
 
     public function __destruct()

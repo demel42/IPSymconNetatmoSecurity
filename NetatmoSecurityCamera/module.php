@@ -3238,13 +3238,17 @@ class NetatmoSecurityCamera extends IPSModule
         $root = realpath(__DIR__);
         $uri = $_SERVER['REQUEST_URI'];
         if (substr($uri, -1) == '/') {
+            $err = 'hook ends with /';
+            $this->SendDebug(__FUNCTION__, 'fatal: uri=' . $uri . ' => ' . $err, 0);
             http_response_code(404);
-            die('File not found!');
+            die($err);
         }
         $hook = $this->ReadPropertyString('hook');
         if ($hook == '') {
+            $err = 'no hook defined';
+            $this->SendDebug(__FUNCTION__, 'fatal: hook=' . $hook . ' => ' . $err, 0);
             http_response_code(404);
-            die('File not found!');
+            die($err);
         }
         if (substr($uri, -1) != '/') {
             $hook .= '/';
@@ -3328,8 +3332,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $resolution = isset($_GET['resolution']) ? $_GET['resolution'] : 'high';
                     $this->SendDebug(__FUNCTION__, 'option: event_id=' . $event_id . ', resolution=' . $resolution, 0);
                     if ($event_id == '') {
+                        $err = 'event_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', event_id=' . $event_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('event_id missing');
+                        die($err);
                     }
                     $event = $this->SearchEvent($event_id);
                     if (isset($event['video_status']) && $event['video_status'] == 'recording') {
@@ -3358,8 +3364,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $subevent_id = $_GET['subevent_id'];
                     $this->SendDebug(__FUNCTION__, 'option: subevent_id=' . $subevent_id, 0);
                     if ($subevent_id == '') {
+                        $err = 'subevent_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', subevent_id=' . $subevent_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('subevent_id missing');
+                        die($err);
                     }
                     $url = $this->GetSnapshotUrl4Subevent($subevent_id, $preferLocal);
                     $path = $this->GetSnapshotFilename4Subevent($subevent_id);
@@ -3368,8 +3376,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $event_id = $_GET['event_id'];
                     $this->SendDebug(__FUNCTION__, 'option: event_id=' . $event_id, 0);
                     if ($event_id == '') {
+                        $err = 'event_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', event_id=' . $event_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('event_id missing');
+                        die($err);
                     }
                     $url = $this->GetSnapshotUrl4Event($event_id, $preferLocal);
                     $path = $this->GetSnapshotFilename4Event($event_id);
@@ -3378,8 +3388,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $notification_id = $_GET['notification_id'];
                     $this->SendDebug(__FUNCTION__, 'option: notification_id=' . $notification_id, 0);
                     if ($notification_id == '') {
+                        $err = 'notification_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', notification_id=' . $notification_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('notification_id missing');
+                        die($err);
                     }
                     $url = $this->GetSnapshotUrl4Notification($notification_id, $preferLocal);
                     $path = $this->GetSnapshotFilename4Notification($notification_id);
@@ -3398,8 +3410,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $subevent_id = $_GET['subevent_id'];
                     $this->SendDebug(__FUNCTION__, 'option: subevent_id=' . $subevent_id, 0);
                     if ($subevent_id == '') {
+                        $err = 'subevent_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', subevent_id=' . $subevent_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('subevent_id missing');
+                        die($err);
                     }
                     $url = $this->GetVignetteUrl4Subevent($subevent_id, $preferLocal);
                     $path = $this->GetVignetteFilename4Subevent($subevent_id);
@@ -3408,8 +3422,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $event_id = $_GET['event_id'];
                     $this->SendDebug(__FUNCTION__, 'option: event_id=' . $event_id, 0);
                     if ($event_id == '') {
+                        $err = 'event_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', event_id=' . $event_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('event_id missing');
+                        die($err);
                     }
                     $url = $this->GetVignetteUrl4Event($event_id, $preferLocal);
                     $path = $this->GetVignetteFilename4Event($event_id);
@@ -3418,8 +3434,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $notification_id = $_GET['notification_id'];
                     $this->SendDebug(__FUNCTION__, 'option: notification_id=' . $notification_id, 0);
                     if ($notification_id == '') {
+                        $err = 'notification_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', notification_id=' . $notification_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('notification_id missing');
+                        die($err);
                     }
                     $url = $this->GetVignetteUrl4Notification($notification_id, $preferLocal);
                     $path = $this->GetVignetteFilename4Notification($notification_id);
@@ -3436,8 +3454,10 @@ class NetatmoSecurityCamera extends IPSModule
                 if (isset($_GET['date'])) {
                     $date = strtotime($_GET['date']);
                     if ($date == 0) {
+                        $err = 'malformed date-argument';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', date=' . $_GET['date'] . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('malformed date');
+                        die($err);
                     }
                 } else {
                     $date = time() - (24 * 60 * 60);
@@ -3447,8 +3467,10 @@ class NetatmoSecurityCamera extends IPSModule
                 break;
             case 'script':
                 if (IPS_ScriptExists($webhook_script) == false) {
+                    $err = 'no custom-script not found';
+                    $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', webhook_script=' . $webhook_script . ' => ' . $err, 0);
                     http_response_code(404);
-                    die('no custom-script not found!');
+                    die($err);
                 }
                 $this->SendDebug(__FUNCTION__, 'webhook_script=' . IPS_GetName($webhook_script), 0);
                 $this->SendDebug(__FUNCTION__, 'opts=' . print_r($opts, true), 0);
@@ -3459,8 +3481,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $person_id = $_GET['person_id'];
                     $this->SendDebug(__FUNCTION__, 'option: person_id=' . $person_id, 0);
                     if ($person_id == '') {
+                        $err = 'person_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', person_id=' . $person_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('person_id missing');
+                        die($err);
                     }
                     $url = $this->GetPersonUrl($person_id, $preferLocal);
                     $path = $this->GetImageCachePath('person-' . $person_id);
@@ -3469,8 +3493,10 @@ class NetatmoSecurityCamera extends IPSModule
                     $face_id = $_GET['face_id'];
                     $this->SendDebug(__FUNCTION__, 'option: face_id=' . $face_id, 0);
                     if ($face_id == '') {
+                        $err = 'face_id missing';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', face_id=' . $face_id . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('face_id missing');
+                        die($err);
                     }
                     $url = $this->GetFaceUrl($face_id, $preferLocal);
                     $path = $this->GetImageCachePath('face-' . $face_id);
@@ -3498,6 +3524,7 @@ class NetatmoSecurityCamera extends IPSModule
                         break;
                     case 'custom':
                         if (IPS_ScriptExists($webhook_script) == false) {
+                            $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', mode=' . $mode . ', webhook_script=' . $webhook_script, 0);
                             http_response_code(404);
                             die('no custom-script not found!');
                         }
@@ -3511,14 +3538,18 @@ class NetatmoSecurityCamera extends IPSModule
                         break;
                     case 'html':
                         if ($url == false) {
+                            $err = 'result-mode "html" without valid url';
+                            $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', mode=' . $mode . ', url=' . $url . ' => ' . $err, 0);
                             http_response_code(404);
-                            die('File not found!');
+                            die($err);
                         }
                         $html = $this->buildHtml($url);
                         break;
                     default:
+                        'unknown result-mode "' . $mode . '"';
+                        $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', mode=' . $mode . ' => ' . $err, 0);
                         http_response_code(404);
-                        die('unknown result-mode!');
+                        die($err);
                 }
                 $this->SendDebug(__FUNCTION__, 'html=' . $html, 0);
                 echo $html;
@@ -3527,14 +3558,24 @@ class NetatmoSecurityCamera extends IPSModule
             case 'person':
                 break;
             default:
+                if ($command == '') {
+                    $err = 'missing command';
+                    $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ' => ' . $err, 0);
+                    http_response_code(404);
+                    die($err);
+                }
                 $path = realpath($root . '/' . $basename);
                 if ($path === false) {
+                    $err = 'missing or invalid path';
+                    $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', path=' . $path . ', root=' . $root . ', basename=' . $basename . ' => ' . $err, 0);
                     http_response_code(404);
-                    die('File not found!');
+                    die($err);
                 }
                 if (substr($path, 0, strlen($root)) != $root) {
+                    $err = 'security issue: cannot leave root folder';
+                    $this->SendDebug(__FUNCTION__, 'fatal: command=' . $command . ', path=' . $path . ', root=' . $root . ' => ' . $err, 0);
                     http_response_code(403);
-                    die('Security issue. Cannot leave root folder!');
+                    die($err);
                 }
                 header('Content-Type: ' . $this->GetMimeType(pathinfo($path, PATHINFO_EXTENSION)));
                 readfile($path);

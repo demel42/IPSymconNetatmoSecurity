@@ -3243,6 +3243,7 @@ class NetatmoSecurityCamera extends IPSModule
             http_response_code(404);
             die($err);
         }
+        $this->SendDebug(__FUNCTION__, 'uri="' . $uri . '"', 0);
         $hook = $this->ReadPropertyString('hook');
         if ($hook == '') {
             $err = 'no hook defined';
@@ -3253,13 +3254,20 @@ class NetatmoSecurityCamera extends IPSModule
         if (substr($uri, -1) != '/') {
             $hook .= '/';
         }
+        $this->SendDebug(__FUNCTION__, 'hook="' . $hook . '"', 0);
+
         $path = parse_url($uri, PHP_URL_PATH);
+        $this->SendDebug(__FUNCTION__, 'path="' . $path . '"', 0);
+
         $basename = substr($path, strlen($hook));
+        $this->SendDebug(__FUNCTION__, 'basename="' . $basename . '"', 0);
+
         $command = $basename;
         if (substr($command, 0, 1) == '/') {
             $command = substr($command, 1);
+            $this->SendDebug(__FUNCTION__, 'command#2="' . $command . '"', 0);
         }
-        $this->SendDebug(__FUNCTION__, 'command=' . $command, 0);
+        $this->SendDebug(__FUNCTION__, 'command="' . $command . '"', 0);
 
         $externalIP = $this->ReadPropertyString('externalIP');
         $localCIDRs = $this->ReadPropertyString('localCIDRs');

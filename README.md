@@ -615,7 +615,7 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.50 @ 24.11.2025 08:31
+- 1.50 @ 28.11.2025 17:29
   - Verbesserung: Rückmeldung eine WebHook-Aufrufs nun detaillierter; zusätzlich ist der Debug umfangreicherer
   - update submodule CommonStubs
 

@@ -1217,10 +1217,6 @@ class NetatmoSecurityDetector extends IPSModule
     public function WifiStrength2Icon(string $wifi_strength, bool $asPath)
     {
         $img = $this->wifi_strength2icon($wifi_strength);
-        if ($img != false) {
-            $hook = $this->ReadPropertyString('hook');
-            $img = $hook . '/imgs/' . $img;
-        }
         return $img;
     }
 

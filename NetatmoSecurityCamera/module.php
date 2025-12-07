@@ -691,9 +691,10 @@ class NetatmoSecurityCamera extends IPSModule
             'type'    => 'ExpansionPanel',
             'items'   => [
                 [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'hook',
-                    'caption' => 'Webhook'
+                    'type'     => 'ValidationTextBox',
+                    'name'     => 'hook',
+                    'validate' => $this->RegexpPattern('hook', true),
+                    'caption'  => 'Webhook',
                 ],
                 [
                     'type'     => 'SelectScript',
@@ -1087,10 +1088,10 @@ class NetatmoSecurityCamera extends IPSModule
                                     }
 
                                     if ($with_light) {
-                                        $light_mode_status = $this->map_lightmode_status($this->GetArrayElem($module, 'floodlight', ''));
-                                        if (is_int($light_mode_status)) {
-                                            $this->SetValue('LightmodeStatus', $light_mode_status);
-                                            if ($light_mode_status == self::$LIGHT_STATUS_ON) {
+                                        $lightmode_status = $this->map_lightmode_status($this->GetArrayElem($module, 'floodlight', ''));
+                                        if (is_int($lightmode_status)) {
+                                            $this->SetValue('LightmodeStatus', $lightmode_status);
+                                            if ($lightmode_status == self::$LIGHT_STATUS_ON) {
                                                 $v = self::$LIGHT_STATUS_OFF;
                                             } else {
                                                 $v = self::$LIGHT_STATUS_ON;
@@ -1743,6 +1744,8 @@ class NetatmoSecurityCamera extends IPSModule
                             case 'NDB-incoming_call':
                             case 'NDB-accepted_call':
                             case 'NDB-missed_call':
+                                $camera_status = self::$CAMERA_STATUS_UNDEFINED;
+                                $lightmode_status = self::$LIGHT_STATUS_UNDEFINED;
                                 $doorbell_type = self::$DOORBELL_TYPE_NONE;
                                 switch ($push_type) {
                                     case 'connection':
@@ -1756,19 +1759,23 @@ class NetatmoSecurityCamera extends IPSModule
                                     case 'NOC-disconnection':
                                     case 'NDB-disconnection':
                                         $message = $this->Translate('Camera disconnected');
+                                        $camera_status = self::$CAMERA_STATUS_DISCONNECTED;
                                         break;
                                     case 'off':
                                     case 'NACamera-off':
                                     case 'NOC-off':
                                         $message = $this->Translate('Monitoring disabled');
+                                        $camera_status = self::$CAMERA_STATUS_OFF;
                                         break;
                                     case 'on':
                                     case 'NACamera-on':
                                     case 'NOC-on':
                                         $message = $this->Translate('Monitoring enabled');
+                                        $camera_status = self::$CAMERA_STATUS_ON;
                                         break;
                                     case 'NOC-light_mode':
                                         $message = $this->Translate('Light-mode changed to ' . $sub_type);
+                                        $lightmode_status = $this->map_lightmode_status($sub_type);
                                         break;
                                     case 'NOC-ftp':
                                         switch ($message) {
@@ -1807,9 +1814,32 @@ class NetatmoSecurityCamera extends IPSModule
                                         break;
                                 }
 
+                                if ($with_camera_status && $camera_status != self::$CAMERA_STATUS_UNDEFINED) {
+                                    $this->SetValue('CameraStatus', $camera_status);
+                                    if ($camera_status == self::$CAMERA_STATUS_ON) {
+                                        $v = self::$CAMERA_STATUS_OFF;
+                                    } else {
+                                        $v = self::$CAMERA_STATUS_ON;
+                                    }
+                                    $this->SetValue('CameraAction', $v);
+                                    $this->SendDebug(__FUNCTION__, 'camera_status=' . $camera_status, 0);
+                                }
+
+                                if ($with_light && $lightmode_status != self::$LIGHT_STATUS_UNDEFINED) {
+                                    $this->SetValue('LightmodeStatus', $lightmode_status);
+                                    if ($lightmode_status == self::$LIGHT_STATUS_ON) {
+                                        $v = self::$LIGHT_STATUS_OFF;
+                                    } else {
+                                        $v = self::$LIGHT_STATUS_ON;
+                                    }
+                                    $this->SetValue('LightAction', $v);
+                                    $this->SendDebug(__FUNCTION__, 'lightmode_status=' . $lightmode_status, 0);
+                                }
+
                                 if ($with_doorbell_detection && $doorbell_type != self::$DOORBELL_TYPE_NONE) {
                                     $this->SetValue('Doorbell', $doorbell_type);
                                     $this->MaintainTimer('DoorbellRelease', self::$DOORBELL_RELEASE * 1000);
+                                    $this->SendDebug(__FUNCTION__, 'doorbell=' . $doorbell_type, 0);
                                 }
 
                                 $cur_notification = [
@@ -1923,7 +1953,15 @@ class NetatmoSecurityCamera extends IPSModule
             case 'LightAction':
                 if ($with_light) {
                     $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
-                    $this->SwitchLight($value);
+                    if ($this->SwitchLight($value)) {
+                        $this->SetValue('LightmodeStatus', $value);
+                        if ($value == self::$LIGHT_STATUS_ON) {
+                            $v = self::$LIGHT_STATUS_OFF;
+                        } else {
+                            $v = self::$LIGHT_STATUS_ON;
+                        }
+                        $this->SetValue('LightAction', $v);
+                    }
                 } else {
                     $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident . ' for product ' . $product_type, 0);
                 }
@@ -1941,7 +1979,15 @@ class NetatmoSecurityCamera extends IPSModule
             case 'CameraAction':
                 if ($with_camera_status) {
                     $this->SendDebug(__FUNCTION__, $ident . '=' . $value, 0);
-                    $this->SwitchCamera($value);
+                    if ($this->SwitchCamera($value)) {
+                        $this->SetValue('CameraStatus', $value);
+                        if ($value == self::$CAMERA_STATUS_ON) {
+                            $v = self::$CAMERA_STATUS_OFF;
+                        } else {
+                            $v = self::$CAMERA_STATUS_ON;
+                        }
+                        $this->SetValue('CameraAction', $v);
+                    }
                 } else {
                     $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident . ' for product ' . $product_type, 0);
                 }
@@ -3243,7 +3289,7 @@ class NetatmoSecurityCamera extends IPSModule
             http_response_code(404);
             die($err);
         }
-        $this->SendDebug(__FUNCTION__, 'uri="' . $uri . '"', 0);
+
         $hook = $this->ReadPropertyString('hook');
         if ($hook == '') {
             $err = 'no hook defined';
@@ -3254,18 +3300,12 @@ class NetatmoSecurityCamera extends IPSModule
         if (substr($uri, -1) != '/') {
             $hook .= '/';
         }
-        $this->SendDebug(__FUNCTION__, 'hook="' . $hook . '"', 0);
 
         $path = parse_url($uri, PHP_URL_PATH);
-        $this->SendDebug(__FUNCTION__, 'path="' . $path . '"', 0);
-
         $basename = substr($path, strlen($hook));
-        $this->SendDebug(__FUNCTION__, 'basename="' . $basename . '"', 0);
-
         $command = $basename;
         if (substr($command, 0, 1) == '/') {
             $command = substr($command, 1);
-            $this->SendDebug(__FUNCTION__, 'command#2="' . $command . '"', 0);
         }
         $this->SendDebug(__FUNCTION__, 'command="' . $command . '"', 0);
 

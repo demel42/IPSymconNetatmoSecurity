@@ -615,8 +615,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.50 @ 28.11.2025 17:29
+- 1.50 @ 07.12.2025 17:09
   - Verbesserung: Rückmeldung eine WebHook-Aufrufs nun detaillierter; zusätzlich ist der Debug umfangreicherer
+  - Verbesserung: Auswerten der PUSH-Nachricht zur Aktualisierung der Variablen "Kamera-Status" und "Licht-Modus"
+  - Verbesserung: Setzen der Variablen "Kamera-Status" und "Licht-Modus" nach erfolgreicher Durchführung der jeweiligen Variable-Aktion
   - update submodule CommonStubs
 
 - 1.49.1 @ 03.09.2025 17:01

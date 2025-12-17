@@ -330,20 +330,27 @@ class NetatmoSecurityIO extends IPSModule
         $jbody = false;
 
         $attempt = 1;
+        $retry = false;
         do {
             $response = curl_exec($ch);
             $cerrno = curl_errno($ch);
             $cerror = $cerrno ? curl_error($ch) : '';
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($cerrno) {
                 $this->SendDebug(__FUNCTION__, ' => attempt=' . $attempt . ', got curl-errno ' . $cerrno . ' (' . $cerror . ')', 0);
                 IPS_Sleep((int) floor($curl_exec_delay * 1000));
+                $retry = true;
+            } elseif ($httpcode == 429) {
+                $this->SendDebug(__FUNCTION__, ' => attempt=' . $attempt . ', got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')', 0);
+                IPS_Sleep((int) floor($curl_exec_delay * 1000));
+                $retry = true;
+            } else {
+                $retry = false;
             }
-        } while ($cerrno && $attempt++ <= $curl_exec_attempts);
+        } while ($retry && $attempt++ <= $curl_exec_attempts);
 
         $curl_info = curl_getinfo($ch);
         curl_close($ch);
-
-        $httpcode = $curl_info['http_code'];
 
         $duration = round(microtime(true) - $time_start, 2);
         $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's, attempts=' . $attempt, 0);
@@ -375,7 +382,7 @@ class NetatmoSecurityIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode;
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1606,17 +1613,25 @@ class NetatmoSecurityIO extends IPSModule
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
         $attempt = 1;
+        $retry = false;
         do {
             $cdata = curl_exec($ch);
             $cerrno = curl_errno($ch);
             $cerror = $cerrno ? curl_error($ch) : '';
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($cerrno) {
                 $this->SendDebug(__FUNCTION__, ' => attempt=' . $attempt . ', got curl-errno ' . $cerrno . ' (' . $cerror . ')', 0);
                 IPS_Sleep((int) floor($curl_exec_delay * 1000));
+                $retry = true;
+            } elseif ($httpcode == 429) {
+                $this->SendDebug(__FUNCTION__, ' => attempt=' . $attempt . ', got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')', 0);
+                IPS_Sleep((int) floor($curl_exec_delay * 1000));
+                $retry = true;
+            } else {
+                $retry = false;
             }
-        } while ($cerrno && $attempt++ <= $curl_exec_attempts);
+        } while ($retry && $attempt++ <= $curl_exec_attempts);
 
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         $duration = round(microtime(true) - $time_start, 2);
@@ -1642,16 +1657,16 @@ class NetatmoSecurityIO extends IPSModule
                     $data = $cdata;
                 } else {
                     $statuscode = self::$IS_HTTPERROR;
-                    $err = 'got http-code ' . $httpcode . ' (not acceptable)';
+                    $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
                 }
             } elseif ($httpcode == 409) {
                 $data = $cdata;
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
                 $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             } else {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode;
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         } elseif ($cdata == '') {
             $statuscode = self::$IS_NODATA;

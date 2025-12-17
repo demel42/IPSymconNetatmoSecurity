@@ -615,10 +615,11 @@ GUIDs
 
 ## 7. Versions-Historie
 
-- 1.50 @ 07.12.2025 17:09
+- 1.50 @ 17.12.2025 10:46
   - Verbesserung: Rückmeldung eine WebHook-Aufrufs nun detaillierter; zusätzlich ist der Debug umfangreicherer
   - Verbesserung: Auswerten der PUSH-Nachricht zur Aktualisierung der Variablen "Kamera-Status" und "Licht-Modus"
   - Verbesserung: Setzen der Variablen "Kamera-Status" und "Licht-Modus" nach erfolgreicher Durchführung der jeweiligen Variable-Aktion
+  - Verbesserung: HTTP-Aufrufe mit HTTP-Code 429 (too may requests) mehrfach wiederholen (analog zu fehlgeschlagenen HTTP-Aufrufen in v1.47)
   - update submodule CommonStubs
 
 - 1.49.1 @ 03.09.2025 17:01

@@ -615,6 +615,10 @@ GUIDs
 
 ## 7. Versions-Historie
 
+- 1.51 @ 27.03.2026 14:44
+  - Fix: Anpassung für IPS 9
+  - update submodule CommonStubs
+
 - 1.50 @ 17.12.2025 10:46
   - Verbesserung: Rückmeldung eine WebHook-Aufrufs nun detaillierter; zusätzlich ist der Debug umfangreicherer
   - Verbesserung: Auswerten der PUSH-Nachricht zur Aktualisierung der Variablen "Kamera-Status" und "Licht-Modus"

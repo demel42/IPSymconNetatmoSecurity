@@ -92,6 +92,14 @@ class NetatmoSecurityCamera extends IPSModule
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
 
+    public function Destroy()
+    {
+        if (IPS_InstanceExists($this->InstanceID) == false) {
+            $this->CleanupHook();
+        }
+        parent::Destroy();
+    }
+
     private function CheckModuleConfiguration()
     {
         $r = [];
@@ -484,7 +492,7 @@ class NetatmoSecurityCamera extends IPSModule
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
         $guid = '{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}';
-        $instIDs = IPS_GetInstanceListByModuleID($guid);
+        $instIDs = (array) IPS_GetInstanceListByModuleID($guid);
 
         if (is_array($jdata)) {
             $home_id = $this->ReadPropertyString('home_id');
@@ -3697,7 +3705,9 @@ class NetatmoSecurityCamera extends IPSModule
         $cerrno = curl_errno($ch);
         $cerror = $cerrno ? curl_error($ch) : '';
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        if (IPS_GetKernelVersion() < 8.5) {
+            curl_close($ch);
+        }
 
         $duration = round(microtime(true) - $time_start, 2);
         $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
@@ -4354,10 +4364,15 @@ class NetatmoSecurityCamera extends IPSModule
                     if ($data == false) {
                         $this->SendDebug(__FUNCTION__, 'unable to fetch url ' . $url, 0);
                         $is_ok = false;
-                    } elseif (isset($http_response_header[0]) && preg_match('/HTTP\/[0-9\.]+\s+([0-9]*)/', $http_response_header[0], $r)) {
-                        $httpcode = $r[1];
                     } else {
-                        $this->SendDebug(__FUNCTION__, 'missing http_response_header', 0);
+                        if (IPS_GetKernelVersion() >= 8.5) {
+                            $http_response_header = http_get_last_response_headers();
+                        }
+                        if (isset($http_response_header[0]) && preg_match('/HTTP\/[0-9\.]+\s+([0-9]*)/', $http_response_header[0], $r)) {
+                            $httpcode = $r[1];
+                        } else {
+                            $this->SendDebug(__FUNCTION__, 'missing http_response_header', 0);
+                        }
                     }
                     $this->SendDebug(__FUNCTION__, ' => httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
                 }
@@ -4419,7 +4434,7 @@ class NetatmoSecurityCamera extends IPSModule
         $cache_ids = [];
 
         // Rücksprache mit NT per Mail am 13.02.2024
-        $instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}'); // NetatmoSecurityCamera
+        $instIDs = (array) IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}'); // NetatmoSecurityCamera
         foreach ($instIDs as $instID) {
             @$mediaID = IPS_GetObjectIDByIdent('Events', $instID);
             if ($mediaID == false) {

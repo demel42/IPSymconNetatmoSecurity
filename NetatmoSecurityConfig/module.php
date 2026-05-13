@@ -138,7 +138,7 @@ class NetatmoSecurityConfig extends IPSModule
                                 continue;
                             }
 
-                            $instIDs = IPS_GetInstanceListByModuleID($guid);
+                            $instIDs = (array) IPS_GetInstanceListByModuleID($guid);
 
                             $instanceID = 0;
                             foreach ($instIDs as $instID) {
@@ -190,7 +190,7 @@ class NetatmoSecurityConfig extends IPSModule
         ];
         foreach ($modules as $module) {
             $category = $this->Translate($module['category']);
-            $instIDs = IPS_GetInstanceListByModuleID($module['guid']);
+            $instIDs = (array) IPS_GetInstanceListByModuleID($module['guid']);
             foreach ($instIDs as $instID) {
                 $fnd = false;
                 foreach ($entries as $entry) {

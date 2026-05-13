@@ -54,14 +54,14 @@ $scriptInfo = IPS_GetName(IPS_GetParent($_IPS['SELF'])) . '\\' . IPS_GetName($_I
 // Ermitteln der Personen
 $personIDs = [];
 $personID2Pseudo = [];
-$instIDs = IPS_GetInstanceListByModuleID('{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}'); // NetatmoSecurityPerson
+$instIDs = (array) IPS_GetInstanceListByModuleID('{7FAAE2B1-D5E8-4E51-9161-85F82EEE79DC}'); // NetatmoSecurityPerson
 foreach ($instIDs as $instID) {
     $personID = IPS_GetProperty($instID, 'person_id');
     $personIDs[] = $personID;
     $personID2Pseudo[$personID] = IPS_GetProperty($instID, 'pseudo');
 }
 
-$instIDs = IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}'); // NetatmoSecurityCamera
+$instIDs = (array) IPS_GetInstanceListByModuleID('{06D589CF-7789-44B1-A0EC-6F51428352E6}'); // NetatmoSecurityCamera
 
 // Basis-URL ermitteln
 $instID = false;
